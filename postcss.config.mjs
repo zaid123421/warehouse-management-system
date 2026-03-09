@@ -1,7 +1,9 @@
-const config = {
+const postcssConfig = {
   plugins: {
-    "@tailwindcss/postcss": {},
+    // نستخدم الحزمة الجديدة التي طلبتها رسالة الخطأ
+    "@tailwindcss/postcss": {}, 
+    autoprefixer: {},
   },
 };
 
-export default config;
+export default postcssConfig;
