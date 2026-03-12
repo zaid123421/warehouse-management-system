@@ -14,7 +14,16 @@ const config: Config = {
 
       /* ───────── COLORS ───────── */
       colors: {
+        /* Shadcn semantic (from globals.css, theme-aware) */
+        background: "var(--background)",
+        foreground: "var(--foreground)",
+        border: "var(--border)",
+        input: "var(--input)",
+        ring: "var(--ring)",
+
         primary: {
+          DEFAULT: "var(--primary)",
+          foreground: "var(--primary-foreground)",
           dark: "var(--color-primary-main-dark)",
           light: "var(--color-primary-main-light)",
           container: "var(--color-primary-container)",
@@ -23,9 +32,36 @@ const config: Config = {
         },
 
         secondary: {
+          DEFAULT: "var(--secondary)",
+          foreground: "var(--secondary-foreground)",
           main: "var(--color-secondary-main)",
           container: "var(--color-secondary-container)",
           onSurface: "var(--color-secondary-on-surface)",
+        },
+
+        destructive: {
+          DEFAULT: "var(--destructive)",
+          foreground: "var(--destructive-foreground)",
+        },
+
+        muted: {
+          DEFAULT: "var(--muted)",
+          foreground: "var(--muted-foreground)",
+        },
+
+        accent: {
+          DEFAULT: "var(--accent)",
+          foreground: "var(--accent-foreground)",
+        },
+
+        card: {
+          DEFAULT: "var(--card)",
+          foreground: "var(--card-foreground)",
+        },
+
+        popover: {
+          DEFAULT: "var(--popover)",
+          foreground: "var(--popover-foreground)",
         },
 
         tertiary: {

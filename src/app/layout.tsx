@@ -2,9 +2,10 @@ import type { Metadata } from "next";
 import "./globals.css";
 import QueryProvider from "../providers/query-provider";
 import { NextIntlClientProvider } from "next-intl";
-import { getMessages } from "next-intl/server";
+import { getLocale, getMessages } from "next-intl/server";
 import { Suspense } from "react";
 import Loading from "./loading";
+import { ThemeProvider } from "next-themes";
 
 export const metadata: Metadata = {
   title: "TreadX - WMS",
@@ -15,19 +16,22 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const locale = await getLocale();
   const messages = await getMessages();
+  const dir = locale === "ar" ? "rtl" : "ltr";
+
   return (
-    <html lang="en">
-      <body
-        className={`font-english`}
-      >
-        <NextIntlClientProvider messages={messages}>
-          <QueryProvider>
-            <Suspense fallback={<Loading />}>
-              {children}
-            </Suspense>
-          </QueryProvider>
-        </NextIntlClientProvider>
+    <html lang={locale} dir={dir} suppressHydrationWarning>
+      <body className={locale === "ar" ? "font-arabic" : "font-english"}>
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+          <NextIntlClientProvider messages={messages}>
+            <QueryProvider>
+              <Suspense fallback={<Loading />}>
+                {children}
+              </Suspense>
+            </QueryProvider>
+          </NextIntlClientProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

@@ -2,7 +2,7 @@ import axios from 'axios';
 import TokenLocalService from '@/services/locale-services/cookies-storage-services/token-service'; // تأكد من المسار حسب صورتك الأخيرة
 
 const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api',
+  baseURL: process.env.NEXT_PUBLIC_BACKEND_URL_FOR_SERVER_REQUESTS || 'http://localhost:5000/api',
   headers: {
     'Content-Type': 'application/json',
   },

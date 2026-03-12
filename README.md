@@ -1,36 +1,50 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# TreadX WMS — Base Project
 
-## Getting Started
+مشروع Next.js (App Router) مُهيأ كقاعدة لمشاريع ويب مع مصادقة، صلاحيات، ترجمة وثيمات.
 
-First, run the development server:
+## الميزات
+
+- **المصادقة**: تسجيل دخول وتسجيل مستخدم جديد (محاكاة جاهزة لربط الـ Backend).
+- **الصلاحيات (RBAC)**: أدوار (admin, supplier, user) وحماية مسارات وSidebar ديناميكي.
+- **الترجمة**: عربي / إنجليزي (next-intl)، لغة من الكوكي مع دعم RTL.
+- **الثيمات**: فاتح / غامق / نظام (next-themes).
+- **Layout**: الصفحة الرئيسية تُوجّه إلى تسجيل الدخول؛ لوحة تحكم مع Sidebar (قائمة، مبدّل ثيم ولغة، تسجيل خروج).
+
+## التشغيل
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+افتح [http://localhost:3000](http://localhost:3000). سيتم توجيهك إلى صفحة تسجيل الدخول (`/auth`).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## متغيرات البيئة
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+انسخ `.env.example` إلى `.env.local` وعدّل القيم عند الحاجة:
 
-## Learn More
+| المتغير | الوصف |
+|--------|--------|
+| `NEXT_PUBLIC_API_URL` | عنوان الـ API (افتراضي: `http://localhost:5000/api`) |
 
-To learn more about Next.js, take a look at the following resources:
+## البنية والتوثيق
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- **[BASE_PROJECT.md](BASE_PROJECT.md)** — ملخص وروابط.
+- **[docs/architecture.md](docs/architecture.md)** — بنية المجلدات، إضافة features و use-cases، استخدام المشروع كقاعدة.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## التقنيات
 
-## Deploy on Vercel
+- Next.js 16 (App Router)
+- React 19
+- next-intl, next-themes
+- Tailwind CSS
+- Zustand, Axios
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## الأوامر
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+| الأمر | الوصف |
+|-------|--------|
+| `npm run dev` | تشغيل وضع التطوير |
+| `npm run build` | بناء للإنتاج |
+| `npm run start` | تشغيل إنتاج |
+| `npm run lint` | فحص ESLint |

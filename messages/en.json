@@ -3,10 +3,68 @@
     "login": "Login",
     "email": "Email Address",
     "password": "Password",
-    "welcome": "Welcome to the Vendor Portal"
+    "welcome": "Welcome to the Vendor Portal",
+    "loginDescription": "Sign in to manage your products and orders",
+    "loginButton": "Login",
+    "roleTest": "Role (for testing)",
+    "noAccount": "Don't have an account?",
+    "createAccount": "Create account",
+    "haveAccount": "Already have an account?",
+    "registerSuccess": "Your account has been created. You can log in now."
+  },
+  "register": {
+    "title": "Create account",
+    "description": "Enter your details to register",
+    "fullName": "Full name",
+    "confirmPassword": "Confirm password",
+    "submit": "Register",
+    "submitting": "Registering..."
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "products": "Products",
+    "orders": "Orders",
+    "inventory": "Inventory",
+    "profile": "Profile",
+    "role": "Role",
+    "logout": "Log out",
+    "appName": "TreadX WMS"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "intro": "Choose a section from the menu above. Links shown depend on your role.",
+    "profileTitle": "Profile",
+    "profileIntro": "Profile content by permissions.",
+    "productsTitle": "Products",
+    "productsIntro": "Product list (access by role).",
+    "ordersTitle": "Orders",
+    "ordersIntro": "Orders list (access by role).",
+    "inventoryTitle": "Inventory",
+    "inventoryIntro": "Stock levels (access by role)."
+  },
+  "theme": {
+    "light": "Light",
+    "dark": "Dark",
+    "system": "System"
   },
   "common": {
     "save": "Save",
-    "cancel": "Cancel"
-  }
+    "cancel": "Cancel",
+    "formError": "Something went wrong. Try again."
+  },
+  "errors": {
+    "forbidden": "Forbidden",
+    "forbiddenMessage": "You do not have permission to access this page.",
+    "backToDashboard": "Back to dashboard"
+  },
+  "validation": {
+    "required": "Required",
+    "invalidEmail": "Enter a valid email address",
+    "passwordMin": "Password must be at least 8 characters",
+    "passwordMismatch": "Passwords do not match",
+    "nameRequired": "Name is required",
+    "emailRequired": "Email is required",
+    "passwordRequired": "Password is required"
+  },
+  "formError": "Something went wrong. Try again."
 }

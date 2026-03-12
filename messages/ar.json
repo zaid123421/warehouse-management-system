@@ -3,10 +3,67 @@
     "login": "تسجيل الدخول",
     "email": "البريد الإلكتروني",
     "password": "كلمة المرور",
-    "welcome": "مرحباً بك في بوابة الموردين"
+    "welcome": "مرحباً بك في بوابة الموردين",
+    "loginDescription": "سجل دخولك لإدارة منتجاتك وطلباتك",
+    "loginButton": "تسجيل الدخول",
+    "roleTest": "الدور (للاختبار)",
+    "noAccount": "لا تملك حساباً؟",
+    "createAccount": "إنشاء حساب",
+    "haveAccount": "لديك حساب؟",
+    "registerSuccess": "تم إنشاء حسابك بنجاح. يمكنك تسجيل الدخول الآن."
+  },
+  "register": {
+    "title": "إنشاء حساب",
+    "description": "أدخل بياناتك لتسجيل حساب جديد",
+    "fullName": "الاسم الكامل",
+    "confirmPassword": "تأكيد كلمة المرور",
+    "submit": "تسجيل",
+    "submitting": "جاري التسجيل..."
+  },
+  "nav": {
+    "dashboard": "لوحة التحكم",
+    "products": "المنتجات",
+    "orders": "الطلبات",
+    "inventory": "المخزون",
+    "profile": "الملف الشخصي",
+    "role": "الدور",
+    "logout": "تسجيل الخروج",
+    "appName": "TreadX WMS"
+  },
+  "dashboard": {
+    "title": "لوحة التحكم",
+    "intro": "اختر قسمًا من القائمة أعلاه. الروابط المعروضة تعتمد على صلاحيات دورك.",
+    "profileTitle": "الملف الشخصي",
+    "profileIntro": "محتوى الصفحة حسب الصلاحيات.",
+    "productsTitle": "المنتجات",
+    "productsIntro": "قائمة المنتجات (صلاحية الوصول حسب الدور).",
+    "ordersTitle": "الطلبات",
+    "ordersIntro": "قائمة الطلبات (صلاحية الوصول حسب الدور).",
+    "inventoryTitle": "المخزون",
+    "inventoryIntro": "مستويات المخزون (صلاحية الوصول حسب الدور)."
+  },
+  "theme": {
+    "light": "فاتح",
+    "dark": "غامق",
+    "system": "النظام"
   },
   "common": {
     "save": "حفظ",
-    "cancel": "إلغاء"
+    "cancel": "إلغاء",
+    "formError": "حدث خطأ. حاول مرة أخرى."
+  },
+  "errors": {
+    "forbidden": "ممنوع",
+    "forbiddenMessage": "ليس لديك صلاحية للوصول إلى هذه الصفحة.",
+    "backToDashboard": "العودة للوحة التحكم"
+  },
+  "validation": {
+    "required": "مطلوب",
+    "invalidEmail": "أدخل بريداً إلكترونياً صالحاً",
+    "passwordMin": "كلمة المرور 8 أحرف على الأقل",
+    "passwordMismatch": "كلمة المرور غير متطابقة",
+    "nameRequired": "الاسم مطلوب",
+    "emailRequired": "البريد الإلكتروني مطلوب",
+    "passwordRequired": "كلمة المرور مطلوبة"
   }
 }
