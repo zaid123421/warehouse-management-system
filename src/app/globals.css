@@ -30,15 +30,18 @@
     --popover: var(--color-surface-light-container);
     --popover-foreground: var(--color-secondary-main);
 
-    --border: var(--color-surface-container);
-    --input: var(--color-surface-container);
+    --border: #cbd5e1;
+    --input: #bfdbfe;
     --ring: var(--color-primary-main-light);
+    --radius: var(--radius-md);
   }
 
   body {
     font-family: var(--font-family-sans);
     background: var(--background);
     color: var(--foreground);
+    min-width: 0;
+    overflow-x: hidden;
   }
 
   html[lang="ar"] body {
@@ -46,6 +49,8 @@
   }
 
   .dark {
+    --color-text-subtle: #94A3B8;
+
     --background: var(--color-surface-default);
     --foreground: var(--color-secondary-on-surface);
 
@@ -70,8 +75,184 @@
     --popover: var(--color-surface-bright);
     --popover-foreground: var(--color-secondary-on-surface);
 
-    --border: var(--color-surface-container);
-    --input: var(--color-surface-container);
+    --border: #1e3a5f;
+    --input: #1e4976;
     --ring: var(--color-primary-main-dark);
+  }
+}
+
+@layer components {
+  /* Form validation messages — same red as invalid field border */
+  [data-slot="field-error"],
+  form p.text-error-main,
+  [role="dialog"] p.text-error-main {
+    color: var(--color-error-main);
+  }
+
+  [data-slot="button"] {
+    font-size: var(--font-size-label-lg);
+    font-weight: var(--font-weight-medium);
+    border-radius: var(--radius-md);
+    transition-duration: var(--duration-normal);
+    transition-timing-function: var(--easing-standard);
+  }
+
+  [data-slot="input"] {
+    border-radius: var(--radius-md);
+    font-size: var(--font-size-body-md);
+    transition-duration: var(--duration-normal);
+    transition-timing-function: var(--easing-standard);
+  }
+
+  [data-slot="card"] {
+    border-radius: var(--radius-lg);
+  }
+
+  [data-slot="dialog-content"] {
+    border-radius: var(--radius-xl);
+  }
+
+  [data-slot="select-content"],
+  [data-slot="dropdown-menu-content"],
+  [data-slot="combobox-content"] {
+    border-radius: var(--radius-lg);
+  }
+
+  [data-slot="label"] {
+    font-size: var(--font-size-label-lg);
+    font-weight: var(--font-weight-medium);
+  }
+
+  /* Global scrollbar — same thin pill thumb everywhere */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: rgb(148 163 184 / 0.5) transparent;
+  }
+
+  *::-webkit-scrollbar {
+    width: 5px;
+    height: 5px;
+  }
+
+  *::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  *::-webkit-scrollbar-thumb {
+    background: rgb(148 163 184 / 0.5);
+    border-radius: 9999px;
+  }
+
+  *::-webkit-scrollbar-thumb:hover {
+    background: rgb(148 163 184 / 0.7);
+  }
+
+  .dark * {
+    scrollbar-color: rgb(255 255 255 / 0.25) transparent;
+  }
+
+  .dark *::-webkit-scrollbar-thumb {
+    background: rgb(255 255 255 / 0.25);
+  }
+
+  .dark *::-webkit-scrollbar-thumb:hover {
+    background: rgb(255 255 255 / 0.4);
+  }
+
+  /* Custom scrollbar — keep the customer-card gutter behavior */
+  .scrollbar-custom {
+    scrollbar-width: thin;
+    scrollbar-color: rgb(148 163 184 / 0.5) transparent;
+    padding-inline-end: 6px;
+  }
+  
+  /* Hide padding when no scrollbar is present */
+  .scrollbar-custom:not(:has(::-webkit-scrollbar-thumb:visible)) {
+    padding-inline-end: 0;
+  }
+  
+  /* Alternative approach - check if content overflows */
+  .scrollbar-custom[data-scrollable="false"] {
+    padding-inline-end: 0;
+  }
+  .scrollbar-custom::-webkit-scrollbar {
+    width: 5px;
+    height: 5px;
+  }
+  .scrollbar-custom::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .scrollbar-custom::-webkit-scrollbar-thumb {
+    background: rgb(148 163 184 / 0.5);
+    border-radius: 9999px;
+  }
+  .scrollbar-custom::-webkit-scrollbar-thumb:hover {
+    background: rgb(148 163 184 / 0.7);
+  }
+  .dark .scrollbar-custom {
+    scrollbar-color: rgb(255 255 255 / 0.25) transparent;
+  }
+  .dark .scrollbar-custom::-webkit-scrollbar-thumb {
+    background: rgb(255 255 255 / 0.25);
+  }
+  .dark .scrollbar-custom::-webkit-scrollbar-thumb:hover {
+    background: rgb(255 255 255 / 0.4);
+  }
+}
+
+@layer utilities {
+  /* Orange border on focus for all form fields */
+  [data-slot="input"]:focus,
+  [data-slot="input"]:focus-visible,
+  [data-slot="textarea"]:focus,
+  [data-slot="textarea"]:focus-visible,
+  [data-slot="select-trigger"]:focus,
+  [data-slot="select-trigger"]:focus-visible,
+  [data-slot="select-trigger"][data-state="open"],
+  [data-slot="combobox-trigger"]:focus,
+  [data-slot="combobox-trigger"]:focus-visible,
+  [data-slot="combobox-trigger"][aria-expanded="true"] {
+    border-color: var(--color-primary-main-light);
+    outline: none;
+    box-shadow: none;
+  }
+
+  .dark [data-slot="input"]:focus,
+  .dark [data-slot="input"]:focus-visible,
+  .dark [data-slot="textarea"]:focus,
+  .dark [data-slot="textarea"]:focus-visible,
+  .dark [data-slot="select-trigger"]:focus,
+  .dark [data-slot="select-trigger"]:focus-visible,
+  .dark [data-slot="select-trigger"][data-state="open"],
+  .dark [data-slot="combobox-trigger"]:focus,
+  .dark [data-slot="combobox-trigger"]:focus-visible,
+  .dark [data-slot="combobox-trigger"][aria-expanded="true"] {
+    border-color: var(--color-primary-main-dark);
+  }
+
+  [data-slot="field-group"][data-invalid="true"],
+  [data-slot="field-group"][data-invalid="true"]:focus-within {
+    border-color: var(--color-error-main);
+  }
+
+  [data-slot="input"][aria-invalid="true"],
+  [data-slot="textarea"][aria-invalid="true"],
+  [data-slot="select-trigger"][aria-invalid="true"],
+  [data-slot="combobox-trigger"][aria-invalid="true"] {
+    border-color: var(--color-error-main);
+  }
+
+  [data-slot="input"][aria-invalid="true"]:focus,
+  [data-slot="input"][aria-invalid="true"]:focus-visible,
+  [data-slot="textarea"][aria-invalid="true"]:focus,
+  [data-slot="textarea"][aria-invalid="true"]:focus-visible,
+  [data-slot="combobox-trigger"][aria-invalid="true"]:focus,
+  [data-slot="combobox-trigger"][aria-invalid="true"]:focus-visible {
+    border-color: var(--color-error-main);
+  }
+
+  [data-slot="required-mark"],
+  [data-slot="field-error"] {
+    color: var(--color-error-main);
   }
 }

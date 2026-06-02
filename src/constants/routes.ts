@@ -8,7 +8,7 @@ export const ROUTES = {
   DASHBOARD: {
     ROOT: "/dashboard",
     PROFILE: "/dashboard/profile",
-    
+
     PRODUCTS: {
       LIST: "/dashboard/products",
       ADD: "/dashboard/products/add",
@@ -27,7 +27,7 @@ export const ROUTES = {
   ERRORS: {
     NOT_FOUND: "/404",
     FORBIDDEN: "/403",
-  }
+  },
 } as const;
 
 export type AppRoutes = typeof ROUTES;

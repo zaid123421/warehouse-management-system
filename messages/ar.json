@@ -3,14 +3,45 @@
     "login": "تسجيل الدخول",
     "email": "البريد الإلكتروني",
     "password": "كلمة المرور",
-    "welcome": "مرحباً بك في بوابة الموردين",
-    "loginDescription": "سجل دخولك لإدارة منتجاتك وطلباتك",
+    "welcome": "مرحباً بك",
+    "welcomeBack": "مرحباً بعودتك",
+    "signInSubtitle": "سجّل دخولك لإدارة المستودع",
+    "emailAddress": "البريد الإلكتروني",
+    "passwordLabel": "كلمة المرور",
+    "signIn": "تسجيل الدخول",
+    "signingIn": "جاري تسجيل الدخول…",
+    "loginFailed": "فشل تسجيل الدخول. تحقق من بياناتك وحاول مرة أخرى.",
+    "loginDescription": "سجل دخولك لإدارة عمليات المستودع",
     "loginButton": "تسجيل الدخول",
     "roleTest": "الدور (للاختبار)",
     "noAccount": "لا تملك حساباً؟",
     "createAccount": "إنشاء حساب",
     "haveAccount": "لديك حساب؟",
-    "registerSuccess": "تم إنشاء حسابك بنجاح. يمكنك تسجيل الدخول الآن."
+    "registerSuccess": "تم إنشاء الحساب بنجاح! يمكنك تسجيل الدخول الآن.",
+    "activateAccountSuccess": "تم تفعيل حسابك! يمكنك تسجيل الدخول الآن.",
+    "resetLinkSentInfo": "إن وُجد حساب لهذا البريد، تحقق من صندوق الوارد لرابط إعادة تعيين كلمة المرور.",
+    "forgotPassword": {
+      "title": "نسيت كلمة المرور؟",
+      "subtitle": "أدخل بريدك المسجّل وسنرسل لك رابطاً لإعادة تعيين كلمة المرور.",
+      "backToSignIn": "العودة لتسجيل الدخول",
+      "submitButton": "إرسال رابط إعادة التعيين",
+      "submitting": "جاري الإرسال…",
+      "requestFailed": "تعذّر إرسال الطلب. حاول مرة أخرى.",
+      "emailPlaceholder": "أدخل بريدك الإلكتروني",
+      "successTitle": "تحقق من بريدك",
+      "successDescription": "إذا وُجد حساب لـ {email}، أرسلنا تعليمات إعادة تعيين كلمة المرور.",
+      "spamHint": "تحقق من مجلد الرسائل غير المرغوب فيها إن لم تجد الرسالة.",
+      "tryAnotherEmail": "استخدام بريد آخر",
+      "rememberPassword": "تذكرت كلمة المرور؟"
+    },
+    "brandPanelAlt": "مستودع",
+    "logoAlt": "شعار TreadX",
+    "vendorDashboard": "نظام إدارة المستودع",
+    "warehousePortal": "بوابة المستودع",
+    "wmsVersion": "WMS v2.1",
+    "needAccess": "تحتاج وصول؟ تواصل مع مدير المستودع",
+    "seasonalPlatform": "منصة عمليات المستودع",
+    "securedBy": "مؤمن بواسطة TreadX Enterprise"
   },
   "register": {
     "title": "إنشاء حساب",
@@ -26,9 +57,18 @@
     "orders": "الطلبات",
     "inventory": "المخزون",
     "profile": "الملف الشخصي",
-    "role": "الدور",
+    "role": ":الدور",
     "logout": "تسجيل الخروج",
-    "appName": "TreadX WMS"
+    "appName": "TreadX WMS",
+    "overview": "نظرة عامة",
+    "stock": "المخزون الفعلي",
+    "settings": "الإعدادات",
+    "active": "نشط",
+    "roleAdmin": "مدير",
+    "roleSupplier": "مستودع",
+    "roleUser": "مشغّل",
+    "defaultAccountName": "الحساب",
+    "professionalPlan": "الخطة الاحترافية"
   },
   "dashboard": {
     "title": "لوحة التحكم",
@@ -40,7 +80,35 @@
     "ordersTitle": "الطلبات",
     "ordersIntro": "قائمة الطلبات (صلاحية الوصول حسب الدور).",
     "inventoryTitle": "المخزون",
-    "inventoryIntro": "مستويات المخزون (صلاحية الوصول حسب الدور)."
+    "inventoryIntro": "مستويات المخزون (صلاحية الوصول حسب الدور).",
+    "stockTitle": "المخزون الفعلي",
+    "stockIntro": "نظرة عامة على المخزون والمستويات حسب الموقع.",
+    "inventoryRackPreview": "معاينة تخطيط المستودع",
+    "inventoryRackPreviewDescription": "عدة رفوف إطارات حسب منطقة التخزين. اسحب للدوران، مرّر للتكبير.",
+    "warehouseZonesLegendTitle": "ألوان المناطق",
+    "warehouseZonesLegendHint": "لكل منطقة شبكة رفوف وعدد مستويات وإطارات مختلف. لون الرف يطابق المنطقة.",
+    "warehouseZones": {
+      "zoneA": {
+        "label": "المنطقة أ — جمع سريع",
+        "description": "أصناف دوران عالٍ قرب الشحن.",
+        "stats": "{rackCols}×{rackRows} وحدة رف · {shelves} مستويات رف · ~{tires} إطار"
+      },
+      "zoneB": {
+        "label": "المنطقة ب — تخزين بالجملة",
+        "description": "تخزين على المنصات والكميات الكبيرة.",
+        "stats": "{rackCols}×{rackRows} وحدة رف · {shelves} مستويات رف · ~{tires} إطار"
+      },
+      "zoneC": {
+        "label": "المنطقة ج — احتياطي",
+        "description": "مخزون أمان والفائض.",
+        "stats": "{rackCols}×{rackRows} وحدة رف · {shelves} مستويات رف · ~{tires} إطار"
+      },
+      "zoneD": {
+        "label": "المنطقة د — الاستلام",
+        "description": "منطقة تجهيز واستلام الوارد.",
+        "stats": "{rackCols}×{rackRows} وحدة رف · {shelves} مستويات رف · ~{tires} إطار"
+      }
+    }
   },
   "theme": {
     "light": "فاتح",
@@ -50,6 +118,7 @@
   "common": {
     "save": "حفظ",
     "cancel": "إلغاء",
+    "ok": "موافق",
     "formError": "حدث خطأ. حاول مرة أخرى."
   },
   "errors": {
@@ -65,5 +134,28 @@
     "nameRequired": "الاسم مطلوب",
     "emailRequired": "البريد الإلكتروني مطلوب",
     "passwordRequired": "كلمة المرور مطلوبة"
+  },
+  "settings": {
+    "title": "الإعدادات",
+    "subtitle": "إدارة حسابك وتفضيلاتك",
+    "accountSection": "الحساب",
+    "securitySection": "الأمان",
+    "securitySectionHint": "حافظ على أمان حسابك بكلمة مرور قوية.",
+    "changePasswordModalTitle": "تغيير كلمة المرور",
+    "changePasswordModalDescription": "أدخل كلمة المرور الحالية ثم الجديدة مرتين.",
+    "openChangePassword": "تغيير كلمة المرور",
+    "currentPasswordLabel": "كلمة المرور الحالية",
+    "newPasswordLabel": "كلمة المرور الجديدة",
+    "confirmPasswordLabel": "تأكيد كلمة المرور الجديدة",
+    "updatePasswordButton": "تحديث كلمة المرور",
+    "passwordChangeSuccess": "تم تحديث كلمة المرور.",
+    "passwordChangeSuccessTitle": "تم بنجاح",
+    "wrongCurrentPassword": "كلمة المرور الحالية غير صحيحة.",
+    "showPassword": "إظهار كلمة المرور",
+    "hidePassword": "إخفاء كلمة المرور",
+    "appearanceSection": "المظهر",
+    "themeLabel": "الثيم",
+    "languageLabel": "اللغة",
+    "accessLevelLabel": "مستوى الوصول"
   }
 }

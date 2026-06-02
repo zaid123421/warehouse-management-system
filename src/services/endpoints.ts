@@ -1,20 +1,14 @@
 export const ENDPOINTS = {
-  // Example
-  PATIENT: {
-    LIST: "/admin/patients",
-    CHECK_EXISTS: "/admin/patients/check-exists",
-    DETAILS: (id: string | number) => `/admin/patients/${id}`,
-    ALLERGIES: "/admin/patient-allergies",
-    SCAN_QR: "/patients/scan-qr-code",
+  AUTH: {
+    LOGIN: "/v1/auth/login",
+    LOGOUT: "/v1/auth/logout",
+    REFRESH: "/v1/auth/refresh",
+    FORGOT_PASSWORD: "/v1/auth/forgot-password",
+    CHANGE_PASSWORD: "/v1/auth/change-password",
+  },
+  USER: {
+    ME: "/v1/users/me",
   },
 } as const;
 
 export type Endpoints = typeof ENDPOINTS;
-
-export const getFullUrl = (suffix: string, isClient: boolean = true): string => {
-  const baseUrl = isClient
-    ? process.env.NEXT_PUBLIC_BACKEND_URL_FOR_CLIENT_REQUESTS 
-    : process.env.NEXT_PUBLIC_BACKEND_URL_FOR_SERVER_REQUESTS;
-    
-  return `${baseUrl}/api${suffix.startsWith("/") ? suffix : `/${suffix}`}`;
-};

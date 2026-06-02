@@ -10,7 +10,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 const LOCALE_COOKIE = "NEXT_LOCALE";
@@ -34,14 +33,14 @@ export function LocaleSwitcher() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button
-          variant="outline"
-          className="h-9 min-w-[7rem] justify-between gap-2"
+        <button
+          type="button"
+          className="flex items-center justify-between gap-2 rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-primary hover:text-primary-foreground"
           aria-label="Language"
         >
           <span>{currentLabel}</span>
-          <ChevronDown className="size-4 opacity-50" />
-        </Button>
+          <ChevronDown className="size-4" />
+        </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
         {LOCALES.map(({ value, label }) => (

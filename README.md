@@ -25,7 +25,8 @@ npm run dev
 
 | المتغير | الوصف |
 |--------|--------|
-| `NEXT_PUBLIC_API_URL` | عنوان الـ API (افتراضي: `http://localhost:5000/api`) |
+| `NEXT_PUBLIC_BACKEND_URL_FOR_CLIENT_REQUESTS` | عنوان الـ API للمتصفح (افتراضي: `https://api.treadx.uqarsoft.com/api`) |
+| `NEXT_PUBLIC_BACKEND_URL_FOR_SERVER_REQUESTS` | عنوان الـ API على السيرفر (نفس القيمة عادةً) |
 
 ## البنية والتوثيق
 

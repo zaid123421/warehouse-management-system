@@ -6,11 +6,11 @@
 
 :root {
   /* ── Colors ──────────────────────────────────────────────────── */
-  --color-primary-main-dark: #F59F0A; /* Primary brand color — Dark mode */
-  --color-primary-main-light: #C47F08; /* Primary brand color — Light mode */
-  --color-primary-container: #FDECC2; /* Primary container background */
-  --color-primary-on-container: #2B1A00; /* Text on primary container */
-  --color-primary-inverse: #FFE082; /* Inverse primary for dark surfaces */
+  --color-primary-main-dark: #0EA5E9; /* Primary brand color — Dark mode (Logistics Blue) */
+  --color-primary-main-light: #0284C7; /* Primary brand color — Light mode (Logistics Blue) */
+  --color-primary-container: #E0F2FE; /* Primary container background */
+  --color-primary-on-container: #0C4A6E; /* Text on primary container */
+  --color-primary-inverse: #BAE6FD; /* Inverse primary for dark surfaces */
   --color-secondary-main: #2B303B; /* Secondary surface color */
   --color-secondary-container: #414856; /* Secondary container */
   --color-secondary-on-surface: #F4F3F1; /* Text on secondary surface */
@@ -47,6 +47,7 @@
   --color-chart-4: #F97316; /* Chart color 4 — Processing */
   --color-chart-5: #DC2828; /* Chart color 5 — Issues */
   --color-chart-6: #64748B; /* Chart color 6 — Unclassified */
+  --color-text-subtle: #64748B; /* Page subtitles — slate neutral, light mode */
 
   /* ── Spacing ─────────────────────────────────────────────────── */
   --spacing-1: 4px; /* Icon gap, micro padding */

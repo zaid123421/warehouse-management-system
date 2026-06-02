@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 export default async function ForbiddenPage() {
   const t = await getTranslations("errors");
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-background p-4">
+    <div className="flex min-h-screen flex-col items-center justify-center bg-background p-2 sm:p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <CardTitle className="text-headline-sm font-bold text-foreground">

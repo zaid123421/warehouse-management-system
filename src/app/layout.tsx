@@ -6,6 +6,7 @@ import { getLocale, getMessages } from "next-intl/server";
 import { Suspense } from "react";
 import Loading from "./loading";
 import { ThemeProvider } from "next-themes";
+import { Toaster } from "@/components/ui/sonner";
 
 export const metadata: Metadata = {
   title: "TreadX - WMS",
@@ -32,6 +33,7 @@ export default async function RootLayout({
             </QueryProvider>
           </NextIntlClientProvider>
         </ThemeProvider>
+        <Toaster />
       </body>
     </html>
   );

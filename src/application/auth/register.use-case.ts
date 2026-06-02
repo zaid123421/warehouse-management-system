@@ -13,6 +13,7 @@ export interface RegisterResult {
 }
 
 export async function registerUseCase(input: RegisterInput): Promise<RegisterResult> {
+  void input;
   // محاكاة: تأخير بسيط ثم نجاح
   await new Promise((resolve) => setTimeout(resolve, 500));
   return { success: true };

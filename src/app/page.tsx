@@ -1,9 +1,7 @@
 import { redirect } from "next/navigation";
+import { ROUTES } from "@/constants/routes";
 
-/**
- * الصفحة الرئيسية: توجيه المستخدم إلى صفحة تسجيل الدخول.
- * صفحة تسجيل الدخول الفعلية عند /auth
- */
+/** الصفحة الرئيسية: توجيه المستخدم إلى تسجيل الدخول */
 export default function Home() {
-  redirect("/auth");
+  redirect(ROUTES.AUTH.LOGIN);
 }

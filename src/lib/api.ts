@@ -1,48 +1,122 @@
-import axios from 'axios';
-import TokenLocalService from '@/services/locale-services/cookies-storage-services/token-service'; // تأكد من المسار حسب صورتك الأخيرة
+import axios, { AxiosHeaders, type InternalAxiosRequestConfig } from "axios";
+import TokenService from "@/infrastructure/auth/token-service";
+import { ROUTES } from "@/constants/routes";
+import { refreshAccessTokenUseCase } from "@/application/auth/refresh-access-token.use-case";
+import { useAuthStore } from "@/shared/stores/auth-store";
+
+type RetryableRequestConfig = InternalAxiosRequestConfig & { _retry?: boolean };
+
+function attachBearerToken(config: InternalAxiosRequestConfig, rawToken: string) {
+  const token = rawToken.trim();
+  if (!token) return;
+  const headers = AxiosHeaders.from(config.headers ?? {});
+  headers.set("Authorization", `Bearer ${token}`);
+  config.headers = headers;
+}
 
 const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_BACKEND_URL_FOR_SERVER_REQUESTS || 'http://localhost:5000/api',
+  baseURL:
+    process.env.NEXT_PUBLIC_BACKEND_URL_FOR_CLIENT_REQUESTS ||
+    process.env.NEXT_PUBLIC_BACKEND_URL_FOR_SERVER_REQUESTS ||
+    "https://api.treadx.uqarsoft.com/api",
   headers: {
-    'Content-Type': 'application/json',
+    "Content-Type": "application/json",
   },
 });
 
-// --- 1. Request Interceptor ---
+let refreshInFlight: Promise<string> | null = null;
+
+function getRefreshedAccessToken(): Promise<string> {
+  if (!refreshInFlight) {
+    refreshInFlight = refreshAccessTokenUseCase()
+      .then((access) => {
+        refreshInFlight = null;
+        return access;
+      })
+      .catch((e) => {
+        refreshInFlight = null;
+        throw e;
+      });
+  }
+  return refreshInFlight;
+}
+
+function isRefreshRequest(config: InternalAxiosRequestConfig): boolean {
+  const path = config.url ?? "";
+  return path.includes("auth/refresh");
+}
+
+function isLogoutRequest(config: InternalAxiosRequestConfig): boolean {
+  const path = config.url ?? "";
+  return path.includes("auth/logout");
+}
+
+/** 401 بسبب كلمة السر الحالية الخاطئة — لا نفترض انتهاء الـ access token ولا نستدعي refresh */
+function isWrongCurrentPassword401(error: unknown): boolean {
+  if (!axios.isAxiosError(error)) return false;
+  if (error.response?.status !== 401) return false;
+  const data = error.response.data;
+  if (!data || typeof data !== "object") return false;
+  const msg = (data as Record<string, unknown>).message;
+  if (typeof msg !== "string") return false;
+  const lower = msg.toLowerCase();
+  return lower.includes("current password") && lower.includes("incorrect");
+}
+
+function clearSessionAndRedirectLogin(): void {
+  TokenService.removeRefreshToken();
+  useAuthStore.getState().clearAuth();
+  if (typeof window !== "undefined") {
+    window.location.href = ROUTES.AUTH.LOGIN;
+  }
+}
+
 api.interceptors.request.use(
   (config) => {
-    // نستخدم الخدمة الجديدة لجلب التوكن من الكوكيز
-    const token = TokenLocalService.GetRefreshToken(); // أو GetAccessToken إذا أضفته
-    
+    const token = TokenService.getAccessToken();
     if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+      attachBearerToken(config, token);
     }
     return config;
   },
-  (error) => {
-    return Promise.reject(error);
-  }
+  (error) => Promise.reject(error),
 );
 
-// --- 2. Response Interceptor ---
 api.interceptors.response.use(
-  (response) => {
-    return response;
-  },
-  (error) => {
-    if (error.response && error.response.status === 401) {
-      console.error("انتهت صلاحية الجلسة، يرجى تسجيل الدخول مجدداً");
-      
-      // نستخدم الخدمة لمسح الكوكيز بدلاً من localStorage
-      TokenLocalService.RemoveRefreshToken();
-      
-      if (typeof window !== 'undefined') {
-        window.location.href = '/login'; 
-      }
+  (response) => response,
+  async (error) => {
+    const status = error.response?.status;
+    const originalRequest = error.config as RetryableRequestConfig | undefined;
+
+    const shouldTryRefresh = status === 401;
+    if (!shouldTryRefresh || !originalRequest) {
+      return Promise.reject(error);
     }
-    
-    return Promise.reject(error);
-  }
+
+    if (status === 401 && isWrongCurrentPassword401(error)) {
+      return Promise.reject(error);
+    }
+
+    if (isRefreshRequest(originalRequest) || isLogoutRequest(originalRequest)) {
+      clearSessionAndRedirectLogin();
+      return Promise.reject(error);
+    }
+
+    if (originalRequest._retry) {
+      clearSessionAndRedirectLogin();
+      return Promise.reject(error);
+    }
+
+    try {
+      const access = await getRefreshedAccessToken();
+      attachBearerToken(originalRequest, access);
+      originalRequest._retry = true;
+      return api.request(originalRequest);
+    } catch {
+      clearSessionAndRedirectLogin();
+      return Promise.reject(error);
+    }
+  },
 );
 
 export default api;

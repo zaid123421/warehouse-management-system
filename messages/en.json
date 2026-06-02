@@ -3,14 +3,45 @@
     "login": "Login",
     "email": "Email Address",
     "password": "Password",
-    "welcome": "Welcome to the Vendor Portal",
-    "loginDescription": "Sign in to manage your products and orders",
+    "welcomeBack": "Welcome Back",
+    "signInSubtitle": "Sign in to manage your warehouse",
+    "emailAddress": "Email Address",
+    "passwordLabel": "Password",
+    "signIn": "Sign In",
+    "signingIn": "Signing in…",
+    "loginFailed": "Sign in failed. Check your credentials and try again.",
+    "welcome": "Welcome to TreadX WMS",
+    "loginDescription": "Sign in to manage warehouse operations",
     "loginButton": "Login",
     "roleTest": "Role (for testing)",
     "noAccount": "Don't have an account?",
-    "createAccount": "Create account",
+    "createAccount": "Create Account",
     "haveAccount": "Already have an account?",
-    "registerSuccess": "Your account has been created. You can log in now."
+    "registerSuccess": "Account created successfully! You can now sign in.",
+    "activateAccountSuccess": "Your account is active! You can now sign in.",
+    "resetLinkSentInfo": "If an account exists for that email, check your inbox for a link to reset your password.",
+    "forgotPassword": {
+      "title": "Forgot Password?",
+      "subtitle": "Enter your registered email and we'll send you a link to reset your password.",
+      "backToSignIn": "Back to Sign In",
+      "submitButton": "Send reset link",
+      "submitting": "Sending…",
+      "requestFailed": "Could not send the request. Please try again.",
+      "emailPlaceholder": "Enter your email address",
+      "successTitle": "Check your email",
+      "successDescription": "If an account exists for {email}, we sent instructions to reset your password.",
+      "spamHint": "Check your spam or junk folder if you don't see the message.",
+      "tryAnotherEmail": "Use a different email",
+      "rememberPassword": "Remember your password?"
+    },
+    "brandPanelAlt": "Warehouse",
+    "logoAlt": "TreadX Logo",
+    "vendorDashboard": "Warehouse Management System",
+    "warehousePortal": "Warehouse Portal",
+    "wmsVersion": "WMS v2.1",
+    "needAccess": "Need access? Contact your warehouse admin",
+    "seasonalPlatform": "Warehouse Operations Platform",
+    "securedBy": "Secured by TreadX Enterprise"
   },
   "register": {
     "title": "Create account",
@@ -26,9 +57,18 @@
     "orders": "Orders",
     "inventory": "Inventory",
     "profile": "Profile",
-    "role": "Role",
+    "role": "Role:",
     "logout": "Log out",
-    "appName": "TreadX WMS"
+    "appName": "TreadX WMS",
+    "overview": "Overview",
+    "stock": "Stock",
+    "settings": "Settings",
+    "active": "ACTIVE",
+    "roleAdmin": "Admin",
+    "roleSupplier": "Warehouse",
+    "roleUser": "Operator",
+    "defaultAccountName": "Account",
+    "professionalPlan": "Professional Plan"
   },
   "dashboard": {
     "title": "Dashboard",
@@ -40,7 +80,35 @@
     "ordersTitle": "Orders",
     "ordersIntro": "Orders list (access by role).",
     "inventoryTitle": "Inventory",
-    "inventoryIntro": "Stock levels (access by role)."
+    "inventoryIntro": "Stock levels (access by role).",
+    "stockTitle": "Stock",
+    "stockIntro": "Stock overview and levels by location.",
+    "inventoryRackPreview": "Warehouse layout preview",
+    "inventoryRackPreviewDescription": "Multiple tire racks by storage zone. Drag to orbit, scroll to zoom.",
+    "warehouseZonesLegendTitle": "Zone colors",
+    "warehouseZonesLegendHint": "Each zone has its own rack grid, shelf levels, and tire count. Rack color matches the zone.",
+    "warehouseZones": {
+      "zoneA": {
+        "label": "Zone A — Fast pick",
+        "description": "High-turnover SKUs near dispatch.",
+        "stats": "{rackCols}×{rackRows} racks · {shelves} shelf rows · ~{tires} tires"
+      },
+      "zoneB": {
+        "label": "Zone B — Bulk storage",
+        "description": "Pallet and bulk tire storage.",
+        "stats": "{rackCols}×{rackRows} racks · {shelves} shelf rows · ~{tires} tires"
+      },
+      "zoneC": {
+        "label": "Zone C — Reserve",
+        "description": "Safety stock and overflow.",
+        "stats": "{rackCols}×{rackRows} racks · {shelves} shelf rows · ~{tires} tires"
+      },
+      "zoneD": {
+        "label": "Zone D — Receiving",
+        "description": "Inbound staging and inspection.",
+        "stats": "{rackCols}×{rackRows} racks · {shelves} shelf rows · ~{tires} tires"
+      }
+    }
   },
   "theme": {
     "light": "Light",
@@ -50,6 +118,7 @@
   "common": {
     "save": "Save",
     "cancel": "Cancel",
+    "ok": "OK",
     "formError": "Something went wrong. Try again."
   },
   "errors": {
@@ -66,5 +135,28 @@
     "emailRequired": "Email is required",
     "passwordRequired": "Password is required"
   },
-  "formError": "Something went wrong. Try again."
+  "formError": "Something went wrong. Try again.",
+  "settings": {
+    "title": "Settings",
+    "subtitle": "Manage your account and preferences",
+    "accountSection": "Account",
+    "securitySection": "Security",
+    "securitySectionHint": "Keep your account secure with a strong password.",
+    "changePasswordModalTitle": "Change password",
+    "changePasswordModalDescription": "Enter your current password, then your new password twice.",
+    "openChangePassword": "Change password",
+    "currentPasswordLabel": "Current password",
+    "newPasswordLabel": "New password",
+    "confirmPasswordLabel": "Confirm new password",
+    "updatePasswordButton": "Update password",
+    "passwordChangeSuccess": "Your password has been updated.",
+    "passwordChangeSuccessTitle": "Success",
+    "wrongCurrentPassword": "The current password is incorrect.",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password",
+    "appearanceSection": "Appearance",
+    "themeLabel": "Theme",
+    "languageLabel": "Language",
+    "accessLevelLabel": "Access level"
+  }
 }
