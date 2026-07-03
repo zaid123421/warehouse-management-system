@@ -5,7 +5,9 @@ export function normalizeBackendRole(raw: string | null | undefined): Role | nul
   if (!raw?.trim()) return null;
   const u = raw.toUpperCase();
   if (u.includes("TECHNICIAN") || u.includes("PICKER")) return ROLES.USER;
-  if (u.includes("WAREHOUSE") || u.includes("OPERATOR")) return ROLES.SUPPLIER;
+  if (u.includes("WAREHOUSE_MANAGER") || u.includes("WAREHOUSE") || u.includes("OPERATOR")) {
+    return ROLES.SUPPLIER;
+  }
   if (u.includes("DEALER")) return ROLES.SUPPLIER;
   if (u.includes("SALES") || u === "SYSTEM_ADMIN" || u === "PLATFORM_ADMIN") {
     return ROLES.ADMIN;

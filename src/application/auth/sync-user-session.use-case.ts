@@ -28,7 +28,7 @@ export function mapUserProfileToAuthUser(
     position: profile.position,
     backendRole: profile.role.name,
     accessLevel: profile.position || profile.role.description,
-    userActive: profile.userActive,
+    userActive: profile.active,
     tenantType: "WAREHOUSE",
     tenantId: 0,
     tenantName: profile.position || profile.role.description,

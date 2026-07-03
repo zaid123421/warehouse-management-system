@@ -1,12 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { ErrorAlert } from "@/components/ui/error-alert";
 import { useAuthStore } from "@/shared/stores/auth-store";
 import { ROUTES } from "@/constants/routes";
@@ -18,6 +15,8 @@ import {
   AuthPageShell,
   darkInput,
 } from "@/app/(auth)/_components/auth-shell";
+import { AuthPageHeading } from "@/app/(auth)/_components/auth-page-heading";
+import { AuthTextField } from "@/app/(auth)/_components/auth-text-field";
 
 export default function LoginPage() {
   const t = useTranslations("auth");
@@ -87,11 +86,10 @@ export default function LoginPage() {
 
   return (
     <AuthPageShell>
-      {/* Heading */}
-      <div className="mb-10 text-center">
-        <h2 className="text-3xl font-bold text-white">{t("welcomeBack")}</h2>
-        <p className="mt-2 text-sm text-white/50">{t("signInSubtitle")}</p>
-      </div>
+      <AuthPageHeading
+        title={t("welcomeBack")}
+        subtitle={t("signInSubtitle")}
+      />
 
       {/* Banners */}
       {showRegisteredMessage && (
@@ -118,41 +116,29 @@ export default function LoginPage() {
 
       {/* Form */}
       <form onSubmit={handleSubmit} className="space-y-5">
-        {/* Email */}
-        <div className="space-y-1.5">
-          <Label htmlFor="email" className="text-xs font-medium text-white/60">
-            {t("emailAddress")}
-          </Label>
-          <div className="relative">
-            <Mail className="absolute start-4 top-1/2 size-4 -translate-y-1/2 text-white/35" />
-            <Input
-              id="email"
-              name="email"
-              type="email"
-              placeholder={t("emailAddress")}
-              autoComplete="email"
-              className={cn(darkInput, "ps-11")}
-              required
-            />
-          </div>
-        </div>
+        <AuthTextField
+          id="email"
+          name="email"
+          label={t("emailAddress")}
+          type="email"
+          placeholder={t("emailAddress")}
+          autoComplete="email"
+          required
+          icon={<Mail className="absolute start-4 top-1/2 size-4 -translate-y-1/2 text-white/35" />}
+          inputClassName={cn(darkInput, "ps-11")}
+        />
 
-        {/* Password */}
-        <div className="space-y-1.5">
-          <Label htmlFor="password" className="text-xs font-medium text-white/60">
-            {t("passwordLabel")}
-          </Label>
-          <div className="relative">
-            <Lock className="absolute start-4 top-1/2 size-4 -translate-y-1/2 text-white/35" />
-            <Input
-              id="password"
-              name="password"
-              type={showPassword ? "text" : "password"}
-              placeholder="••••••••"
-              autoComplete="current-password"
-              className={cn(darkInput, "ps-11 pe-11")}
-              required
-            />
+        <AuthTextField
+          id="password"
+          name="password"
+          label={t("passwordLabel")}
+          type={showPassword ? "text" : "password"}
+          placeholder="••••••••"
+          autoComplete="current-password"
+          required
+          icon={<Lock className="absolute start-4 top-1/2 size-4 -translate-y-1/2 text-white/35" />}
+          inputClassName={cn(darkInput, "ps-11 pe-11")}
+          rightSlot={
             <button
               type="button"
               onClick={() => setShowPassword((p) => !p)}
@@ -161,8 +147,8 @@ export default function LoginPage() {
             >
               {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
             </button>
-          </div>
-        </div>
+          }
+        />
 
         {/* Forgot password */}
         <div className="flex justify-end">

@@ -3,6 +3,7 @@
 import { useTranslations } from "next-intl";
 import { ROLES, type Role } from "@/shared/config/roles";
 import type { AuthUser } from "@/shared/types/auth-session";
+import { useCurrentUser } from "@/modules/user/hooks/use-current-user";
 import { useAuthUser, useRole, useUserProfile } from "@/shared/hooks/use-can-access";
 
 function getRoleLabel(role: Role | null | undefined, t: (key: string) => string): string {
@@ -48,6 +49,7 @@ export function getAvatarInitials(
 /** Display helpers from GET /v1/users/me */
 export function useWarehouseAccount() {
   const tNav = useTranslations("nav");
+  useCurrentUser();
   const user = useAuthUser();
   const profile = useUserProfile();
   const role = useRole();
@@ -64,6 +66,7 @@ export function useWarehouseAccount() {
   const roleDisplay =
     position ||
     roleDescription ||
+    profile?.role.name?.trim() ||
     user?.backendRole?.trim() ||
     getRoleLabel(role, tNav);
 

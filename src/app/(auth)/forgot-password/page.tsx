@@ -3,8 +3,6 @@
 import Link from "next/link";
 import { useState } from "react";
 import { useTranslations } from "next-intl";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { ROUTES } from "@/constants/routes";
 import { Mail, KeyRound, CheckCircle2, ArrowLeft } from "lucide-react";
 import { AUTH_PRIMARY_BUTTON_CLASS } from "@/lib/primary-button-styles";
@@ -18,6 +16,8 @@ import {
   AuthPageShell,
   darkInput,
 } from "@/app/(auth)/_components/auth-shell";
+import { AuthPageHeading } from "@/app/(auth)/_components/auth-page-heading";
+import { AuthTextField } from "@/app/(auth)/_components/auth-text-field";
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -97,35 +97,26 @@ export default function ForgotPasswordPage() {
                 <KeyRound className="size-8 text-primary-dark" strokeWidth={1.5} />
               </div>
             </div>
-            <h2 className="text-3xl font-bold text-white">
-              {tForgot("title")}
-            </h2>
-            <p className="mt-2 text-sm text-white/50">
-              {tForgot("subtitle")}
-            </p>
+            <AuthPageHeading
+              title={tForgot("title")}
+              subtitle={tForgot("subtitle")}
+              className="text-center"
+            />
           </div>
 
           <form onSubmit={(e) => void handleSubmit(e)} className="space-y-5">
-            <div className="space-y-1.5">
-              <Label htmlFor="email" className="text-xs font-medium text-white/60">
-                {t("emailAddress")}
-              </Label>
-              <div className="relative">
-                <Mail className="absolute start-4 top-1/2 size-4 -translate-y-1/2 text-white/35" />
-                <Input
-                  id="email"
-                  name="email"
-                  type="email"
-                  placeholder={tForgot("emailPlaceholder")}
-                  autoComplete="email"
-                  className={cn(darkInput, "ps-11")}
-                  required
-                />
-              </div>
-              {emailError && (
-                <p className="text-sm text-red-400">{emailError}</p>
-              )}
-            </div>
+            <AuthTextField
+              id="email"
+              name="email"
+              label={t("emailAddress")}
+              type="email"
+              placeholder={tForgot("emailPlaceholder")}
+              autoComplete="email"
+              required
+              icon={<Mail className="absolute start-4 top-1/2 size-4 -translate-y-1/2 text-white/35" />}
+              inputClassName={cn(darkInput, "ps-11")}
+              error={emailError}
+            />
 
             <button
               type="submit"
@@ -157,9 +148,7 @@ export default function ForgotPasswordPage() {
                 <CheckCircle2 className="size-8 text-success-dark" strokeWidth={1.5} />
               </div>
             </div>
-            <h2 className="text-3xl font-bold text-white">
-              {tForgot("successTitle")}
-            </h2>
+            <h2 className="text-3xl font-bold text-white">{tForgot("successTitle")}</h2>
             <p className="mt-3 text-sm text-white/50">
               {tForgot("successDescription", { email: obfuscateEmail(email) })}
             </p>

@@ -22,6 +22,11 @@ export const ROUTES = {
 
     INVENTORY: "/dashboard/inventory",
     STOCK: "/dashboard/stock",
+    WAREHOUSE_STRUCTURE: "/dashboard/warehouse-structure",
+    INBOUND_SESSIONS: "/dashboard/inbound-sessions",
+    OUTBOUND_SESSIONS: "/dashboard/outbound-sessions",
+    EMPLOYEES: "/dashboard/employees",
+    REPORTS: "/dashboard/reports",
   },
 
   ERRORS: {

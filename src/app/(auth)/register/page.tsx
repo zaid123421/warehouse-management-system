@@ -4,8 +4,6 @@ import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { ROUTES } from "@/constants/routes";
 import { User, Mail, Lock, Eye, EyeOff, ArrowLeft } from "lucide-react";
 import { AUTH_PRIMARY_BUTTON_CLASS } from "@/lib/primary-button-styles";
@@ -15,6 +13,8 @@ import {
   AuthPageShell,
   darkInput,
 } from "@/app/(auth)/_components/auth-shell";
+import { AuthPageHeading } from "@/app/(auth)/_components/auth-page-heading";
+import { AuthTextField } from "@/app/(auth)/_components/auth-text-field";
 
 const MIN_PASSWORD_LENGTH = 8;
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -76,11 +76,11 @@ export default function RegisterPage() {
         {tAuth("haveAccount")}
       </Link>
 
-      {/* Heading */}
-      <div className="mb-8 text-center">
-        <h2 className="text-3xl font-bold text-white">{t("title")}</h2>
-        <p className="mt-2 text-sm text-white/50">{t("description")}</p>
-      </div>
+      <AuthPageHeading
+        title={t("title")}
+        subtitle={t("description")}
+        className="mb-8 text-center"
+      />
 
       {/* Form error */}
       {errors.form && (
@@ -90,65 +90,47 @@ export default function RegisterPage() {
       )}
 
       <form onSubmit={handleSubmit} className="space-y-4">
-        {/* Full name */}
-        <div className="space-y-1.5">
-          <Label htmlFor="name" className="text-xs font-medium text-white/60">
-            {t("fullName")}
-          </Label>
-          <div className="relative">
-            <User className="absolute start-4 top-1/2 size-4 -translate-y-1/2 text-white/35" />
-            <Input
-              id="name"
-              name="name"
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder={t("fullName")}
-              className={cn(darkInput, "ps-11")}
-              autoComplete="name"
-            />
-          </div>
-          {errors.name && <p className="text-sm text-red-400">{errors.name}</p>}
-        </div>
+        <AuthTextField
+          id="name"
+          name="name"
+          label={t("fullName")}
+          type="text"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          placeholder={t("fullName")}
+          autoComplete="name"
+          icon={<User className="absolute start-4 top-1/2 size-4 -translate-y-1/2 text-white/35" />}
+          inputClassName={cn(darkInput, "ps-11")}
+          error={errors.name}
+        />
 
-        {/* Email */}
-        <div className="space-y-1.5">
-          <Label htmlFor="email" className="text-xs font-medium text-white/60">
-            {tAuth("emailAddress")}
-          </Label>
-          <div className="relative">
-            <Mail className="absolute start-4 top-1/2 size-4 -translate-y-1/2 text-white/35" />
-            <Input
-              id="email"
-              name="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="name@example.com"
-              className={cn(darkInput, "ps-11")}
-              autoComplete="email"
-            />
-          </div>
-          {errors.email && <p className="text-sm text-red-400">{errors.email}</p>}
-        </div>
+        <AuthTextField
+          id="email"
+          name="email"
+          label={tAuth("emailAddress")}
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder="name@example.com"
+          autoComplete="email"
+          icon={<Mail className="absolute start-4 top-1/2 size-4 -translate-y-1/2 text-white/35" />}
+          inputClassName={cn(darkInput, "ps-11")}
+          error={errors.email}
+        />
 
-        {/* Password */}
-        <div className="space-y-1.5">
-          <Label htmlFor="password" className="text-xs font-medium text-white/60">
-            {tAuth("passwordLabel")}
-          </Label>
-          <div className="relative">
-            <Lock className="absolute start-4 top-1/2 size-4 -translate-y-1/2 text-white/35" />
-            <Input
-              id="password"
-              name="password"
-              type={showPassword ? "text" : "password"}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
-              className={cn(darkInput, "ps-11 pe-11")}
-              autoComplete="new-password"
-            />
+        <AuthTextField
+          id="password"
+          name="password"
+          label={tAuth("passwordLabel")}
+          type={showPassword ? "text" : "password"}
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          placeholder="••••••••"
+          autoComplete="new-password"
+          icon={<Lock className="absolute start-4 top-1/2 size-4 -translate-y-1/2 text-white/35" />}
+          inputClassName={cn(darkInput, "ps-11 pe-11")}
+          error={errors.password}
+          rightSlot={
             <button
               type="button"
               onClick={() => setShowPassword((p) => !p)}
@@ -157,27 +139,22 @@ export default function RegisterPage() {
             >
               {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
             </button>
-          </div>
-          {errors.password && <p className="text-sm text-red-400">{errors.password}</p>}
-        </div>
+          }
+        />
 
-        {/* Confirm password */}
-        <div className="space-y-1.5">
-          <Label htmlFor="confirmPassword" className="text-xs font-medium text-white/60">
-            {t("confirmPassword")}
-          </Label>
-          <div className="relative">
-            <Lock className="absolute start-4 top-1/2 size-4 -translate-y-1/2 text-white/35" />
-            <Input
-              id="confirmPassword"
-              name="confirmPassword"
-              type={showConfirm ? "text" : "password"}
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              placeholder="••••••••"
-              className={cn(darkInput, "ps-11 pe-11")}
-              autoComplete="new-password"
-            />
+        <AuthTextField
+          id="confirmPassword"
+          name="confirmPassword"
+          label={t("confirmPassword")}
+          type={showConfirm ? "text" : "password"}
+          value={confirmPassword}
+          onChange={(e) => setConfirmPassword(e.target.value)}
+          placeholder="••••••••"
+          autoComplete="new-password"
+          icon={<Lock className="absolute start-4 top-1/2 size-4 -translate-y-1/2 text-white/35" />}
+          inputClassName={cn(darkInput, "ps-11 pe-11")}
+          error={errors.confirmPassword}
+          rightSlot={
             <button
               type="button"
               onClick={() => setShowConfirm((p) => !p)}
@@ -186,11 +163,8 @@ export default function RegisterPage() {
             >
               {showConfirm ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
             </button>
-          </div>
-          {errors.confirmPassword && (
-            <p className="text-sm text-red-400">{errors.confirmPassword}</p>
-          )}
-        </div>
+          }
+        />
 
         {/* Submit */}
         <div className="pt-1">

@@ -1,7 +1,9 @@
 import axios from "axios";
 import api from "@/lib/api";
+import { ENDPOINTS } from "@/services/endpoints";
 import { normalizeUserMeDto } from "@/modules/user/lib/user-me-dto";
 import type { UserMeProfile } from "@/modules/user/types/user-profile";
+import { getApiErrorMessage } from "@/lib/api-error";
 
 export class UserMeError extends Error {
   constructor(
@@ -13,17 +15,10 @@ export class UserMeError extends Error {
   }
 }
 
-function messageFromResponseData(data: unknown): string | undefined {
-  if (!data || typeof data !== "object") return undefined;
-  const rec = data as Record<string, unknown>;
-  if (typeof rec.message === "string" && rec.message.trim()) return rec.message.trim();
-  return undefined;
-}
-
 /** GET /v1/users/me */
 export async function getUserMe(): Promise<UserMeProfile> {
   try {
-    const { data } = await api.get<unknown>("/v1/users/me");
+    const { data } = await api.get<unknown>(ENDPOINTS.USER.ME);
     const profile = normalizeUserMeDto(data);
     if (!profile) {
       throw new UserMeError("Invalid user profile response");
@@ -34,7 +29,7 @@ export async function getUserMe(): Promise<UserMeProfile> {
     if (axios.isAxiosError(err)) {
       const status = err.response?.status;
       const msg =
-        messageFromResponseData(err.response?.data) ?? err.message ?? "Request failed";
+        getApiErrorMessage(err.response?.data) ?? err.message ?? "Request failed";
       throw new UserMeError(msg, status);
     }
     if (err instanceof Error) throw new UserMeError(err.message);

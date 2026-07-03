@@ -2,14 +2,12 @@
 
 import React from "react";
 import {
-  Table,
   TableBody,
   TableCell,
   TableHead,
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { useScrollbarDetection } from "@/hooks/use-scrollbar-detection";
 
 type Column<T> = {
   header: React.ReactNode;
@@ -24,6 +22,9 @@ interface StyledTableProps<T> {
   keyProp: (row: T) => number | string;
   isLoading?: boolean;
   emptyText?: string;
+  /** Enable horizontal scroll when columns exceed container width. */
+  horizontalScroll?: boolean;
+  className?: string;
 }
 
 export function StyledTable<T>({
@@ -32,25 +33,31 @@ export function StyledTable<T>({
   keyProp,
   isLoading = false,
   emptyText = "No items",
+  horizontalScroll = false,
+  className,
 }: StyledTableProps<T>) {
   const borderColor = "border-[var(--color-surface-light-container)] dark:border-[var(--color-surface-container-high)]";
-  const containerRef = useScrollbarDetection();
 
   return (
-    <div 
-      ref={containerRef}
-      className={`min-h-0 flex-1 overflow-auto scrollbar-custom rounded-lg border-2 ${borderColor} bg-card ${isLoading ? "opacity-70" : ""}`}
+    <div
+      className={`rounded-xl border-2 ${borderColor} bg-card ${horizontalScroll ? "overflow-x-auto" : "overflow-hidden"} ${isLoading ? "opacity-70" : ""} ${className ?? ""}`}
     >
-      <Table className="w-full border-separate border-spacing-0">
+      <table
+        className={`w-full border-separate border-spacing-0 ${horizontalScroll ? "min-w-[44rem]" : ""}`}
+      >
         <TableHeader>
-          <TableRow className="bg-[var(--color-surface-light-container)] dark:bg-[var(--color-surface-container-high)]">
+          <TableRow className="hover:bg-transparent">
             {columns.map((col, idx) => (
               <TableHead
                 key={idx}
                 className={`${col.className ?? ""} ${
-                  col.align === "right" ? "text-right" : 
+                  col.align === "right" ? "text-right" :
                   col.align === "left" ? "text-left" : "text-center"
-                } text-foreground text-body-sm font-semibold tracking-wide py-3 px-4 border-b-2 ${borderColor}`}
+                } bg-[var(--color-surface-light-container)] dark:bg-[var(--color-surface-container-high)] text-foreground text-body-sm font-semibold tracking-wide py-3 px-4 border-b-2 ${borderColor} ${
+                  horizontalScroll ? "whitespace-nowrap" : ""
+                } ${
+                  idx === 0 ? "rounded-ss-xl" : ""
+                } ${idx === columns.length - 1 ? "rounded-se-xl" : ""}`}
               >
                 {col.header}
               </TableHead>
@@ -60,34 +67,44 @@ export function StyledTable<T>({
         <TableBody>
           {isLoading && rows.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={columns.length} className={`text-body-md text-muted-foreground h-32 text-center border-b-2 ${borderColor}`}>
+              <TableCell
+                colSpan={columns.length}
+                className={`text-body-md text-muted-foreground h-32 text-center border-b-2 rounded-es-xl rounded-ee-xl ${borderColor}`}
+              >
                 Loading...
               </TableCell>
             </TableRow>
           ) : rows.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={columns.length} className="text-body-md text-muted-foreground h-32 text-center">
+              <TableCell
+                colSpan={columns.length}
+                className="text-body-md text-muted-foreground h-32 text-center rounded-es-xl rounded-ee-xl"
+              >
                 {emptyText}
               </TableCell>
             </TableRow>
           ) : (
             rows.map((row, rowIndex) => (
-              <TableRow 
-                key={String(keyProp(row))} 
+              <TableRow
+                key={String(keyProp(row))}
                 className={`hover:bg-[var(--color-surface-light)] dark:hover:bg-[var(--color-surface-bright)]/10 transition-colors ${
                   rowIndex === rows.length - 1 ? "" : "border-b-2 " + borderColor
                 }`}
               >
                 {columns.map((col, ci) => (
-                  <TableCell 
-                    key={ci} 
+                  <TableCell
+                    key={ci}
                     className={`${col.className ?? ""} ${
-                      col.align === "right" ? "text-right" : 
+                      col.align === "right" ? "text-right" :
                       col.align === "left" ? "text-left" : "text-center"
-                    } text-foreground py-3 px-4 align-middle ${
+                    } text-foreground py-3 px-4 align-middle text-sm ${
+                      horizontalScroll ? "whitespace-nowrap" : ""
+                    } ${
                       rowIndex === rows.length - 1 ? "" : "border-b-2 " + borderColor
-                    } text-sm`}
-                  > 
+                    } ${
+                      rowIndex === rows.length - 1 && ci === 0 ? "rounded-es-xl" : ""
+                    } ${rowIndex === rows.length - 1 && ci === columns.length - 1 ? "rounded-ee-xl" : ""}`}
+                  >
                     {col.render(row)}
                   </TableCell>
                 ))}
@@ -95,7 +112,7 @@ export function StyledTable<T>({
             ))
           )}
         </TableBody>
-      </Table>
+      </table>
     </div>
   );
 }

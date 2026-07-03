@@ -6,10 +6,13 @@ import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import {
-  Home,
-  ShoppingCart,
-  Package,
-  Boxes,
+  LayoutDashboard,
+  Warehouse,
+  Import,
+  ArrowUpFromLine,
+  Box,
+  Users,
+  ChartBar,
   Settings,
   Menu,
   type LucideIcon,
@@ -25,11 +28,13 @@ import { useWarehouseAccount } from "@/shared/hooks/use-warehouse-account";
 import { performClientLogout } from "@/application/auth/logout.use-case";
 
 const KEY_ICON_MAP: Record<string, LucideIcon> = {
-  overview: Home,
-  inventory: Package,
-  orders: ShoppingCart,
-  products: Boxes,
-  stock: Package,
+  dashboard: LayoutDashboard,
+  warehouseStructure: Warehouse,
+  inboundSessions: Import,
+  outboundSessions: ArrowUpFromLine,
+  inventory: Box,
+  employees: Users,
+  reports: ChartBar,
   settings: Settings,
 };
 
@@ -74,9 +79,9 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
     <>
       <nav className="flex-1 space-y-1.5 overflow-auto p-3">
         {navEntries.map(({ path, key }) => {
-          const Icon = KEY_ICON_MAP[key] ?? Home;
+          const Icon = KEY_ICON_MAP[key] ?? LayoutDashboard;
           const isActive =
-            key === "overview"
+            key === "dashboard"
               ? pathname === path
               : pathname === path || pathname.startsWith(path + "/");
           return (

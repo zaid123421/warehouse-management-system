@@ -54,8 +54,8 @@ export function useAuthUser() {
 /** معرف المستخدم من GET /v1/users/me */
 export function useUserId(): number | null {
   const profile = useUserProfile();
-  if (profile?.id != null && profile.id > 0) return profile.id;
   const user = useAuthUser();
+  if (profile?.id != null && profile.id > 0) return profile.id;
   if (user?.userId != null && user.userId > 0) return user.userId;
   return null;
 }

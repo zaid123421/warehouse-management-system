@@ -2,6 +2,7 @@ import axios, { AxiosHeaders, type InternalAxiosRequestConfig } from "axios";
 import TokenService from "@/infrastructure/auth/token-service";
 import { ROUTES } from "@/constants/routes";
 import { refreshAccessTokenUseCase } from "@/application/auth/refresh-access-token.use-case";
+import { syncUserSessionFromMeApi } from "@/application/auth/sync-user-session.use-case";
 import { useAuthStore } from "@/shared/stores/auth-store";
 
 type RetryableRequestConfig = InternalAxiosRequestConfig & { _retry?: boolean };
@@ -29,8 +30,13 @@ let refreshInFlight: Promise<string> | null = null;
 function getRefreshedAccessToken(): Promise<string> {
   if (!refreshInFlight) {
     refreshInFlight = refreshAccessTokenUseCase()
-      .then((access) => {
+      .then(async (access) => {
         refreshInFlight = null;
+        try {
+          await syncUserSessionFromMeApi();
+        } catch {
+          /* profile sync is best-effort after refresh */
+        }
         return access;
       })
       .catch((e) => {
