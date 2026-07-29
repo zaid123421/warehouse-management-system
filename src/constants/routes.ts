@@ -23,8 +23,16 @@ export const ROUTES = {
     INVENTORY: "/dashboard/inventory",
     STOCK: "/dashboard/stock",
     WAREHOUSE_STRUCTURE: "/dashboard/warehouse-structure",
-    INBOUND_SESSIONS: "/dashboard/inbound-sessions",
-    OUTBOUND_SESSIONS: "/dashboard/outbound-sessions",
+    INBOUND_SESSIONS: {
+      LIST: "/dashboard/inbound-sessions",
+      REQUEST_DETAIL: (id: string | number) => `/dashboard/inbound-sessions/${id}`,
+      RECEIVING_DETAIL: (id: string | number) => `/dashboard/inbound-sessions/receiving/${id}`,
+      PUTAWAY_DETAIL: (id: string | number) => `/dashboard/inbound-sessions/putaway/${id}`,
+    },
+    OUTBOUND_SESSIONS: {
+      LIST: "/dashboard/outbound-sessions",
+      PICKING_DETAIL: (id: string | number) => `/dashboard/outbound-sessions/picking/${id}`,
+    },
     EMPLOYEES: "/dashboard/employees",
     REPORTS: "/dashboard/reports",
   },
