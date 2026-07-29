@@ -1,13 +1,9 @@
-import { getTranslations } from "next-intl/server";
+import { InboundSessionsPageContent } from "@/modules/inbound-sessions/components/inbound-sessions-page-content";
 
-export default async function InboundSessionsPage() {
-  const t = await getTranslations("dashboard");
+export default function InboundSessionsPage() {
   return (
-    <div className="space-y-4 break-words">
-      <h1 className="text-headline-sm font-bold text-foreground">
-        {t("inboundSessionsTitle")}
-      </h1>
-      <p className="text-body-md text-muted-foreground">{t("inboundSessionsIntro")}</p>
+    <div className="flex min-h-0 flex-1 flex-col">
+      <InboundSessionsPageContent />
     </div>
   );
 }
