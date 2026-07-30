@@ -1,13 +1,11 @@
 "use client";
 
-import Link from "next/link";
 import { useMemo } from "react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
-import { Check } from "lucide-react";
+import { ArrowRight, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ROUTES } from "@/constants/routes";
 import { PRIMARY_BUTTON_CLASS } from "@/lib/primary-button-styles";
 import { SchedulingCellDetailPanelFrame } from "@/shared/components/scheduling/scheduling-cell-detail-panel-frame";
 import { formatSchedulingDayLabel } from "@/shared/lib/scheduling-grid-utils";
@@ -19,9 +17,14 @@ import { canApproveSchedulingCell } from "@/modules/inbound-sessions/lib/status-
 type SchedulingCellDetailPanelProps = {
   cellId: number | null;
   onClose?: () => void;
+  onOpenPlanning?: (cellId?: number) => void;
 };
 
-export function SchedulingCellDetailPanel({ cellId, onClose }: SchedulingCellDetailPanelProps) {
+export function SchedulingCellDetailPanel({
+  cellId,
+  onClose,
+  onOpenPlanning,
+}: SchedulingCellDetailPanelProps) {
   const t = useTranslations("inboundSessions");
   const enabled = cellId != null && cellId > 0;
   const { data, isPending, isError, error, refetch } = useSchedulingCell(cellId, { enabled });
@@ -65,17 +68,29 @@ export function SchedulingCellDetailPanel({ cellId, onClose }: SchedulingCellDet
       onClose={onClose}
       closeLabel={t("closePanel")}
       footer={
-        data && canApproveSchedulingCell(data.status) ? (
+        data ? (
           <>
-            <p className="text-body-sm text-muted-foreground">{t("cellDetailApproveHint")}</p>
+            {canApproveSchedulingCell(data.status) ? (
+              <>
+                <p className="text-body-sm text-muted-foreground">{t("cellDetailApproveHint")}</p>
+                <Button
+                  type="button"
+                  className={PRIMARY_BUTTON_CLASS}
+                  disabled={approveMutation.isPending}
+                  onClick={() => void handleApprove()}
+                >
+                  <Check className="size-4" />
+                  {t("approveCellGenerate")}
+                </Button>
+              </>
+            ) : null}
             <Button
               type="button"
-              className={PRIMARY_BUTTON_CLASS}
-              disabled={approveMutation.isPending}
-              onClick={() => void handleApprove()}
+              variant="outline"
+              onClick={() => onOpenPlanning?.(data.cellId)}
             >
-              <Check className="size-4" />
-              {t("approveCellGenerate")}
+              <ArrowRight className="size-4" />
+              {t("openTruckPlanning")}
             </Button>
           </>
         ) : undefined
@@ -126,12 +141,6 @@ export function SchedulingCellDetailPanel({ cellId, onClose }: SchedulingCellDet
                       </div>
                       <SessionStatusBadge status={request.status} />
                     </div>
-                    <Link
-                      href={ROUTES.DASHBOARD.INBOUND_SESSIONS.REQUEST_DETAIL(request.inboundRequestId)}
-                      className="mt-2 inline-block text-body-sm font-medium text-primary hover:underline"
-                    >
-                      {t("viewDetails")}
-                    </Link>
                   </li>
                 ))}
               </ul>

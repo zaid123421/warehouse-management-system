@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
-import { Check, Eye, UserPlus } from "lucide-react";
+import { Check, Eye, Play, UserPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ErrorAlert } from "@/components/ui/error-alert";
 import { StyledTable } from "@/components/ui/styled-table";
@@ -16,19 +16,22 @@ import { SessionStatusBadge } from "@/modules/inbound-sessions/components/shared
 import {
   useApprovePutawaySession,
   useAssignPutawaySession,
+  useStartPutawaySession,
 } from "@/modules/inbound-sessions/hooks/use-putaway-session-mutations";
 import { usePutawaySessions } from "@/modules/inbound-sessions/hooks/use-putaway-sessions";
 import {
   canApprovePutawaySession,
   canAssignPutawaySession,
+  canStartPutawaySession,
 } from "@/modules/inbound-sessions/lib/status-utils";
 import type { PutawaySession } from "@/modules/inbound-sessions/types/putaway-session";
 
 export function PutawaySessionsTable() {
   const t = useTranslations("inboundSessions");
-  const { data = [], isPending, isError, error, refetch } = usePutawaySessions();
+  const { data, isPending, isError, error, refetch } = usePutawaySessions();
   const approveMutation = useApprovePutawaySession();
   const assignMutation = useAssignPutawaySession();
+  const startMutation = useStartPutawaySession();
   const [assignSession, setAssignSession] = useState<PutawaySession | null>(null);
 
   async function handleApprove(sessionId: number) {
@@ -52,7 +55,7 @@ export function PutawaySessionsTable() {
         />
       ) : null}
 
-      <StyledTable
+      <StyledTable<PutawaySession>
         columns={[
           { header: t("columnSession"), render: (row) => `#${row.id}` },
           { header: t("columnZone"), render: (row) => row.zoneName ?? "—" },
@@ -101,11 +104,30 @@ export function PutawaySessionsTable() {
                     {t("assignStaff")}
                   </Button>
                 ) : null}
+                {canStartPutawaySession(row.status) ? (
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    disabled={startMutation.isPending}
+                    onClick={async () => {
+                      try {
+                        await startMutation.mutateAsync(row.id);
+                        toast.success(t("startSessionSuccess"));
+                      } catch (err) {
+                        toast.error(err instanceof Error ? err.message : t("actionError"));
+                      }
+                    }}
+                  >
+                    <Play className="size-4" />
+                    {t("startSession")}
+                  </Button>
+                ) : null}
               </div>
             ),
           },
         ]}
-        rows={data}
+        rows={data ?? []}
         keyProp={(row) => row.id}
         isLoading={isPending}
         emptyText={t("noPutawaySessions")}

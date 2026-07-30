@@ -1,15 +1,54 @@
 "use client";
 
+import { useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ROUTES } from "@/constants/routes";
 import { InboundOperationsDashboard } from "@/modules/inbound-sessions/components/inbound-operations-dashboard";
-import { InboundRequestsTable } from "@/modules/inbound-sessions/components/inbound-requests-table";
 import { InboundSchedulingBoard } from "@/modules/inbound-sessions/components/inbound-scheduling-board";
+import { InboundTransitBoard } from "@/modules/inbound-sessions/components/inbound-transit-board";
 import { PutawaySessionsTable } from "@/modules/inbound-sessions/components/putaway-sessions-table";
 import { ReceivingSessionsTable } from "@/modules/inbound-sessions/components/receiving-sessions-table";
 
+const TAB_VALUES = new Set([
+  "overview",
+  "scheduling",
+  "transit",
+  "receiving",
+  "putaway",
+]);
+
 export function InboundSessionsPageContent() {
   const t = useTranslations("inboundSessions");
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const tabFromUrl = searchParams.get("tab");
+  const [activeTab, setActiveTab] = useState(() =>
+    tabFromUrl && TAB_VALUES.has(tabFromUrl) ? tabFromUrl : "overview",
+  );
+
+  useEffect(() => {
+    if (tabFromUrl && TAB_VALUES.has(tabFromUrl) && tabFromUrl !== activeTab) {
+      setActiveTab(tabFromUrl);
+    }
+  }, [tabFromUrl, activeTab]);
+
+  function handleOpenPlanning(cellId?: number) {
+    if (!cellId) return;
+    router.push(ROUTES.DASHBOARD.INBOUND_SESSIONS.TRUCK_PLANNING(cellId));
+  }
+
+  function handleTabChange(value: string) {
+    setActiveTab(value);
+    const url = new URL(window.location.href);
+    if (value === "overview") {
+      url.searchParams.delete("tab");
+    } else {
+      url.searchParams.set("tab", value);
+    }
+    router.replace(`${url.pathname}${url.search}`, { scroll: false });
+  }
 
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-4">
@@ -18,11 +57,11 @@ export function InboundSessionsPageContent() {
         <p className="mt-1 text-body-md text-muted-foreground">{t("intro")}</p>
       </div>
 
-      <Tabs defaultValue="overview" className="min-h-0 flex-1">
+      <Tabs value={activeTab} onValueChange={handleTabChange} className="min-h-0 flex-1">
         <TabsList className="h-auto w-full flex-wrap justify-start gap-1">
           <TabsTrigger value="overview">{t("tabOverview")}</TabsTrigger>
           <TabsTrigger value="scheduling">{t("tabScheduling")}</TabsTrigger>
-          <TabsTrigger value="requests">{t("tabRequests")}</TabsTrigger>
+          <TabsTrigger value="transit">{t("tabTransit")}</TabsTrigger>
           <TabsTrigger value="receiving">{t("tabReceiving")}</TabsTrigger>
           <TabsTrigger value="putaway">{t("tabPutaway")}</TabsTrigger>
         </TabsList>
@@ -31,10 +70,10 @@ export function InboundSessionsPageContent() {
           <InboundOperationsDashboard />
         </TabsContent>
         <TabsContent value="scheduling" className="mt-4">
-          <InboundSchedulingBoard />
+          <InboundSchedulingBoard onOpenPlanning={handleOpenPlanning} />
         </TabsContent>
-        <TabsContent value="requests" className="mt-4">
-          <InboundRequestsTable />
+        <TabsContent value="transit" className="mt-4">
+          <InboundTransitBoard />
         </TabsContent>
         <TabsContent value="receiving" className="mt-4">
           <ReceivingSessionsTable />

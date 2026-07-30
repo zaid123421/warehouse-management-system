@@ -13,7 +13,9 @@ export function useApproveSchedulingCell() {
     onSuccess: (_data, cellId) => {
       void queryClient.invalidateQueries({ queryKey: keys.scheduling });
       void queryClient.invalidateQueries({ queryKey: inboundQueryKeys.schedulingCell(cellId) });
-      void queryClient.invalidateQueries({ queryKey: keys.requests });
+      void queryClient.invalidateQueries({
+        queryKey: [...inboundQueryKeys.all, "planning-pool"],
+      });
       void queryClient.invalidateQueries({ queryKey: keys.dashboard });
     },
   });

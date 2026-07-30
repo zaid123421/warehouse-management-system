@@ -7,7 +7,6 @@ import {
 } from "@/modules/inbound-sessions/lib/receiving-session-dto";
 import type {
   AssignReceivingSessionRequest,
-  CreateReceivingSessionRequest,
   ReceivingSession,
 } from "@/modules/inbound-sessions/types/receiving-session";
 
@@ -25,19 +24,6 @@ export async function getReceivingSessionById(sessionId: number): Promise<Receiv
     const { data } = await api.get<unknown>(ENDPOINTS.WMS_RECEIVING_SESSIONS.BY_ID(sessionId));
     const detail = normalizeReceivingSessionDetail(data);
     if (!detail) throw new Error("Invalid receiving session response");
-    return detail;
-  } catch (err: unknown) {
-    toInboundError(err);
-  }
-}
-
-export async function createReceivingSession(
-  payload: CreateReceivingSessionRequest,
-): Promise<ReceivingSession> {
-  try {
-    const { data } = await api.post<unknown>(ENDPOINTS.WMS_RECEIVING_SESSIONS.CREATE, payload);
-    const detail = normalizeReceivingSessionDetail(data);
-    if (!detail) throw new Error("Invalid create receiving session response");
     return detail;
   } catch (err: unknown) {
     toInboundError(err);

@@ -1,7 +1,7 @@
 import { asRecord, pickNumber, pickString, str, unwrapPayload } from "@/shared/lib/dto-utils";
-import { normalizeInboundRequest } from "@/modules/inbound-sessions/lib/inbound-request-dto";
 import { normalizePutawaySession } from "@/modules/inbound-sessions/lib/putaway-session-dto";
 import { normalizeReceivingSession } from "@/modules/inbound-sessions/lib/receiving-session-dto";
+import type { InboundRequest } from "@/modules/inbound-sessions/types/inbound-request";
 import type {
   OperationsAlert,
   OperationsCounters,
@@ -9,6 +9,28 @@ import type {
   OperationsDashboardPutawaySession,
   OperationsDashboardReceivingSession,
 } from "@/modules/inbound-sessions/types/operations-dashboard";
+
+function normalizeInboundRequest(raw: unknown): InboundRequest | null {
+  const rec = asRecord(raw);
+  if (!rec) return null;
+  const id = pickNumber(rec, "id") || pickNumber(rec, "inboundRequestId");
+  if (!id) return null;
+  const expectedTireCount =
+    pickNumber(rec, "expectedTireCount") ||
+    pickNumber(rec, "totalVolume") ||
+    pickNumber(rec, "tiresCount");
+  return {
+    id,
+    dealerId: pickNumber(rec, "dealerId") || undefined,
+    dealerName: pickString(rec, "dealerName"),
+    receivingDay: pickString(rec, "receivingDay"),
+    status: str(rec.status),
+    expectedTireCount,
+    receivedTireCount: pickNumber(rec, "receivedTireCount") || undefined,
+    storedTireCount: pickNumber(rec, "storedTireCount") || undefined,
+    lines: [],
+  };
+}
 
 function normalizeAlert(raw: unknown): OperationsAlert | null {
   const rec = asRecord(raw);

@@ -32,8 +32,14 @@ function normalizeSchedulingCell(raw: unknown): SchedulingCell | null {
   return {
     cellId,
     receivingDay: str(rec.receivingDay),
-    regionProvinceId: pickNumber(rec, "regionProvinceId") || undefined,
-    regionProvinceName: str(rec.regionProvinceName),
+    regionProvinceId:
+      pickNumber(rec, "regionCityId") ||
+      pickNumber(rec, "regionProvinceId") ||
+      undefined,
+    regionProvinceName:
+      pickString(rec, "regionCityName") ||
+      pickString(rec, "regionProvinceName") ||
+      "—",
     totalVolume: pickNumber(rec, "totalVolume"),
     estimatedTrucks: pickNumber(rec, "estimatedTrucks"),
     status: str(rec.status),
@@ -64,7 +70,10 @@ export function normalizeSchedulingCellDetail(data: unknown): SchedulingCellDeta
   return {
     cellId,
     receivingDay: str(payload.receivingDay),
-    regionProvinceName: pickString(payload, "regionProvinceName"),
+    serviceDate: pickString(payload, "serviceDate"),
+    regionProvinceName:
+      pickString(payload, "regionCityName") ||
+      pickString(payload, "regionProvinceName"),
     totalVolume: pickNumber(payload, "totalVolume") || undefined,
     estimatedTrucks: pickNumber(payload, "estimatedTrucks") || undefined,
     status: str(payload.status),

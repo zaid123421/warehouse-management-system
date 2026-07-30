@@ -7,21 +7,16 @@ import {
   approveReceivingSession,
   assignReceivingSession,
   completeReceivingSession,
-  createReceivingSession,
   rejectReceivingSession,
   startReceivingSession,
 } from "@/modules/inbound-sessions/services/receiving-session.service";
-import type {
-  AssignReceivingSessionRequest,
-  CreateReceivingSessionRequest,
-} from "@/modules/inbound-sessions/types/receiving-session";
+import type { AssignReceivingSessionRequest } from "@/modules/inbound-sessions/types/receiving-session";
 
 function useInvalidateReceiving(queryClient: ReturnType<typeof useQueryClient>) {
   const keys = inboundMutationInvalidationKeys();
   return (sessionId?: number) => {
     void queryClient.invalidateQueries({ queryKey: keys.receiving });
     void queryClient.invalidateQueries({ queryKey: keys.putaway });
-    void queryClient.invalidateQueries({ queryKey: keys.requests });
     void queryClient.invalidateQueries({ queryKey: keys.dashboard });
     if (sessionId) {
       void queryClient.invalidateQueries({
@@ -29,15 +24,6 @@ function useInvalidateReceiving(queryClient: ReturnType<typeof useQueryClient>) 
       });
     }
   };
-}
-
-export function useCreateReceivingSession() {
-  const queryClient = useQueryClient();
-  const invalidate = useInvalidateReceiving(queryClient);
-  return useMutation({
-    mutationFn: (payload: CreateReceivingSessionRequest) => createReceivingSession(payload),
-    onSuccess: (data) => invalidate(data.id),
-  });
 }
 
 export function useApproveReceivingSession() {

@@ -25,7 +25,8 @@ export const ROUTES = {
     WAREHOUSE_STRUCTURE: "/dashboard/warehouse-structure",
     INBOUND_SESSIONS: {
       LIST: "/dashboard/inbound-sessions",
-      REQUEST_DETAIL: (id: string | number) => `/dashboard/inbound-sessions/${id}`,
+      TRUCK_PLANNING: (cellId: string | number) =>
+        `/dashboard/inbound-sessions/truck-planning/${cellId}`,
       RECEIVING_DETAIL: (id: string | number) => `/dashboard/inbound-sessions/receiving/${id}`,
       PUTAWAY_DETAIL: (id: string | number) => `/dashboard/inbound-sessions/putaway/${id}`,
     },

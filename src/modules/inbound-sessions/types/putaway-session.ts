@@ -17,6 +17,7 @@ export type PutawaySessionLine = {
 
 export type PutawaySession = {
   id: number;
+  receivingSessionId?: number;
   zoneId?: number;
   zoneName?: string;
   status: PutawaySessionStatus;
@@ -36,3 +37,7 @@ export type AssignPutawaySessionRequest = {
 };
 
 export type PutawaySessionActionResult = PutawaySession;
+
+export type PutawaySessionListParams = {
+  receivingSessionId?: number;
+};

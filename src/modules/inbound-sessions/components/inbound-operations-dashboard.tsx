@@ -170,14 +170,7 @@ export function InboundOperationsDashboard() {
               },
               {
                 header: t("columnActions"),
-                render: (row) => (
-                  <Link
-                    href={ROUTES.DASHBOARD.INBOUND_SESSIONS.REQUEST_DETAIL(row.id)}
-                    className="text-body-sm font-medium text-primary hover:underline"
-                  >
-                    {t("viewDetails")}
-                  </Link>
-                ),
+                render: () => "—",
               },
             ]}
             rows={data.attentionInboundRequests}

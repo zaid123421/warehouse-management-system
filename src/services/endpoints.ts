@@ -38,20 +38,24 @@ export const ENDPOINTS = {
     CELL: (cellId: number) => `/v1/wms/my-warehouse/scheduling/cells/${cellId}`,
     APPROVE_CELL: (cellId: number) =>
       `/v1/wms/my-warehouse/scheduling/cells/${cellId}/approve`,
-    GENERATE_RECEIVING: "/v1/wms/my-warehouse/scheduling/generate-receiving-sessions",
   },
 
-  WMS_INBOUND_REQUESTS: {
-    LIST: "/v1/wms/my-warehouse/inbound-requests",
-    BY_ID: (requestId: number) => `/v1/wms/my-warehouse/inbound-requests/${requestId}`,
-    ACCEPT: (requestId: number) => `/v1/wms/my-warehouse/inbound-requests/${requestId}/accept`,
-    REJECT: (requestId: number) => `/v1/wms/my-warehouse/inbound-requests/${requestId}/reject`,
+  WMS_INBOUND_TRUCKS: {
+    PLANNING_POOL: "/v1/wms/my-warehouse/inbound-trucks/planning-pool",
+    PLANNING: "/v1/wms/my-warehouse/inbound-trucks/planning",
+    CREATE: "/v1/wms/my-warehouse/inbound-trucks",
+    BY_ID: (truckId: number) => `/v1/wms/my-warehouse/inbound-trucks/${truckId}`,
+    ASSIGN: (truckId: number, inboundRequestId: number) =>
+      `/v1/wms/my-warehouse/inbound-trucks/${truckId}/assign/${inboundRequestId}`,
+    APPROVE: (truckId: number) => `/v1/wms/my-warehouse/inbound-trucks/${truckId}/approve`,
+    TRANSIT: "/v1/wms/my-warehouse/inbound-trucks/transit",
+    CREATE_RECEIVING_SESSION: (truckId: number) =>
+      `/v1/wms/my-warehouse/inbound-trucks/${truckId}/create-receiving-session`,
   },
 
   WMS_RECEIVING_SESSIONS: {
     LIST: "/v1/wms/my-warehouse/receiving-sessions",
     BY_ID: (sessionId: number) => `/v1/wms/my-warehouse/receiving-sessions/${sessionId}`,
-    CREATE: "/v1/wms/my-warehouse/receiving-sessions",
     APPROVE: (sessionId: number) =>
       `/v1/wms/my-warehouse/receiving-sessions/${sessionId}/approve`,
     REJECT: (sessionId: number) =>
@@ -71,6 +75,7 @@ export const ENDPOINTS = {
       `/v1/wms/my-warehouse/putaway-sessions/${sessionId}/approve`,
     ASSIGN: (sessionId: number) =>
       `/v1/wms/my-warehouse/putaway-sessions/${sessionId}/assign`,
+    START: (sessionId: number) => `/v1/wms/my-warehouse/putaway-sessions/${sessionId}/start`,
   },
 
   WMS_OPERATIONS: {

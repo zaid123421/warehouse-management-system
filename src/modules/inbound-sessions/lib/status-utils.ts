@@ -1,8 +1,9 @@
-import type { InboundRequestStatus } from "@/modules/inbound-sessions/types/inbound-request";
-
 const STATUS_VARIANT: Record<string, "default" | "success" | "warning" | "danger" | "muted"> = {
   PLANNED: "default",
   SCHEDULED: "default",
+  SCHEDULE_APPROVED: "success",
+  TRUCK_ASSIGNED: "default",
+  IN_TRANSIT: "default",
   PENDING_SCHEDULING: "warning",
   PENDING_ACCEPTANCE: "warning",
   PENDING_APPROVAL: "warning",
@@ -13,6 +14,7 @@ const STATUS_VARIANT: Record<string, "default" | "success" | "warning" | "danger
   RECEIVING_COMPLETED: "success",
   PARTIALLY_RECEIVED: "warning",
   PUTAWAY_APPROVED: "success",
+  PUTAWAY_IN_PROGRESS: "default",
   APPROVED: "success",
   IN_PROGRESS: "default",
   COMPLETED: "success",
@@ -21,6 +23,8 @@ const STATUS_VARIANT: Record<string, "default" | "success" | "warning" | "danger
   RESERVED: "default",
   STORED: "success",
   MISSING: "danger",
+  PUTAWAY_PENDING: "warning",
+  AT_STAGING: "default",
 };
 
 export function getStatusVariant(status: string): "default" | "success" | "warning" | "danger" | "muted" {
@@ -30,14 +34,6 @@ export function getStatusVariant(status: string): "default" | "success" | "warni
 export function formatDayLabel(day: string): string {
   if (!day) return "—";
   return day.charAt(0) + day.slice(1).toLowerCase();
-}
-
-export function canAcceptInboundRequest(status: string): boolean {
-  return status === "PENDING_ACCEPTANCE";
-}
-
-export function canRejectInboundRequest(status: string): boolean {
-  return status === "PENDING_ACCEPTANCE";
 }
 
 export function canApproveReceivingSession(status: string): boolean {
@@ -64,19 +60,21 @@ export function canAssignPutawaySession(status: string): boolean {
   return status === "APPROVED" || status === "IN_PROGRESS";
 }
 
+export function canStartPutawaySession(status: string): boolean {
+  return status === "APPROVED";
+}
+
 export function canApproveSchedulingCell(status: string): boolean {
   return status === "PLANNED";
 }
 
-export const INBOUND_REQUEST_STATUS_FILTERS: { value: InboundRequestStatus | "all"; labelKey: string }[] =
-  [
-    { value: "all", labelKey: "filterAllStatuses" },
-    { value: "PENDING_ACCEPTANCE", labelKey: "statusPendingAcceptance" },
-    { value: "RESERVATIONS_COMPLETE", labelKey: "statusReservationsComplete" },
-    { value: "RECEIVING_IN_PROGRESS", labelKey: "statusReceivingInProgress" },
-    { value: "PARTIALLY_RECEIVED", labelKey: "statusPartiallyReceived" },
-    { value: "COMPLETED", labelKey: "statusCompleted" },
-  ];
+export function canAssignToInboundTruck(status: string): boolean {
+  return status === "PLANNED";
+}
+
+export function canApproveInboundTruck(status: string): boolean {
+  return status === "PLANNED";
+}
 
 export const DAYS_OF_WEEK = [
   "MONDAY",

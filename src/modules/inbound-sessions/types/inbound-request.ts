@@ -1,7 +1,8 @@
 export type InboundRequestStatus =
   | "SCHEDULED"
+  | "SCHEDULE_APPROVED"
+  | "TRUCK_ASSIGNED"
   | "PENDING_SCHEDULING"
-  | "PENDING_ACCEPTANCE"
   | "RESERVATIONS_COMPLETE"
   | "RECEIVING_SESSION_PENDING"
   | "RECEIVING_APPROVED"
@@ -13,6 +14,10 @@ export type InboundRequestStatus =
   | "CANCELLED"
   | "EXPIRED_RESERVATION"
   | string;
+
+export type InboundRequestListParams = {
+  status: InboundRequestStatus | string;
+};
 
 export type InboundRequestLine = {
   tireId?: number;
@@ -39,8 +44,4 @@ export type InboundRequest = {
   completedAt?: string;
   createdAt?: string;
   lines: InboundRequestLine[];
-};
-
-export type InboundRequestListParams = {
-  status?: InboundRequestStatus | string;
 };

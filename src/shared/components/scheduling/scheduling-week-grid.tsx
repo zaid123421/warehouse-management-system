@@ -121,16 +121,23 @@ export function SchedulingWeekGrid({
                     key={day}
                     className={cn("border-b px-2 py-2 align-top", borderColor)}
                   >
-                    <button
-                      type="button"
-                      onClick={() => onSelectCell(cell.cellId)}
-                      className={cn(
-                        "flex min-h-[7.5rem] w-full flex-col gap-2 rounded-lg border p-3 text-start transition-colors",
-                        isSelected
-                          ? "border-primary bg-primary/5 ring-2 ring-primary/30"
-                          : "border-[var(--color-surface-light-container)] bg-card hover:bg-muted/40 dark:border-[var(--color-surface-container-high)]",
-                      )}
-                    >
+                <div
+  role="button"
+  tabIndex={0}
+  onClick={() => onSelectCell(cell.cellId)}
+  onKeyDown={(event) => {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      onSelectCell(cell.cellId);
+    }
+  }}
+  className={cn(
+    "flex min-h-[7.5rem] w-full cursor-pointer flex-col gap-2 rounded-lg border p-3 text-start transition-colors",
+    isSelected
+      ? "border-primary bg-primary/5 ring-2 ring-primary/30"
+      : "border-[var(--color-surface-light-container)] bg-card hover:bg-muted/40 dark:border-[var(--color-surface-container-high)]",
+  )}
+>
                       <div className="space-y-0.5">
                         <p className="text-body-md font-semibold text-foreground">
                           {t("gridCellTires", { count: cell.totalVolume })}
@@ -160,7 +167,7 @@ export function SchedulingWeekGrid({
                           </Button>
                         ) : null}
                       </div>
-                    </button>
+                    </div>
                   </td>
                 );
               })}
