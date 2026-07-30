@@ -3,14 +3,11 @@ import { ENDPOINTS } from "@/services/endpoints";
 import { toInboundError } from "@/modules/inbound-sessions/lib/inbound-error";
 import {
   normalizeApproveSchedulingCellResult,
-  normalizeGenerateReceivingSessionsResult,
   normalizeSchedulingBoard,
   normalizeSchedulingCellDetail,
 } from "@/modules/inbound-sessions/lib/scheduling-dto";
 import type {
   ApproveSchedulingCellResult,
-  GenerateReceivingSessionsRequest,
-  GenerateReceivingSessionsResult,
   SchedulingBoard,
   SchedulingCellDetail,
 } from "@/modules/inbound-sessions/types/scheduling";
@@ -43,20 +40,6 @@ export async function approveSchedulingCell(
       ENDPOINTS.WMS_INBOUND_SCHEDULING.APPROVE_CELL(cellId),
     );
     return normalizeApproveSchedulingCellResult(data);
-  } catch (err: unknown) {
-    toInboundError(err);
-  }
-}
-
-export async function generateReceivingSessions(
-  payload: GenerateReceivingSessionsRequest,
-): Promise<GenerateReceivingSessionsResult> {
-  try {
-    const { data } = await api.post<unknown>(
-      ENDPOINTS.WMS_INBOUND_SCHEDULING.GENERATE_RECEIVING,
-      payload,
-    );
-    return normalizeGenerateReceivingSessionsResult(data);
   } catch (err: unknown) {
     toInboundError(err);
   }

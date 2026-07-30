@@ -40,6 +40,8 @@ export function normalizeReceivingSession(raw: unknown): ReceivingSession | null
     expectedTires,
     receivedTires,
     progressPercent,
+    inboundTruckId: pickNumber(rec, "inboundTruckId") || undefined,
+    inboundTruckLabel: pickString(rec, "inboundTruckLabel"),
     assignedStaffUserIds: normalizeStaffIds(rec.assignedStaffUserIds),
     assignedStaffCount:
       pickNumber(rec, "assignedStaffCount") ||

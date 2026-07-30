@@ -36,6 +36,7 @@ export function normalizePutawaySession(raw: unknown): PutawaySession | null {
     (tireCount > 0 ? Math.round((completedCount / tireCount) * 100) : 0);
   return {
     id,
+    receivingSessionId: pickNumber(rec, "receivingSessionId") || undefined,
     zoneId: pickNumber(rec, "zoneId") || undefined,
     zoneName: pickString(rec, "zoneName"),
     status: str(rec.status),

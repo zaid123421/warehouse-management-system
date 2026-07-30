@@ -6,6 +6,7 @@ import {
 import {
   approvePutawaySession,
   assignPutawaySession,
+  startPutawaySession,
 } from "@/modules/inbound-sessions/services/putaway-session.service";
 import type { AssignPutawaySessionRequest } from "@/modules/inbound-sessions/types/putaway-session";
 
@@ -13,7 +14,6 @@ function useInvalidatePutaway(queryClient: ReturnType<typeof useQueryClient>) {
   const keys = inboundMutationInvalidationKeys();
   return (sessionId?: number) => {
     void queryClient.invalidateQueries({ queryKey: keys.putaway });
-    void queryClient.invalidateQueries({ queryKey: keys.requests });
     void queryClient.invalidateQueries({ queryKey: keys.dashboard });
     if (sessionId) {
       void queryClient.invalidateQueries({
@@ -43,6 +43,15 @@ export function useAssignPutawaySession() {
       sessionId: number;
       payload: AssignPutawaySessionRequest;
     }) => assignPutawaySession(sessionId, payload),
+    onSuccess: (data) => invalidate(data.id),
+  });
+}
+
+export function useStartPutawaySession() {
+  const queryClient = useQueryClient();
+  const invalidate = useInvalidatePutaway(queryClient);
+  return useMutation({
+    mutationFn: (sessionId: number) => startPutawaySession(sessionId),
     onSuccess: (data) => invalidate(data.id),
   });
 }

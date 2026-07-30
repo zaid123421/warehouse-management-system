@@ -76,6 +76,10 @@ export function ReceivingSessionsTable() {
         columns={[
           { header: t("columnSession"), render: (row) => `#${row.id}` },
           {
+            header: t("columnTruck"),
+            render: (row) => row.inboundTruckLabel ?? "—",
+          },
+          {
             header: t("columnStatus"),
             render: (row) => <SessionStatusBadge status={row.status} />,
           },

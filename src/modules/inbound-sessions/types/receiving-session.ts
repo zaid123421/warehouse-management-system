@@ -18,6 +18,8 @@ export type ReceivingSession = {
   expectedTires: number;
   receivedTires: number;
   progressPercent?: number;
+  inboundTruckId?: number;
+  inboundTruckLabel?: string;
   assignedStaffUserIds?: number[];
   assignedStaffCount?: number;
   exceptionScanCount?: number;
@@ -26,10 +28,6 @@ export type ReceivingSession = {
   completedAt?: string;
   createdAt?: string;
   inboundRequests: ReceivingSessionInboundLink[];
-};
-
-export type CreateReceivingSessionRequest = {
-  inboundRequestIds: number[];
 };
 
 export type AssignReceivingSessionRequest = {

@@ -37,6 +37,7 @@ export type SchedulingCellRequest = {
 export type SchedulingCellDetail = {
   cellId: number;
   receivingDay: DayOfWeek | string;
+  serviceDate?: string;
   regionProvinceName?: string;
   totalVolume?: number;
   estimatedTrucks?: number;

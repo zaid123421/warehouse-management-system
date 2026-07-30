@@ -88,14 +88,7 @@ export function ReceivingSessionDetailContent({ sessionId }: ReceivingSessionDet
                 },
                 {
                   header: t("columnActions"),
-                  render: (row) => (
-                    <Link
-                      href={ROUTES.DASHBOARD.INBOUND_SESSIONS.REQUEST_DETAIL(row.inboundRequestId)}
-                      className="text-body-sm font-medium text-primary hover:underline"
-                    >
-                      {t("viewDetails")}
-                    </Link>
-                  ),
+                  render: () => "—",
                 },
               ]}
               rows={data.inboundRequests}
