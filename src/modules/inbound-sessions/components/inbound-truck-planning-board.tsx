@@ -468,9 +468,10 @@ export function InboundTruckPlanningBoard({ schedulingCellId }: InboundTruckPlan
                         {isPersisted &&
                         (requestCountByTruckId.get(truck.serverTruckId as number) ?? 0) > 0
                           ? t("truckAssignedRequestsCount", {
-                              count: requestCountByTruckId.get(
-                                truck.serverTruckId as number,
-                              ),
+                              count:
+                                requestCountByTruckId.get(
+                                  truck.serverTruckId as number,
+                                ) ?? 0,
                             })
                           : t("truckDropHint")}
                       </p>
