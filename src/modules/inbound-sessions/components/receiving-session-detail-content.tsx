@@ -109,7 +109,7 @@ function DetailField({
   value: React.ReactNode;
 }) {
   return (
-    <div className="rounded-lg border border-[var(--color-surface-light-container)] bg-card px-3 py-2.5 dark:border-[var(--color-surface-container-high)]">
+    <div className="rounded-lg border border-border/50 dark:border-white/5 bg-card px-3 py-2.5">
       <p className="text-body-sm text-muted-foreground">{label}</p>
       <div className="mt-1 text-body-md font-medium text-foreground">{value}</div>
     </div>

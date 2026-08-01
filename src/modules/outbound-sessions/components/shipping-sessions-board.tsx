@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/dialog";
 import { ErrorAlert } from "@/components/ui/error-alert";
 import { Input } from "@/components/ui/input";
+import { PaginationControls } from "@/components/ui/pagination-controls";
 import { Skeleton } from "@/components/ui/skeleton";
 import { PRIMARY_BUTTON_CLASS } from "@/lib/primary-button-styles";
 import { cn } from "@/lib/utils";
@@ -63,6 +64,8 @@ export function ShippingSessionsBoard() {
   const [assignSession, setAssignSession] = useState<ShippingSession | null>(null);
   const [pendingCancel, setPendingCancel] = useState<ShippingSession | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 10;
 
   const { data: detailData, isFetching: isDetailFetching } = useShippingSessionDetail(assignSession?.id ?? 0, {
     enabled: assignSession != null,
@@ -80,6 +83,13 @@ export function ShippingSessionsBoard() {
       session.outboundRequests.some(req => (req.dealerName || "").toLowerCase().includes(lowerQuery))
     );
   }, [data, searchQuery]);
+
+  useMemo(() => {
+    setCurrentPage(1);
+  }, [searchQuery]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredData.length / ITEMS_PER_PAGE));
+  const paginatedData = filteredData.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
 
   async function runAction(
     action: () => Promise<unknown>,
@@ -152,12 +162,13 @@ export function ShippingSessionsBoard() {
             <p className="mt-2 text-body-sm text-muted-foreground">{t("shippingCreateFromTruckHint")}</p>
           </div>
         ) : (
-          <div className="space-y-3">
-            {filteredData.map((session) => {
-              const remaining = Math.max(
-                0,
-                session.expectedTires - session.shippedTires - session.missingTires,
-              );
+          <div className="space-y-4">
+            <div className="space-y-3">
+              {paginatedData.map((session) => {
+                const remaining = Math.max(
+                  0,
+                  session.expectedTires - session.shippedTires - session.missingTires,
+                );
               const isSelected = selectedSessionId === session.id;
               const canStartToday = isTodayServiceDate(session.serviceDate);
               return (
@@ -280,6 +291,13 @@ export function ShippingSessionsBoard() {
                 </article>
               );
             })}
+            </div>
+            
+            <PaginationControls
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={setCurrentPage}
+            />
           </div>
         )}
       </div>

@@ -43,7 +43,7 @@ export function StyledTable<T>({
   renderExpanded,
 }: StyledTableProps<T>) {
   const [expandedRows, setExpandedRows] = React.useState<Set<string | number>>(new Set());
-  const borderColor = "border-[var(--color-surface-light-container)] dark:border-[var(--color-surface-container-high)]";
+  const borderColor = "border-black/5 dark:border-white/5";
 
   function toggleExpand(key: string | number) {
     setExpandedRows((prev) => {
@@ -56,15 +56,15 @@ export function StyledTable<T>({
 
   return (
     <div
-      className={`rounded-xl border-2 ${borderColor} bg-card ${horizontalScroll ? "overflow-x-auto" : "overflow-hidden"} ${isLoading ? "opacity-70" : ""} ${className ?? ""}`}
+      className={`rounded-xl border ${borderColor} bg-card ${horizontalScroll ? "overflow-x-auto" : "overflow-hidden"} ${isLoading ? "opacity-70" : ""} ${className ?? ""}`}
     >
       <table
         className={`w-full border-separate border-spacing-0 ${horizontalScroll ? "min-w-[44rem]" : ""}`}
       >
         <TableHeader>
-          <TableRow className="hover:bg-transparent">
+          <TableRow className="border-0 hover:bg-transparent">
             {renderExpanded && (
-              <TableHead className={`w-10 bg-[var(--color-surface-light-container)] dark:bg-[var(--color-surface-container-high)] border-b-2 ${borderColor} rounded-ss-xl`} />
+              <TableHead className={`w-10 bg-[var(--color-surface-light-container)] dark:bg-[var(--color-surface-container-high)] border-b ${borderColor} rounded-ss-xl`} />
             )}
             {columns.map((col, idx) => (
               <TableHead
@@ -72,7 +72,7 @@ export function StyledTable<T>({
                 className={`${col.className ?? ""} ${
                   col.align === "right" ? "text-right" :
                   col.align === "left" ? "text-left" : "text-center"
-                } bg-[var(--color-surface-light-container)] dark:bg-[var(--color-surface-container-high)] text-foreground text-body-sm font-semibold tracking-wide py-3 px-4 border-b-2 ${borderColor} ${
+                } bg-[var(--color-surface-light-container)] dark:bg-[var(--color-surface-container-high)] text-foreground text-body-sm font-semibold tracking-wide py-4 px-4 border-b ${borderColor} ${
                   horizontalScroll ? "whitespace-nowrap" : ""
                 } ${
                   idx === 0 && !renderExpanded ? "rounded-ss-xl" : ""
@@ -88,7 +88,7 @@ export function StyledTable<T>({
             <TableRow>
               <TableCell
                 colSpan={columns.length}
-                className={`text-body-md text-muted-foreground h-32 text-center border-b-2 rounded-es-xl rounded-ee-xl ${borderColor}`}
+                className={`text-body-md text-muted-foreground h-32 text-center border-b rounded-es-xl rounded-ee-xl ${borderColor}`}
               >
                 Loading...
               </TableCell>
@@ -115,13 +115,13 @@ export function StyledTable<T>({
               return (
                 <React.Fragment key={String(rowKey)}>
                   <TableRow
-                    className={`hover:bg-[var(--color-surface-light)] dark:hover:bg-[var(--color-surface-bright)]/10 transition-colors ${
-                      hasBorder && !isExpanded ? "border-b-2 " + borderColor : ""
+                    className={`border-0 hover:bg-[var(--color-surface-light)] dark:hover:bg-[var(--color-surface-bright)]/10 transition-colors ${
+                      hasBorder && !isExpanded ? "border-b " + borderColor : ""
                     }`}
                   >
                     {renderExpanded && (
                       <TableCell 
-                        className={`w-10 px-2 py-3 align-middle ${hasBorder && !isExpanded ? "border-b-2 " + borderColor : ""} ${isLastRow && !isExpanded ? "rounded-es-xl" : ""}`}
+                        className={`w-10 px-2 py-3 align-middle ${hasBorder && !isExpanded ? "border-b " + borderColor : ""} ${isLastRow && !isExpanded ? "rounded-es-xl" : ""}`}
                       >
                         <button
                           type="button"
@@ -138,10 +138,10 @@ export function StyledTable<T>({
                         className={`${col.className ?? ""} ${
                           col.align === "right" ? "text-right" :
                           col.align === "left" ? "text-left" : "text-center"
-                        } text-foreground py-3 px-4 align-middle text-sm ${
+                        } text-foreground py-4 px-4 align-middle text-sm ${
                           horizontalScroll ? "whitespace-nowrap" : ""
                         } ${
-                          hasBorder && !isExpanded ? "border-b-2 " + borderColor : ""
+                          hasBorder && !isExpanded ? "border-b " + borderColor : ""
                         } ${
                           isLastRow && !renderExpanded && ci === 0 && !isExpanded ? "rounded-es-xl" : ""
                         } ${isLastRow && ci === columns.length - 1 && !isExpanded ? "rounded-ee-xl" : ""}`}
@@ -151,10 +151,10 @@ export function StyledTable<T>({
                     ))}
                   </TableRow>
                   {renderExpanded && isExpanded && (
-                    <TableRow className={`bg-[var(--color-surface-light)]/40 dark:bg-[var(--color-surface-bright)]/5 ${!isLastRow ? "border-b-2 " + borderColor : ""}`}>
+                    <TableRow className={`border-0 bg-[var(--color-surface-container)] dark:bg-[var(--color-surface-container)] ${!isLastRow ? "border-b border-black/5 dark:border-white/5" : ""}`}>
                       <TableCell 
                         colSpan={columns.length + 1} 
-                        className={`p-0 border-l-2 border-primary ${isLastRow ? "rounded-es-xl rounded-ee-xl" : ""}`}
+                        className={`p-0 border-l-[3px] border-primary ${isLastRow ? "rounded-es-xl rounded-ee-xl" : ""}`}
                       >
                         <div className="animate-in slide-in-from-top-2 fade-in duration-200">
                           {renderExpanded(row)}

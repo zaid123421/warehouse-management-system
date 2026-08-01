@@ -8,6 +8,7 @@ import { Check, Eye, Play, Search, UserPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ErrorAlert } from "@/components/ui/error-alert";
 import { Input } from "@/components/ui/input";
+import { PaginationControls } from "@/components/ui/pagination-controls";
 import { StyledTable } from "@/components/ui/styled-table";
 import { ROUTES } from "@/constants/routes";
 import { PRIMARY_BUTTON_CLASS } from "@/lib/primary-button-styles";
@@ -37,6 +38,8 @@ export function PutawaySessionsTable() {
   const [assignSession, setAssignSession] = useState<PutawaySession | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [dateFilter, setDateFilter] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 10;
 
   const { data: detailData, isFetching: isDetailFetching } = usePutawaySessionDetail(assignSession?.id ?? 0, {
     enabled: assignSession != null,
@@ -57,6 +60,14 @@ export function PutawaySessionsTable() {
     }
     return result;
   }, [data, searchQuery, dateFilter]);
+
+  // Reset to page 1 when filters change
+  useMemo(() => {
+    setCurrentPage(1);
+  }, [searchQuery, dateFilter]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredData.length / ITEMS_PER_PAGE));
+  const paginatedData = filteredData.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
 
   async function handleApprove(session: PutawaySession) {
     try {
@@ -102,87 +113,95 @@ export function PutawaySessionsTable() {
         />
       ) : null}
 
-      <StyledTable<PutawaySession>
-        rows={filteredData}
-        columns={[
-          { header: t("columnSession"), render: (row) => `#${row.id}` },
-          { header: t("columnZone"), render: (row) => row.zoneName ?? "—" },
-          {
-            header: t("columnStatus"),
-            render: (row) => <SessionStatusBadge status={row.status} />,
-          },
-          {
-            header: t("columnProgress"),
-            render: (row) => <SessionProgressBar value={row.progressPercent ?? 0} />,
-          },
-          {
-            header: t("columnTires"),
-            render: (row) => `${row.completedCount}/${row.tireCount}`,
-          },
-          {
-            header: t("columnActions"),
-            render: (row) => (
-              <div className="flex flex-wrap items-center justify-center gap-2">
-                <Button type="button" size="sm" variant="outline" asChild>
-                  <Link href={ROUTES.DASHBOARD.INBOUND_SESSIONS.PUTAWAY_DETAIL(row.id)}>
-                    <Eye className="size-4" />
-                    {t("viewDetails")}
-                  </Link>
-                </Button>
-                {canApprovePutawaySession(row.status) ? (
-                  <Button
-                    type="button"
-                    size="sm"
-                    className={PRIMARY_BUTTON_CLASS}
-                    disabled={approveMutation.isPending}
-                    onClick={() => void handleApprove(row)}
-                  >
-                    <Check className="size-4" />
-                    {t("approveSession")}
+      <div className="flex flex-col gap-4">
+        <StyledTable<PutawaySession>
+          rows={paginatedData}
+          columns={[
+            { header: t("columnSession"), render: (row) => `#${row.id}` },
+            { header: t("columnZone"), render: (row) => row.zoneName ?? "—" },
+            {
+              header: t("columnStatus"),
+              render: (row) => <SessionStatusBadge status={row.status} />,
+            },
+            {
+              header: t("columnProgress"),
+              render: (row) => <SessionProgressBar value={row.progressPercent ?? 0} />,
+            },
+            {
+              header: t("columnTires"),
+              render: (row) => `${row.completedCount}/${row.tireCount}`,
+            },
+            {
+              header: t("columnActions"),
+              render: (row) => (
+                <div className="flex flex-wrap items-center justify-center gap-2">
+                  <Button type="button" size="sm" variant="outline" asChild>
+                    <Link href={ROUTES.DASHBOARD.INBOUND_SESSIONS.PUTAWAY_DETAIL(row.id)}>
+                      <Eye className="size-4" />
+                      {t("viewDetails")}
+                    </Link>
                   </Button>
-                ) : null}
-                {canAssignPutawaySession(row.status) ? (
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="outline"
-                    onClick={() => setAssignSession(row)}
-                  >
-                    <UserPlus className="size-4" />
-                    {t("assignStaff")}
-                  </Button>
-                ) : null}
-                {canStartPutawaySession(row.status) ? (
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="outline"
-                    disabled={startMutation.isPending}
-                    onClick={async () => {
-                      try {
-                        await startMutation.mutateAsync({
-                          sessionId: row.id,
-                          version: row.version ?? 0,
-                        });
-                        toast.success(t("startSessionSuccess"));
-                      } catch (err) {
-                        toast.error(err instanceof Error ? err.message : t("actionError"));
-                      }
-                    }}
-                  >
-                    <Play className="size-4" />
-                    {t("startSession")}
-                  </Button>
-                ) : null}
-              </div>
-            ),
-          },
-        ]}
-        keyProp={(row) => row.id}
-        isLoading={isPending}
-        emptyText={t("noPutawaySessions")}
-        horizontalScroll
-      />
+                  {canApprovePutawaySession(row.status) ? (
+                    <Button
+                      type="button"
+                      size="sm"
+                      className={PRIMARY_BUTTON_CLASS}
+                      disabled={approveMutation.isPending}
+                      onClick={() => void handleApprove(row)}
+                    >
+                      <Check className="size-4" />
+                      {t("approveSession")}
+                    </Button>
+                  ) : null}
+                  {canAssignPutawaySession(row.status) ? (
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      onClick={() => setAssignSession(row)}
+                    >
+                      <UserPlus className="size-4" />
+                      {t("assignStaff")}
+                    </Button>
+                  ) : null}
+                  {canStartPutawaySession(row.status) ? (
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      disabled={startMutation.isPending}
+                      onClick={async () => {
+                        try {
+                          await startMutation.mutateAsync({
+                            sessionId: row.id,
+                            version: row.version ?? 0,
+                          });
+                          toast.success(t("startSessionSuccess"));
+                        } catch (err) {
+                          toast.error(err instanceof Error ? err.message : t("actionError"));
+                        }
+                      }}
+                    >
+                      <Play className="size-4" />
+                      {t("startSession")}
+                    </Button>
+                  ) : null}
+                </div>
+              ),
+            },
+          ]}
+          keyProp={(row) => row.id}
+          isLoading={isPending}
+          emptyText={t("noPutawaySessions")}
+          horizontalScroll
+        />
+
+        <PaginationControls
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={setCurrentPage}
+        />
+      </div>
 
       <AssignStaffDialog
         open={assignSession != null}

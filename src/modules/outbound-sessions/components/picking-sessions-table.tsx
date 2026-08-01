@@ -24,6 +24,7 @@ import {
 } from "@/components/ui/dialog";
 import { ErrorAlert } from "@/components/ui/error-alert";
 import { Input } from "@/components/ui/input";
+import { PaginationControls } from "@/components/ui/pagination-controls";
 import { StyledTable } from "@/components/ui/styled-table";
 import { ROUTES } from "@/constants/routes";
 import { PRIMARY_BUTTON_CLASS } from "@/lib/primary-button-styles";
@@ -64,6 +65,8 @@ export function PickingSessionsTable() {
   const [pendingCancel, setPendingCancel] = useState<PickingSession | null>(null);
   const [generateServiceDate, setGenerateServiceDate] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 10;
 
   const { data: detailData, isFetching: isDetailFetching } = usePickingSessionDetail(assignSession?.id ?? 0, {
     enabled: assignSession != null,
@@ -77,6 +80,13 @@ export function PickingSessionsTable() {
       (session.serviceDate || "").includes(lowerQuery)
     );
   }, [data, searchQuery]);
+
+  useMemo(() => {
+    setCurrentPage(1);
+  }, [searchQuery]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredData.length / ITEMS_PER_PAGE));
+  const paginatedData = filteredData.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
 
   async function runAction(
     action: () => Promise<unknown>,
@@ -153,131 +163,139 @@ export function PickingSessionsTable() {
         />
       ) : null}
 
-      <StyledTable
-        rows={filteredData}
-        columns={[
-          { header: t("columnSession"), render: (row) => `#${row.id}` },
-          {
-            header: t("columnServiceDate"),
-            render: (row) => row.serviceDate ?? "—",
-          },
-          {
-            header: t("columnDay"),
-            render: (row) => (row.deliveryDay ? formatDayLabel(row.deliveryDay) : "—"),
-          },
-          {
-            header: t("columnStatus"),
-            render: (row) => <OutboundSessionStatusBadge status={row.status} />,
-          },
-          {
-            header: t("columnProgress"),
-            render: (row) => <SessionProgressBar value={row.progressPercent ?? 0} />,
-          },
-          {
-            header: t("columnTires"),
-            render: (row) => {
-              const picked = row.pickedTires ?? row.completedCount ?? 0;
-              return `${picked}/${row.expectedTires}`;
+      <div className="flex flex-col gap-4">
+        <StyledTable
+          rows={paginatedData}
+          columns={[
+            { header: t("columnSession"), render: (row) => `#${row.id}` },
+            {
+              header: t("columnServiceDate"),
+              render: (row) => row.serviceDate ?? "—",
             },
-          },
-          {
-            header: t("columnRequests"),
-            render: (row) =>
-              (row.outboundRequestCount ?? row.outboundRequests.length).toLocaleString(),
-          },
-          {
-            header: t("columnActions"),
-            render: (row) => (
-              <div className="flex flex-wrap items-center justify-center gap-2">
-                <Button type="button" size="sm" variant="outline" asChild>
-                  <Link href={ROUTES.DASHBOARD.OUTBOUND_SESSIONS.PICKING_DETAIL(row.id)}>
-                    <Eye className="size-4" />
-                    {t("viewDetails")}
-                  </Link>
-                </Button>
-                {canApprovePickingSession(row.status) ? (
-                  <Button
-                    type="button"
-                    size="sm"
-                    className={PRIMARY_BUTTON_CLASS}
-                    disabled={approveMutation.isPending}
-                    onClick={() =>
-                      void runAction(
-                        () => approveMutation.mutateAsync(row.id),
-                        "approveSessionSuccess",
-                      )
-                    }
-                  >
-                    <Check className="size-4" />
-                    {t("approveSession")}
+            {
+              header: t("columnDay"),
+              render: (row) => (row.deliveryDay ? formatDayLabel(row.deliveryDay) : "—"),
+            },
+            {
+              header: t("columnStatus"),
+              render: (row) => <OutboundSessionStatusBadge status={row.status} />,
+            },
+            {
+              header: t("columnProgress"),
+              render: (row) => <SessionProgressBar value={row.progressPercent ?? 0} />,
+            },
+            {
+              header: t("columnTires"),
+              render: (row) => {
+                const picked = row.pickedTires ?? row.completedCount ?? 0;
+                return `${picked}/${row.expectedTires}`;
+              },
+            },
+            {
+              header: t("columnRequests"),
+              render: (row) =>
+                (row.outboundRequestCount ?? row.outboundRequests.length).toLocaleString(),
+            },
+            {
+              header: t("columnActions"),
+              render: (row) => (
+                <div className="flex flex-wrap items-center justify-center gap-2">
+                  <Button type="button" size="sm" variant="outline" asChild>
+                    <Link href={ROUTES.DASHBOARD.OUTBOUND_SESSIONS.PICKING_DETAIL(row.id)}>
+                      <Eye className="size-4" />
+                      {t("viewDetails")}
+                    </Link>
                   </Button>
-                ) : null}
-                {canCancelPickingSession(row.status) ? (
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="destructive"
-                    disabled={cancelMutation.isPending}
-                    onClick={() => setPendingCancel(row)}
-                  >
-                    <Trash2 className="size-4" />
-                    {t("cancelSession")}
-                  </Button>
-                ) : null}
-                {canAssignPickingSession(row.status) ? (
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="outline"
-                    onClick={() => setAssignSession(row)}
-                  >
-                    <UserPlus className="size-4" />
-                    {t("assignStaff")}
-                  </Button>
-                ) : null}
-                {canStartPickingSession(row.status) ? (
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="outline"
-                    disabled={startMutation.isPending}
-                    onClick={() =>
-                      void runAction(
-                        () => startMutation.mutateAsync(row.id),
-                        "startSessionSuccess",
-                      )
-                    }
-                  >
-                    <Play className="size-4" />
-                    {t("startSession")}
-                  </Button>
-                ) : null}
-                {canCompletePickingSession(row.status) ? (
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="outline"
-                    disabled={completeMutation.isPending}
-                    onClick={() =>
-                      void runAction(
-                        () => completeMutation.mutateAsync(row.id),
-                        "completeSessionSuccess",
-                      )
-                    }
-                  >
-                    <Square className="size-4" />
-                    {t("completeSession")}
-                  </Button>
-                ) : null}
-              </div>
-            ),
-          },
-        ]}
-        keyProp={(row) => row.id}
-        isLoading={isPending}
-        emptyText={t("noPickingSessions")}
-        horizontalScroll
-      />
+                  {canApprovePickingSession(row.status) ? (
+                    <Button
+                      type="button"
+                      size="sm"
+                      className={PRIMARY_BUTTON_CLASS}
+                      disabled={approveMutation.isPending}
+                      onClick={() =>
+                        void runAction(
+                          () => approveMutation.mutateAsync(row.id),
+                          "approveSessionSuccess",
+                        )
+                      }
+                    >
+                      <Check className="size-4" />
+                      {t("approveSession")}
+                    </Button>
+                  ) : null}
+                  {canCancelPickingSession(row.status) ? (
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="destructive"
+                      disabled={cancelMutation.isPending}
+                      onClick={() => setPendingCancel(row)}
+                    >
+                      <Trash2 className="size-4" />
+                      {t("cancelSession")}
+                    </Button>
+                  ) : null}
+                  {canAssignPickingSession(row.status) ? (
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      onClick={() => setAssignSession(row)}
+                    >
+                      <UserPlus className="size-4" />
+                      {t("assignStaff")}
+                    </Button>
+                  ) : null}
+                  {canStartPickingSession(row.status) ? (
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      disabled={startMutation.isPending}
+                      onClick={() =>
+                        void runAction(
+                          () => startMutation.mutateAsync(row.id),
+                          "startSessionSuccess",
+                        )
+                      }
+                    >
+                      <Play className="size-4" />
+                      {t("startSession")}
+                    </Button>
+                  ) : null}
+                  {canCompletePickingSession(row.status) ? (
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      disabled={completeMutation.isPending}
+                      onClick={() =>
+                        void runAction(
+                          () => completeMutation.mutateAsync(row.id),
+                          "completeSessionSuccess",
+                        )
+                      }
+                    >
+                      <Square className="size-4" />
+                      {t("completeSession")}
+                    </Button>
+                  ) : null}
+                </div>
+              ),
+            },
+          ]}
+          keyProp={(row) => row.id}
+          isLoading={isPending}
+          emptyText={t("noPickingSessions")}
+          horizontalScroll
+        />
+
+        <PaginationControls
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={setCurrentPage}
+        />
+      </div>
 
       <AssignStaffDialog
         open={assignSession != null}

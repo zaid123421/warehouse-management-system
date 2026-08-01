@@ -53,41 +53,38 @@ export function InboundRequestDetailExpandedRow({ requestId }: { requestId: numb
   }
 
   return (
-    <div className="p-4 sm:p-6 bg-[var(--color-surface-light-container)] dark:bg-[var(--color-surface-container-high)]/50 rounded-lg m-3 sm:m-4 border border-[var(--color-surface-light-container)] shadow-sm">
+    <div className="p-4 sm:p-6 bg-[var(--color-surface-container)] rounded-lg m-3 sm:m-4 border border-black/5 dark:border-white/5 shadow-sm">
       <div className="mb-6 flex items-center justify-between">
-        <h4 className="text-label-lg font-bold text-primary flex items-center gap-2">
+        <h4 className="text-body-md font-bold text-primary flex items-center gap-2">
           {t("requestTireSetsTitle", { id: requestId })}
         </h4>
         <div className="flex items-center gap-3">
           <span className="text-body-sm text-muted-foreground uppercase tracking-wide font-medium">
-            {t("tiresReceived")}
-          </span>
-          <span className="text-label-lg font-bold">
-            {data.receivedTireCount} <span className="text-muted-foreground font-normal">/ {data.expectedTireCount}</span>
+            {t("tiresReceived")} <span className="text-foreground ml-1">{data.receivedTireCount} / {data.expectedTireCount}</span>
           </span>
         </div>
       </div>
 
       {data.lines.length === 0 ? (
-        <div className="rounded-lg border border-dashed p-6 text-center text-muted-foreground">
+        <div className="rounded-lg border border-dashed border-[var(--color-surface-light-container)] dark:border-[var(--color-surface-container-high)] p-6 text-center text-muted-foreground">
           {t("noTiresInRequest")}
         </div>
       ) : (
-        <div className="overflow-x-auto rounded-lg border border-[var(--color-surface-light-container)] dark:border-[var(--color-surface-container-high)] bg-card">
+        <div className="overflow-x-auto rounded-lg">
           <table className="w-full text-left text-sm">
             <thead>
-              <tr className="border-b-2 border-[var(--color-surface-light-container)] dark:border-[var(--color-surface-container-high)] text-muted-foreground bg-muted/50">
+              <tr className="border-b border-black/5 dark:border-white/5 text-muted-foreground">
                 <th className="py-3 px-4 font-semibold tracking-wide">{t("columnTireId")}</th>
                 <th className="py-3 px-4 font-semibold tracking-wide">{t("columnLocation")}</th>
                 <th className="py-3 px-4 font-semibold tracking-wide text-right">{t("columnStatus")}</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[var(--color-surface-light-container)] dark:divide-[var(--color-surface-container-high)] text-foreground">
+            <tbody className="divide-y divide-black/5 dark:divide-white/5 text-foreground">
               {data.lines.map((line: InboundRequestLine) => (
-                <tr key={line.id} className="group hover:bg-[var(--color-surface-light)] dark:hover:bg-muted/30 transition-colors">
+                <tr key={line.id} className="group hover:bg-[var(--color-surface-light)] dark:hover:bg-muted/10 transition-colors">
                   <td className="py-3 px-4 whitespace-nowrap">
                     <div className="flex items-center gap-2">
-                      <span className="inline-flex h-2 w-2 rounded-full bg-primary/40"></span>
+                      <span className="inline-flex h-1.5 w-1.5 rounded-full bg-primary"></span>
                       <span className="font-mono font-medium tracking-tight text-foreground">
                         {line.tireUniqueId || `#${line.id}`}
                       </span>
