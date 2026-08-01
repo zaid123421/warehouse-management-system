@@ -69,6 +69,11 @@ export function normalizeShippingSession(raw: unknown): ShippingSession | null {
     id,
     status: str(rec.status),
     deliveryDay: pickString(rec, "deliveryDay"),
+    serviceDate: pickString(rec, "serviceDate"),
+    outboundTruckId:
+      pickNumber(rec, "outboundTruckId") || pickNumber(rec, "truckId") || undefined,
+    outboundTruckLabel:
+      pickString(rec, "outboundTruckLabel") || pickString(rec, "label"),
     expectedTires,
     shippedTires,
     missingTires,

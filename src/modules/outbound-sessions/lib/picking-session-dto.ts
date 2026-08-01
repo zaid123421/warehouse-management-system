@@ -57,6 +57,7 @@ export function normalizePickingSession(raw: unknown): PickingSession | null {
     id,
     status: str(rec.status),
     deliveryDay: pickString(rec, "deliveryDay"),
+    serviceDate: pickString(rec, "serviceDate"),
     expectedTires,
     pickedTires: pickedTires || undefined,
     completedCount: pickNumber(rec, "completedCount") || undefined,

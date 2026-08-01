@@ -57,7 +57,14 @@ export function ShippingSessionDetailPanel({
       title={t("shippingDetailTitle", { id: sessionId })}
       subtitle={
         data
-          ? `${formatDayLabel(data.deliveryDay ?? "")} · ${formatDealerSummary(data.outboundRequests, t("unknownDealer"))}`
+          ? [
+              data.outboundTruckLabel,
+              data.serviceDate,
+              formatDayLabel(data.deliveryDay ?? ""),
+              formatDealerSummary(data.outboundRequests, t("unknownDealer")),
+            ]
+              .filter(Boolean)
+              .join(" · ")
           : t("shippingDetailLoading")
       }
       onClose={onClose}

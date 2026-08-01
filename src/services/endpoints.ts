@@ -40,6 +40,11 @@ export const ENDPOINTS = {
       `/v1/wms/my-warehouse/scheduling/cells/${cellId}/approve`,
   },
 
+  WMS_INBOUND_REQUESTS: {
+    LIST: "/v1/wms/my-warehouse/inbound-requests",
+    BY_ID: (requestId: number) => `/v1/wms/my-warehouse/inbound-requests/${requestId}`,
+  },
+
   WMS_INBOUND_TRUCKS: {
     PLANNING_POOL: "/v1/wms/my-warehouse/inbound-trucks/planning-pool",
     PLANNING: "/v1/wms/my-warehouse/inbound-trucks/planning",
@@ -89,6 +94,23 @@ export const ENDPOINTS = {
     APPROVE_CELL: (cellId: number) =>
       `/v1/wms/my-warehouse/outbound-scheduling/cells/${cellId}/approve`,
     GENERATE_PICKING: "/v1/wms/my-warehouse/outbound-scheduling/generate-picking-sessions",
+  },
+
+  WMS_OUTBOUND_TRUCKS: {
+    CREATE: "/v1/wms/my-warehouse/outbound-trucks",
+    LIST: "/v1/wms/my-warehouse/outbound-trucks",
+    PLANNING_POOL: "/v1/wms/my-warehouse/outbound-trucks/planning-pool",
+    PLANNING: "/v1/wms/my-warehouse/outbound-trucks/planning",
+    READY_TO_SHIP: "/v1/wms/my-warehouse/outbound-trucks/ready-to-ship",
+    SHIPPING: "/v1/wms/my-warehouse/outbound-trucks/shipping",
+    BY_ID: (truckId: number) => `/v1/wms/my-warehouse/outbound-trucks/${truckId}`,
+    ASSIGN: (truckId: number, outboundRequestId: number) =>
+      `/v1/wms/my-warehouse/outbound-trucks/${truckId}/assign/${outboundRequestId}`,
+    APPROVE: (truckId: number) =>
+      `/v1/wms/my-warehouse/outbound-trucks/${truckId}/approve`,
+    CREATE_SHIPPING_SESSION: (truckId: number) =>
+      `/v1/wms/my-warehouse/outbound-trucks/${truckId}/create-shipping-session`,
+    DELETE: (truckId: number) => `/v1/wms/my-warehouse/outbound-trucks/${truckId}`,
   },
 
   WMS_PICKING_SESSIONS: {

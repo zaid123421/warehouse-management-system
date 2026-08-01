@@ -18,6 +18,7 @@ export type SchedulingCell = {
   estimatedTrucks: number;
   status: SchedulingCellStatus;
   requestCount: number;
+  version?: number;
 };
 
 export type SchedulingBoard = {
@@ -42,6 +43,7 @@ export type SchedulingCellDetail = {
   totalVolume?: number;
   estimatedTrucks?: number;
   status: SchedulingCellStatus;
+  version?: number;
   requests: SchedulingCellRequest[];
 };
 

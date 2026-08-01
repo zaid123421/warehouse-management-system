@@ -32,6 +32,8 @@ export const ROUTES = {
     },
     OUTBOUND_SESSIONS: {
       LIST: "/dashboard/outbound-sessions",
+      TRUCK_PLANNING: (cellId: string | number) =>
+        `/dashboard/outbound-sessions/truck-planning/${cellId}`,
       PICKING_DETAIL: (id: string | number) => `/dashboard/outbound-sessions/picking/${id}`,
     },
     EMPLOYEES: "/dashboard/employees",

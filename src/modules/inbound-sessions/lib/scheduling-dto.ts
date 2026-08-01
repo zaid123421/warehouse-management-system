@@ -44,6 +44,7 @@ function normalizeSchedulingCell(raw: unknown): SchedulingCell | null {
     estimatedTrucks: pickNumber(rec, "estimatedTrucks"),
     status: str(rec.status),
     requestCount: pickNumber(rec, "requestCount"),
+    version: pickNumber(rec, "version"),
   };
 }
 
@@ -77,6 +78,7 @@ export function normalizeSchedulingCellDetail(data: unknown): SchedulingCellDeta
     totalVolume: pickNumber(payload, "totalVolume") || undefined,
     estimatedTrucks: pickNumber(payload, "estimatedTrucks") || undefined,
     status: str(payload.status),
+    version: pickNumber(payload, "version"),
     requests: requestsRaw
       .map((item) => normalizeSchedulingCellRequest(item))
       .filter((item): item is SchedulingCellRequest => item != null),

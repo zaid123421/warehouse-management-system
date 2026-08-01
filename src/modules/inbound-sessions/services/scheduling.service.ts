@@ -1,6 +1,7 @@
 import api from "@/lib/api";
 import { ENDPOINTS } from "@/services/endpoints";
 import { toInboundError } from "@/modules/inbound-sessions/lib/inbound-error";
+import { toVersionBody } from "@/modules/inbound-sessions/lib/optimistic-lock";
 import {
   normalizeApproveSchedulingCellResult,
   normalizeSchedulingBoard,
@@ -34,10 +35,12 @@ export async function getSchedulingCellDetail(cellId: number): Promise<Schedulin
 
 export async function approveSchedulingCell(
   cellId: number,
+  version?: number | null,
 ): Promise<ApproveSchedulingCellResult> {
   try {
     const { data } = await api.post<unknown>(
       ENDPOINTS.WMS_INBOUND_SCHEDULING.APPROVE_CELL(cellId),
+      toVersionBody(version),
     );
     return normalizeApproveSchedulingCellResult(data);
   } catch (err: unknown) {

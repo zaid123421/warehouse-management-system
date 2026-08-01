@@ -27,6 +27,14 @@ export function normalizeArray<T>(
   return [];
 }
 
+function regionCityNameFrom(rec: Record<string, unknown>): string {
+  return (
+    pickString(rec, "regionCityName") ||
+    pickString(rec, "regionProvinceName") ||
+    ""
+  );
+}
+
 function normalizeCellRequest(raw: unknown): OutboundSchedulingCellRequest | null {
   const rec = asRecord(raw);
   if (!rec) return null;
@@ -40,6 +48,7 @@ function normalizeCellRequest(raw: unknown): OutboundSchedulingCellRequest | nul
     dealerName: pickString(rec, "dealerName"),
     totalVolume: pickNumber(rec, "totalVolume") || undefined,
     deliveryDay: pickString(rec, "deliveryDay"),
+    serviceDate: pickString(rec, "serviceDate"),
   };
 }
 
@@ -48,15 +57,26 @@ function normalizeCell(raw: unknown): OutboundSchedulingCell | null {
   if (!rec) return null;
   const cellId = pickNumber(rec, "cellId") || pickNumber(rec, "id");
   if (!cellId) return null;
+  const regionCityName = regionCityNameFrom(rec);
   return {
     cellId,
     deliveryDay: str(rec.deliveryDay),
+    serviceDate: pickString(rec, "serviceDate"),
+    regionCityId: pickNumber(rec, "regionCityId") || undefined,
+    regionCityName: regionCityName || "—",
     regionProvinceId: pickNumber(rec, "regionProvinceId") || undefined,
-    regionProvinceName: str(rec.regionProvinceName),
+    regionProvinceName: pickString(rec, "regionProvinceName"),
     totalVolume: pickNumber(rec, "totalVolume"),
     estimatedTrucks: pickNumber(rec, "estimatedTrucks"),
     status: str(rec.status),
     requestCount: pickNumber(rec, "requestCount"),
+    cutoffAt: pickString(rec, "cutoffAt"),
+    readyForApproval:
+      rec.readyForApproval === true
+        ? true
+        : rec.readyForApproval === false
+          ? false
+          : undefined,
   };
 }
 
@@ -82,13 +102,24 @@ export function normalizeOutboundSchedulingCellDetail(
   const cellId = pickNumber(payload, "cellId") || pickNumber(payload, "id");
   if (!cellId) return null;
   const requestsRaw = Array.isArray(payload.requests) ? payload.requests : [];
+  const regionCityName = regionCityNameFrom(payload);
   return {
     cellId,
     deliveryDay: str(payload.deliveryDay),
+    serviceDate: pickString(payload, "serviceDate"),
+    regionCityId: pickNumber(payload, "regionCityId") || undefined,
+    regionCityName: regionCityName || undefined,
     regionProvinceName: pickString(payload, "regionProvinceName"),
     totalVolume: pickNumber(payload, "totalVolume") || undefined,
     estimatedTrucks: pickNumber(payload, "estimatedTrucks") || undefined,
     status: str(payload.status),
+    cutoffAt: pickString(payload, "cutoffAt"),
+    readyForApproval:
+      payload.readyForApproval === true
+        ? true
+        : payload.readyForApproval === false
+          ? false
+          : undefined,
     requests: requestsRaw
       .map((item) => normalizeCellRequest(item))
       .filter((item): item is OutboundSchedulingCellRequest => item != null),
@@ -117,6 +148,7 @@ function normalizeGeneratedPickingSession(raw: unknown): GeneratedPickingSession
   return {
     pickingSessionId,
     deliveryDay: pickString(rec, "deliveryDay"),
+    serviceDate: pickString(rec, "serviceDate"),
     outboundRequestCount: pickNumber(rec, "outboundRequestCount") || undefined,
     expectedTires: pickNumber(rec, "expectedTires") || undefined,
     status: str(rec.status),

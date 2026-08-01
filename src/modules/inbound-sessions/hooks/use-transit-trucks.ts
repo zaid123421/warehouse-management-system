@@ -10,5 +10,6 @@ export function useTransitTrucks(options?: { enabled?: boolean }) {
     queryFn: getTransitTrucks,
     enabled,
     staleTime: 30_000,
+    refetchInterval: 15_000,
   });
 }
