@@ -50,19 +50,26 @@ export function ReceivingSessionsTable() {
   const [assignSession, setAssignSession] = useState<ReceivingSession | null>(null);
   const [pendingReject, setPendingReject] = useState<ReceivingSession | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [dateFilter, setDateFilter] = useState("");
 
   const { data: detailData, isFetching: isDetailFetching } = useReceivingSessionDetail(assignSession?.id ?? 0, {
     enabled: assignSession != null,
   });
 
   const filteredData = useMemo(() => {
-    if (!searchQuery.trim()) return data;
-    const lowerQuery = searchQuery.toLowerCase();
-    return data.filter((session) => 
-      String(session.id).includes(lowerQuery) || 
-      (session.inboundTruckLabel?.toLowerCase() || "").includes(lowerQuery)
-    );
-  }, [data, searchQuery]);
+    let result = data;
+    if (dateFilter) {
+      result = result.filter(session => (session.createdAt || "").includes(dateFilter));
+    }
+    if (searchQuery.trim()) {
+      const lowerQuery = searchQuery.toLowerCase();
+      result = result.filter((session) => 
+        String(session.id).includes(lowerQuery) || 
+        (session.inboundTruckLabel?.toLowerCase() || "").includes(lowerQuery)
+      );
+    }
+    return result;
+  }, [data, searchQuery, dateFilter]);
 
   async function runAction(
     action: () => Promise<unknown>,
@@ -80,14 +87,23 @@ export function ReceivingSessionsTable() {
     <div className="space-y-4">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-body-md text-muted-foreground">{t("receivingIntro")}</p>
-        <div className="relative w-full sm:max-w-xs">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
           <Input
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search by ID, truck, assignee..."
-            className="pl-9 h-10 bg-card"
+            type="date"
+            value={dateFilter}
+            onChange={(e) => setDateFilter(e.target.value)}
+            className="w-full sm:w-[180px] h-10"
+            aria-label={t("selectServiceDate")}
           />
+          <div className="relative w-full sm:w-64">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+            <Input
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search by ID, truck..."
+              className="pl-9 h-10 bg-card"
+            />
+          </div>
         </div>
       </div>
 

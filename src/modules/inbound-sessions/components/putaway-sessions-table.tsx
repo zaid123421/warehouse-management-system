@@ -36,6 +36,7 @@ export function PutawaySessionsTable() {
   const startMutation = useStartPutawaySession();
   const [assignSession, setAssignSession] = useState<PutawaySession | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [dateFilter, setDateFilter] = useState("");
 
   const { data: detailData, isFetching: isDetailFetching } = usePutawaySessionDetail(assignSession?.id ?? 0, {
     enabled: assignSession != null,
@@ -43,13 +44,19 @@ export function PutawaySessionsTable() {
 
   const filteredData = useMemo(() => {
     if (!data) return [];
-    if (!searchQuery.trim()) return data;
-    const lowerQuery = searchQuery.toLowerCase();
-    return data.filter((session) => 
-      String(session.id).includes(lowerQuery) || 
-      (session.zoneName?.toLowerCase() || "").includes(lowerQuery)
-    );
-  }, [data, searchQuery]);
+    let result = data;
+    if (dateFilter) {
+      result = result.filter(session => (session.createdAt || "").includes(dateFilter));
+    }
+    if (searchQuery.trim()) {
+      const lowerQuery = searchQuery.toLowerCase();
+      result = result.filter((session) => 
+        String(session.id).includes(lowerQuery) || 
+        (session.zoneName?.toLowerCase() || "").includes(lowerQuery)
+      );
+    }
+    return result;
+  }, [data, searchQuery, dateFilter]);
 
   async function handleApprove(session: PutawaySession) {
     try {
@@ -67,14 +74,23 @@ export function PutawaySessionsTable() {
     <div className="space-y-4">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-body-md text-muted-foreground">{t("putawayIntro")}</p>
-        <div className="relative w-full sm:max-w-xs">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
           <Input
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search by ID, zone, assignee..."
-            className="pl-9 h-10 bg-card"
+            type="date"
+            value={dateFilter}
+            onChange={(e) => setDateFilter(e.target.value)}
+            className="w-full sm:w-[180px] h-10"
+            aria-label={t("selectServiceDate")}
           />
+          <div className="relative w-full sm:w-64">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+            <Input
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search by ID, zone..."
+              className="pl-9 h-10 bg-card"
+            />
+          </div>
         </div>
       </div>
 

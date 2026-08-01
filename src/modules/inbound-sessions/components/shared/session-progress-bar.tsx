@@ -13,12 +13,12 @@ export function SessionProgressBar({ value, className, label }: SessionProgressB
   return (
     <div className={cn("space-y-1", className)}>
       {label ? (
-        <div className="flex items-center justify-between text-[10px] font-medium text-muted-foreground">
-          <span>{label}</span>
-          <span>{Math.round(clamped)}%</span>
+        <div className="flex items-center justify-between text-body-sm text-foreground">
+          <span className="font-semibold">{label}</span>
+          <span className="font-semibold">{Math.round(clamped)}%</span>
         </div>
       ) : null}
-      <div className="h-1.5 w-full overflow-hidden rounded-full bg-secondary dark:bg-secondary/40">
+      <div className="h-2 w-full overflow-hidden rounded-full bg-secondary dark:bg-muted">
         <div
           className={cn(
             "h-full transition-all duration-500 ease-in-out",
