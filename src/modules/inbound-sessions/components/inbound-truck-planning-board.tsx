@@ -410,16 +410,15 @@ export function InboundTruckPlanningBoard({ schedulingCellId }: InboundTruckPlan
                     handlePoolDragStart(event, request.inboundRequestId)
                   }
                   className={cn(
-                    "rounded-lg border border-[var(--color-surface-light-container)] bg-muted/40 px-3 py-2.5 text-body-sm text-foreground dark:border-[var(--color-surface-container-high)]",
+                    "flex items-center gap-2 rounded-lg border border-[var(--color-surface-light-container)] bg-muted/40 px-3 py-2.5 text-body-sm text-foreground dark:border-[var(--color-surface-container-high)]",
                     !isBusy && "cursor-grab active:cursor-grabbing",
                   )}
                 >
                   <span className="font-medium">
                     {t("requestShortLabel", { id: request.inboundRequestId })}
                   </span>
-                  <span className="text-muted-foreground">
-                    {" "}
-                    ({getStatusLabel((key) => tStatus(key as never), request.status)})
+                  <span className="text-muted-foreground ml-auto">
+                    {getStatusLabel((key) => tStatus(key as never), request.status)}
                   </span>
                 </div>
               ))}
@@ -585,12 +584,12 @@ export function InboundTruckPlanningBoard({ schedulingCellId }: InboundTruckPlan
                 type="button"
                 disabled={isBusy || !cell}
                 onClick={handleAddTruck}
-                className="flex min-h-40 flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-primary/60 bg-transparent px-4 py-6 text-primary transition hover:border-primary hover:bg-primary/5 disabled:cursor-not-allowed disabled:opacity-50"
+                className="flex min-h-40 flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed border-primary/40 bg-transparent px-4 py-6 text-primary transition-colors hover:border-primary hover:bg-primary/5 disabled:cursor-not-allowed disabled:opacity-50"
               >
-                <span className="flex size-10 items-center justify-center rounded-full border border-primary/40">
-                  <Plus className="size-5" />
+                <span className="flex size-12 items-center justify-center rounded-full bg-primary/10">
+                  <Plus className="size-6" />
                 </span>
-                <span className="text-body-md font-medium">{t("addTruck")}</span>
+                <span className="text-label-md font-medium tracking-wide">{t("addTruck")}</span>
               </button>
             </div>
           )}

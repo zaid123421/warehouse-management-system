@@ -154,7 +154,7 @@ export function StyledTable<T>({
                     <TableRow className={`bg-[var(--color-surface-light)]/40 dark:bg-[var(--color-surface-bright)]/5 ${!isLastRow ? "border-b-2 " + borderColor : ""}`}>
                       <TableCell 
                         colSpan={columns.length + 1} 
-                        className={`p-0 ${isLastRow ? "rounded-es-xl rounded-ee-xl" : ""}`}
+                        className={`p-0 border-l-2 border-primary ${isLastRow ? "rounded-es-xl rounded-ee-xl" : ""}`}
                       >
                         <div className="animate-in slide-in-from-top-2 fade-in duration-200">
                           {renderExpanded(row)}

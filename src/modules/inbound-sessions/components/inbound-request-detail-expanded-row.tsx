@@ -53,42 +53,50 @@ export function InboundRequestDetailExpandedRow({ requestId }: { requestId: numb
   }
 
   return (
-    <div className="p-4 bg-card rounded-lg m-4 border shadow-sm">
-      <div className="mb-4 flex items-center justify-between">
-        <h4 className="text-label-md font-semibold text-foreground">
+    <div className="p-4 sm:p-6 bg-[var(--color-surface-light-container)] dark:bg-[var(--color-surface-container-high)]/50 rounded-lg m-3 sm:m-4 border border-[var(--color-surface-light-container)] shadow-sm">
+      <div className="mb-6 flex items-center justify-between">
+        <h4 className="text-label-lg font-bold text-primary flex items-center gap-2">
           {t("requestTireSetsTitle", { id: requestId })}
         </h4>
-        <span className="text-body-sm text-muted-foreground">
-          {data.receivedTireCount} / {data.expectedTireCount} {t("tiresReceived")}
-        </span>
+        <div className="flex items-center gap-3">
+          <span className="text-body-sm text-muted-foreground uppercase tracking-wide font-medium">
+            {t("tiresReceived")}
+          </span>
+          <span className="text-label-lg font-bold">
+            {data.receivedTireCount} <span className="text-muted-foreground font-normal">/ {data.expectedTireCount}</span>
+          </span>
+        </div>
       </div>
 
       {data.lines.length === 0 ? (
-        <p className="text-body-sm text-muted-foreground text-center py-4">
+        <div className="rounded-lg border border-dashed p-6 text-center text-muted-foreground">
           {t("noTiresInRequest")}
-        </p>
+        </div>
       ) : (
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto rounded-lg border border-[var(--color-surface-light-container)] dark:border-[var(--color-surface-container-high)] bg-card">
           <table className="w-full text-left text-sm">
             <thead>
-              <tr className="border-b text-muted-foreground">
-                <th className="pb-2 font-medium">{t("columnTireId")}</th>
-                <th className="pb-2 font-medium">{t("columnLocation")}</th>
-                <th className="pb-2 font-medium">{t("columnStatus")}</th>
+              <tr className="border-b-2 border-[var(--color-surface-light-container)] dark:border-[var(--color-surface-container-high)] text-muted-foreground bg-muted/50">
+                <th className="py-3 px-4 font-semibold tracking-wide">{t("columnTireId")}</th>
+                <th className="py-3 px-4 font-semibold tracking-wide">{t("columnLocation")}</th>
+                <th className="py-3 px-4 font-semibold tracking-wide text-right">{t("columnStatus")}</th>
               </tr>
             </thead>
-            <tbody className="divide-y text-foreground">
+            <tbody className="divide-y divide-[var(--color-surface-light-container)] dark:divide-[var(--color-surface-container-high)] text-foreground">
               {data.lines.map((line: InboundRequestLine) => (
-                <tr key={line.id} className="group">
-                  <td className="py-2.5 pr-4 whitespace-nowrap">
-                    <span className="font-medium bg-muted px-2 py-0.5 rounded-md text-xs">
-                      {line.tireUniqueId || `#${line.id}`}
-                    </span>
+                <tr key={line.id} className="group hover:bg-[var(--color-surface-light)] dark:hover:bg-muted/30 transition-colors">
+                  <td className="py-3 px-4 whitespace-nowrap">
+                    <div className="flex items-center gap-2">
+                      <span className="inline-flex h-2 w-2 rounded-full bg-primary/40"></span>
+                      <span className="font-mono font-medium tracking-tight text-foreground">
+                        {line.tireUniqueId || `#${line.id}`}
+                      </span>
+                    </div>
                   </td>
-                  <td className="py-2.5 pr-4 whitespace-nowrap text-muted-foreground">
+                  <td className="py-3 px-4 whitespace-nowrap text-muted-foreground font-medium">
                     {line.reservedPositionBarcode || "—"}
                   </td>
-                  <td className="py-2.5">
+                  <td className="py-3 px-4 text-right">
                     <SessionStatusBadge status={line.status} />
                   </td>
                 </tr>
