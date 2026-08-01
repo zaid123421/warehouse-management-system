@@ -11,6 +11,7 @@ import { ROUTES } from "@/constants/routes";
 import { SessionProgressBar } from "@/modules/inbound-sessions/components/shared/session-progress-bar";
 import { SessionStatusBadge } from "@/modules/inbound-sessions/components/shared/session-status-badge";
 import { useReceivingSessionDetail } from "@/modules/inbound-sessions/hooks/use-receiving-session-detail";
+import { InboundRequestDetailExpandedRow } from "@/modules/inbound-sessions/components/inbound-request-detail-expanded-row";
 
 type ReceivingSessionDetailContentProps = {
   sessionId: number;
@@ -86,15 +87,12 @@ export function ReceivingSessionDetailContent({ sessionId }: ReceivingSessionDet
                   header: t("columnStatus"),
                   render: (row) => <SessionStatusBadge status={row.status} />,
                 },
-                {
-                  header: t("columnActions"),
-                  render: () => "—",
-                },
               ]}
               rows={data.inboundRequests}
               keyProp={(row) => row.inboundRequestId}
               emptyText={t("noLinkedRequests")}
               horizontalScroll
+              renderExpanded={(row) => <InboundRequestDetailExpandedRow requestId={row.inboundRequestId} />}
             />
           </section>
         </div>
@@ -111,7 +109,7 @@ function DetailField({
   value: React.ReactNode;
 }) {
   return (
-    <div className="rounded-lg border border-[var(--color-surface-light-container)] bg-card px-3 py-2.5 dark:border-[var(--color-surface-container-high)]">
+    <div className="rounded-lg border border-border/50 dark:border-white/5 bg-card px-3 py-2.5">
       <p className="text-body-sm text-muted-foreground">{label}</p>
       <div className="mt-1 text-body-md font-medium text-foreground">{value}</div>
     </div>

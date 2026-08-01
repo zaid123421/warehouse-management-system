@@ -1,63 +1,49 @@
+"use client";
+
+import { useTranslations } from "next-intl";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
 
-type PaginationControlsProps = {
-  canPrevious: boolean;
-  canNext: boolean;
-  previousLabel: string;
-  nextLabel: string;
-  pageLabel: string;
-  pageText: string;
-  onPrevious: () => void;
-  onNext: () => void;
+interface PaginationControlsProps {
+  currentPage: number;
+  totalPages: number;
+  onPageChange: (page: number) => void;
   className?: string;
-};
+}
 
 export function PaginationControls({
-  canPrevious,
-  canNext,
-  previousLabel,
-  nextLabel,
-  pageLabel,
-  pageText,
-  onPrevious,
-  onNext,
-  className,
+  currentPage,
+  totalPages,
+  onPageChange,
+  className = "",
 }: PaginationControlsProps) {
+  const t = useTranslations("common");
+
   return (
-    <nav
-      className={cn("flex items-center justify-center", className)}
-      aria-label={pageLabel}
-    >
-      <div className="inline-flex h-12 items-center gap-4 rounded-full bg-secondary-main p-1 shadow-md dark:bg-surface-high">
-        <Button
-          type="button"
-          size="icon"
-          className="size-10 rounded-full border-0 bg-surface-light text-secondary-main shadow-xs hover:bg-surface-lightContainer hover:text-secondary-main focus-visible:border-primary-dark focus-visible:ring-primary-dark/30 disabled:bg-surface-light disabled:text-secondary-main"
-          disabled={!canPrevious}
-          aria-label={previousLabel}
-          onClick={onPrevious}
-        >
-          <ChevronLeft className="size-5" />
-        </Button>
-
-        <span className="min-w-16 text-center text-body-sm font-semibold text-secondary-onSurface">
-          {pageText}
-        </span>
-
-        <Button
-          type="button"
-          size="icon"
-          className="size-10 rounded-full border-0 bg-primary-dark text-white shadow-xs hover:bg-primary-dark/90 focus-visible:border-primary-dark focus-visible:ring-primary-dark/30 disabled:bg-primary-dark disabled:text-white"
-          disabled={!canNext}
-          aria-label={nextLabel}
-          onClick={onNext}
-        >
-          <ChevronRight className="size-5" />
-        </Button>
-      </div>
-    </nav>
+    <div className={`flex items-center justify-center gap-4 mt-6 ${className}`}>
+      <Button
+        variant="outline"
+        size="icon"
+        className="size-8 rounded-full border-black/10 dark:border-white/10 bg-card"
+        onClick={() => onPageChange(Math.max(1, currentPage - 1))}
+        disabled={currentPage === 1}
+        aria-label={t?.("previousPage") ?? "Previous page"}
+      >
+        <ChevronLeft className="size-4" />
+      </Button>
+      <span className="text-body-sm font-medium text-foreground bg-black/5 dark:bg-white/5 px-3 py-1.5 rounded-md">
+        {currentPage} <span className="text-muted-foreground mx-1">of</span> {totalPages}
+      </span>
+      <Button
+        variant="outline"
+        size="icon"
+        className="size-8 rounded-full border-black/10 dark:border-white/10 bg-card"
+        onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))}
+        disabled={currentPage === totalPages}
+        aria-label={t?.("nextPage") ?? "Next page"}
+      >
+        <ChevronRight className="size-4" />
+      </Button>
+    </div>
   );
 }

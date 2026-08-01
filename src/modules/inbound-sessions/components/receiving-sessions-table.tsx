@@ -1,10 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
-import { Check, Eye, Play, Square, UserPlus, X } from "lucide-react";
+import { Check, Eye, Play, Search, Square, UserPlus, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -15,12 +15,15 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { ErrorAlert } from "@/components/ui/error-alert";
+import { Input } from "@/components/ui/input";
+import { PaginationControls } from "@/components/ui/pagination-controls";
 import { StyledTable } from "@/components/ui/styled-table";
 import { ROUTES } from "@/constants/routes";
 import { PRIMARY_BUTTON_CLASS } from "@/lib/primary-button-styles";
 import { AssignStaffDialog } from "@/modules/inbound-sessions/components/shared/assign-staff-dialog";
 import { SessionProgressBar } from "@/modules/inbound-sessions/components/shared/session-progress-bar";
 import { SessionStatusBadge } from "@/modules/inbound-sessions/components/shared/session-status-badge";
+import { useReceivingSessionDetail } from "@/modules/inbound-sessions/hooks/use-receiving-session-detail";
 import {
   useApproveReceivingSession,
   useAssignReceivingSession,
@@ -47,6 +50,38 @@ export function ReceivingSessionsTable() {
   const completeMutation = useCompleteReceivingSession();
   const [assignSession, setAssignSession] = useState<ReceivingSession | null>(null);
   const [pendingReject, setPendingReject] = useState<ReceivingSession | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [dateFilter, setDateFilter] = useState("");
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 10;
+
+  const { data: detailData, isFetching: isDetailFetching } = useReceivingSessionDetail(assignSession?.id ?? 0, {
+    enabled: assignSession != null,
+  });
+
+  const filteredData = useMemo(() => {
+    let result = data;
+    if (dateFilter) {
+      result = result.filter(session => (session.createdAt || "").includes(dateFilter));
+    }
+    if (searchQuery.trim()) {
+      const lowerQuery = searchQuery.toLowerCase();
+      result = result.filter((session) => 
+        String(session.id).includes(lowerQuery) || 
+        (session.inboundTruckLabel?.toLowerCase() || "").includes(lowerQuery)
+      );
+    }
+    return result;
+  }, [data, searchQuery, dateFilter]);
+
+  // Reset to page 1 when filters change
+  useMemo(() => {
+    setCurrentPage(1);
+  }, [searchQuery, dateFilter]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredData.length / ITEMS_PER_PAGE));
+  const paginatedData = filteredData.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
 
   async function runAction(
     action: () => Promise<unknown>,
@@ -62,7 +97,27 @@ export function ReceivingSessionsTable() {
 
   return (
     <div className="space-y-4">
-      <p className="text-body-md text-muted-foreground">{t("receivingIntro")}</p>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <p className="text-body-md text-muted-foreground">{t("receivingIntro")}</p>
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+          <Input
+            type="date"
+            value={dateFilter}
+            onChange={(e) => setDateFilter(e.target.value)}
+            className="w-full sm:w-[180px] h-10"
+            aria-label={t("selectServiceDate")}
+          />
+          <div className="relative w-full sm:w-64">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+            <Input
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search by ID, truck..."
+              className="pl-9 h-10 bg-card"
+            />
+          </div>
+        </div>
+      </div>
 
       {isError ? (
         <ErrorAlert
@@ -72,135 +127,162 @@ export function ReceivingSessionsTable() {
         />
       ) : null}
 
-      <StyledTable
-        columns={[
-          { header: t("columnSession"), render: (row) => `#${row.id}` },
-          {
-            header: t("columnTruck"),
-            render: (row) => row.inboundTruckLabel ?? "—",
-          },
-          {
-            header: t("columnStatus"),
-            render: (row) => <SessionStatusBadge status={row.status} />,
-          },
-          {
-            header: t("columnProgress"),
-            render: (row) => <SessionProgressBar value={row.progressPercent ?? 0} />,
-          },
-          {
-            header: t("columnTires"),
-            render: (row) => `${row.receivedTires}/${row.expectedTires}`,
-          },
-          {
-            header: t("columnRequests"),
-            render: (row) => row.inboundRequests.length.toLocaleString(),
-          },
-          {
-            header: t("columnActions"),
-            render: (row) => (
-              <div className="flex flex-wrap items-center justify-center gap-2">
-                <Button type="button" size="sm" variant="outline" asChild>
-                  <Link href={ROUTES.DASHBOARD.INBOUND_SESSIONS.RECEIVING_DETAIL(row.id)}>
-                    <Eye className="size-4" />
-                    {t("viewDetails")}
-                  </Link>
-                </Button>
-                {canApproveReceivingSession(row.status) ? (
-                  <Button
-                    type="button"
-                    size="sm"
-                    className={PRIMARY_BUTTON_CLASS}
-                    disabled={approveMutation.isPending}
-                    onClick={() =>
-                      void runAction(
-                        () => approveMutation.mutateAsync(row.id),
-                        "approveSessionSuccess",
-                      )
-                    }
-                  >
-                    <Check className="size-4" />
-                    {t("approveSession")}
+      <div className="flex flex-col gap-4">
+        <StyledTable
+          rows={paginatedData}
+          columns={[
+            { header: t("columnSession"), render: (row) => `#${row.id}` },
+            {
+              header: t("columnTruck"),
+              render: (row) => row.inboundTruckLabel ?? "—",
+            },
+            {
+              header: t("columnStatus"),
+              render: (row) => <SessionStatusBadge status={row.status} />,
+            },
+            {
+              header: t("columnProgress"),
+              render: (row) => <SessionProgressBar value={row.progressPercent ?? 0} />,
+            },
+            {
+              header: t("columnTires"),
+              render: (row) => `${row.receivedTires}/${row.expectedTires}`,
+            },
+            {
+              header: t("columnRequests"),
+              render: (row) => row.inboundRequests.length.toLocaleString(),
+            },
+            {
+              header: t("columnActions"),
+              render: (row) => (
+                <div className="flex flex-wrap items-center justify-center gap-2">
+                  <Button type="button" size="sm" variant="outline" asChild>
+                    <Link href={ROUTES.DASHBOARD.INBOUND_SESSIONS.RECEIVING_DETAIL(row.id)}>
+                      <Eye className="size-4" />
+                      {t("viewDetails")}
+                    </Link>
                   </Button>
-                ) : null}
-                {row.status === "PENDING_APPROVAL" ? (
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="destructive"
-                    disabled={rejectMutation.isPending}
-                    onClick={() => setPendingReject(row)}
-                  >
-                    <X className="size-4" />
-                    {t("rejectSession")}
-                  </Button>
-                ) : null}
-                {canAssignReceivingSession(row.status) ? (
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="outline"
-                    onClick={() => setAssignSession(row)}
-                  >
-                    <UserPlus className="size-4" />
-                    {t("assignStaff")}
-                  </Button>
-                ) : null}
-                {canStartReceivingSession(row.status) ? (
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="outline"
-                    disabled={startMutation.isPending}
-                    onClick={() =>
-                      void runAction(
-                        () => startMutation.mutateAsync(row.id),
-                        "startSessionSuccess",
-                      )
-                    }
-                  >
-                    <Play className="size-4" />
-                    {t("startSession")}
-                  </Button>
-                ) : null}
-                {canCompleteReceivingSession(row.status) ? (
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="outline"
-                    disabled={completeMutation.isPending}
-                    onClick={() =>
-                      void runAction(
-                        () => completeMutation.mutateAsync(row.id),
-                        "completeSessionSuccess",
-                      )
-                    }
-                  >
-                    <Square className="size-4" />
-                    {t("completeSession")}
-                  </Button>
-                ) : null}
-              </div>
-            ),
-          },
-        ]}
-        rows={data}
-        keyProp={(row) => row.id}
-        isLoading={isPending}
-        emptyText={t("noReceivingSessions")}
-        horizontalScroll
-      />
+                  {canApproveReceivingSession(row.status) ? (
+                    <Button
+                      type="button"
+                      size="sm"
+                      className={PRIMARY_BUTTON_CLASS}
+                      disabled={approveMutation.isPending}
+                      onClick={() =>
+                        void runAction(
+                          () =>
+                            approveMutation.mutateAsync({
+                              sessionId: row.id,
+                              version: row.version ?? 0,
+                            }),
+                          "approveSessionSuccess",
+                        )
+                      }
+                    >
+                      <Check className="size-4" />
+                      {t("approveSession")}
+                    </Button>
+                  ) : null}
+                  {row.status === "PENDING_APPROVAL" ? (
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="destructive"
+                      disabled={rejectMutation.isPending}
+                      onClick={() => setPendingReject(row)}
+                    >
+                      <X className="size-4" />
+                      {t("rejectSession")}
+                    </Button>
+                  ) : null}
+                  {canAssignReceivingSession(row.status) ? (
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      onClick={() => setAssignSession(row)}
+                    >
+                      <UserPlus className="size-4" />
+                      {t("assignStaff")}
+                    </Button>
+                  ) : null}
+                  {canStartReceivingSession(row.status) ? (
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      disabled={startMutation.isPending}
+                      onClick={() =>
+                        void runAction(
+                          () =>
+                            startMutation.mutateAsync({
+                              sessionId: row.id,
+                              version: row.version ?? 0,
+                            }),
+                          "startSessionSuccess",
+                        )
+                      }
+                    >
+                      <Play className="size-4" />
+                      {t("startSession")}
+                    </Button>
+                  ) : null}
+                  {canCompleteReceivingSession(row.status) ? (
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      disabled={completeMutation.isPending}
+                      onClick={() =>
+                        void runAction(
+                          () =>
+                            completeMutation.mutateAsync({
+                              sessionId: row.id,
+                              version: row.version ?? 0,
+                            }),
+                          "completeSessionSuccess",
+                        )
+                      }
+                    >
+                      <Square className="size-4" />
+                      {t("completeSession")}
+                    </Button>
+                  ) : null}
+                </div>
+              ),
+            },
+          ]}
+          keyProp={(row) => row.id}
+          isLoading={isPending}
+          emptyText={t("noReceivingSessions")}
+          horizontalScroll
+        />
+
+        <PaginationControls
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={setCurrentPage}
+        />
+      </div>
 
       <AssignStaffDialog
         open={assignSession != null}
         onOpenChange={(open) => !open && setAssignSession(null)}
         title={t("assignReceivingTitle")}
         description={t("assignReceivingDescription", { id: assignSession?.id ?? "" })}
-        initialStaffIds={assignSession?.assignedStaffUserIds ?? []}
-        isPending={assignMutation.isPending}
+        initialStaffIds={detailData?.assignedStaffUserIds ?? assignSession?.assignedStaffUserIds ?? []}
+        isPending={assignMutation.isPending || isDetailFetching}
         onConfirm={async (staffUserIds) => {
           if (!assignSession) return;
           await runAction(
-            () => assignMutation.mutateAsync({ sessionId: assignSession.id, payload: { staffUserIds } }),
+            () =>
+              assignMutation.mutateAsync({
+                sessionId: assignSession.id,
+                payload: {
+                  staffUserIds,
+                  version: assignSession.version ?? 0,
+                },
+              }),
             "assignSuccess",
           );
           setAssignSession(null);
@@ -226,7 +308,10 @@ export function ReceivingSessionsTable() {
               onClick={() =>
                 void runAction(async () => {
                   if (!pendingReject) return;
-                  await rejectMutation.mutateAsync(pendingReject.id);
+                  await rejectMutation.mutateAsync({
+                    sessionId: pendingReject.id,
+                    version: pendingReject.version ?? 0,
+                  });
                   setPendingReject(null);
                 }, "rejectSessionSuccess")
               }

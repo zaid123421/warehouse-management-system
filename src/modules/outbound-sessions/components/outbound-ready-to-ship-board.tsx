@@ -9,26 +9,30 @@ import { ErrorAlert } from "@/components/ui/error-alert";
 import { StyledTable } from "@/components/ui/styled-table";
 import { ROUTES } from "@/constants/routes";
 import { PRIMARY_BUTTON_CLASS } from "@/lib/primary-button-styles";
-import { SessionStatusBadge } from "@/modules/inbound-sessions/components/shared/session-status-badge";
-import { useCreateReceivingFromTruck } from "@/modules/inbound-sessions/hooks/use-inbound-truck-mutations";
-import { useTransitTrucks } from "@/modules/inbound-sessions/hooks/use-transit-trucks";
-import { formatDayLabel } from "@/modules/inbound-sessions/lib/status-utils";
+import { OutboundSessionStatusBadge } from "@/modules/outbound-sessions/components/shared/session-status-badge";
+import { useCreateShippingFromTruck } from "@/modules/outbound-sessions/hooks/use-outbound-truck-mutations";
+import { useReadyToShipTrucks } from "@/modules/outbound-sessions/hooks/use-ready-to-ship-trucks";
+import {
+  formatDayLabel,
+  isTodayServiceDate,
+} from "@/modules/outbound-sessions/lib/status-utils";
 
-export function InboundTransitBoard() {
-  const t = useTranslations("inboundSessions");
-  const { data = [], isPending, isError, error, refetch } = useTransitTrucks();
-  const createReceivingMutation = useCreateReceivingFromTruck();
+export function OutboundReadyToShipBoard() {
+  const t = useTranslations("outboundSessions");
+  const { data = [], isPending, isError, error, refetch } = useReadyToShipTrucks();
+  const createShippingMutation = useCreateShippingFromTruck();
 
-  async function handleCreateReceiving(truckId: number, version?: number) {
+  async function handleCreateShipping(truckId: number, serviceDate?: string) {
+    if (!isTodayServiceDate(serviceDate)) {
+      toast.error(t("shippingServiceDateGuard"));
+      return;
+    }
     try {
-      const session = await createReceivingMutation.mutateAsync({
-        truckId,
-        version: version ?? 0,
-      });
+      const session = await createShippingMutation.mutateAsync(truckId);
       toast.success(
-        t("createReceivingFromTruckSuccess", {
+        t("createShippingFromTruckSuccess", {
           sessionId: session.id,
-          label: session.inboundTruckLabel ?? `#${truckId}`,
+          label: session.outboundTruckLabel ?? `#${truckId}`,
         }),
       );
     } catch (err) {
@@ -38,7 +42,7 @@ export function InboundTransitBoard() {
 
   return (
     <div className="space-y-4">
-      <p className="text-body-md text-muted-foreground">{t("transitIntro")}</p>
+      <p className="text-body-md text-muted-foreground">{t("readyToShipIntro")}</p>
 
       {isError ? (
         <ErrorAlert
@@ -56,7 +60,7 @@ export function InboundTransitBoard() {
           },
           {
             header: t("columnDay"),
-            render: (row) => (row.receivingDay ? formatDayLabel(row.receivingDay) : "—"),
+            render: (row) => (row.deliveryDay ? formatDayLabel(row.deliveryDay) : "—"),
           },
           {
             header: t("columnServiceDate"),
@@ -64,22 +68,23 @@ export function InboundTransitBoard() {
           },
           {
             header: t("columnTires"),
-            render: (row) =>
-              (row.assignedTires ?? row.expectedTires ?? 0).toLocaleString(),
+            render: (row) => (row.assignedTires ?? 0).toLocaleString(),
           },
           {
             header: t("columnStatus"),
-            render: (row) => <SessionStatusBadge status={row.status} />,
+            render: (row) => <OutboundSessionStatusBadge status={row.status} />,
           },
           {
             header: t("columnReady"),
             render: (row) =>
               row.ready ? (
                 <span className="text-body-sm font-medium text-emerald-600 dark:text-emerald-400">
-                  {t("transitReady")}
+                  {t("readyToShipReady")}
                 </span>
               ) : (
-                <span className="text-body-sm text-muted-foreground">{t("transitNotReady")}</span>
+                <span className="text-body-sm text-muted-foreground">
+                  {t("readyToShipNotReady")}
+                </span>
               ),
           },
           {
@@ -90,11 +95,15 @@ export function InboundTransitBoard() {
                   type="button"
                   size="sm"
                   className={PRIMARY_BUTTON_CLASS}
-                  disabled={createReceivingMutation.isPending}
-                  onClick={() => void handleCreateReceiving(row.truckId, row.version)}
+                  disabled={
+                    createShippingMutation.isPending ||
+                    !row.ready ||
+                    !isTodayServiceDate(row.serviceDate)
+                  }
+                  onClick={() => void handleCreateShipping(row.truckId, row.serviceDate)}
                 >
                   <PackagePlus className="size-4" />
-                  {t("createReceivingSession")}
+                  {t("createShippingSession")}
                 </Button>
               </div>
             ),
@@ -103,17 +112,17 @@ export function InboundTransitBoard() {
         rows={data}
         keyProp={(row) => row.truckId}
         isLoading={isPending}
-        emptyText={t("noTransitTrucks")}
+        emptyText={t("noReadyToShipTrucks")}
         horizontalScroll
       />
 
       <p className="text-body-sm text-muted-foreground">
-        {t("transitHandoverHint")}{" "}
+        {t("readyToShipHint")}{" "}
         <Link
-          href={ROUTES.DASHBOARD.INBOUND_SESSIONS.LIST}
+          href={`${ROUTES.DASHBOARD.OUTBOUND_SESSIONS.LIST}?tab=shipping`}
           className="font-medium text-primary hover:underline"
         >
-          {t("tabReceiving")}
+          {t("tabShipping")}
         </Link>
       </p>
     </div>

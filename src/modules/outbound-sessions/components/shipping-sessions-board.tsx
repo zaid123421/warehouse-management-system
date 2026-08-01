@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import {
   Check,
   Play,
+  Search,
   Square,
   Trash2,
   UserPlus,
@@ -20,13 +21,8 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { ErrorAlert } from "@/components/ui/error-alert";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
+import { PaginationControls } from "@/components/ui/pagination-controls";
 import { Skeleton } from "@/components/ui/skeleton";
 import { PRIMARY_BUTTON_CLASS } from "@/lib/primary-button-styles";
 import { cn } from "@/lib/utils";
@@ -34,7 +30,7 @@ import { AssignStaffDialog } from "@/modules/inbound-sessions/components/shared/
 import { SessionProgressBar } from "@/modules/inbound-sessions/components/shared/session-progress-bar";
 import { ShippingSessionDetailPanel } from "@/modules/outbound-sessions/components/shipping-session-detail-panel";
 import { OutboundSessionStatusBadge } from "@/modules/outbound-sessions/components/shared/session-status-badge";
-import { useGenerateShippingSessions } from "@/modules/outbound-sessions/hooks/use-generate-shipping-sessions";
+import { useShippingSessionDetail } from "@/modules/outbound-sessions/hooks/use-shipping-session-detail";
 import {
   useApproveShippingSession,
   useAssignShippingSession,
@@ -50,16 +46,15 @@ import {
   canCompleteShippingSession,
   canStartShippingSession,
   computeShippingSessionStats,
-  DAYS_OF_WEEK,
   formatDayLabel,
   formatDealerSummary,
+  isTodayServiceDate,
 } from "@/modules/outbound-sessions/lib/status-utils";
 import type { ShippingSession } from "@/modules/outbound-sessions/types/shipping-session";
 
 export function ShippingSessionsBoard() {
   const t = useTranslations("outboundSessions");
   const { data = [], isPending, isError, error, refetch } = useShippingSessions();
-  const generateMutation = useGenerateShippingSessions();
   const approveMutation = useApproveShippingSession();
   const cancelMutation = useCancelShippingSession();
   const assignMutation = useAssignShippingSession();
@@ -68,9 +63,33 @@ export function ShippingSessionsBoard() {
   const [selectedSessionId, setSelectedSessionId] = useState<number | null>(null);
   const [assignSession, setAssignSession] = useState<ShippingSession | null>(null);
   const [pendingCancel, setPendingCancel] = useState<ShippingSession | null>(null);
-  const [generateDay, setGenerateDay] = useState<string>(DAYS_OF_WEEK[0]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 10;
+
+  const { data: detailData, isFetching: isDetailFetching } = useShippingSessionDetail(assignSession?.id ?? 0, {
+    enabled: assignSession != null,
+  });
 
   const stats = useMemo(() => computeShippingSessionStats(data), [data]);
+
+  const filteredData = useMemo(() => {
+    if (!searchQuery.trim()) return data;
+    const lowerQuery = searchQuery.toLowerCase();
+    return data.filter((session) => 
+      String(session.id).includes(lowerQuery) || 
+      (session.outboundTruckLabel?.toLowerCase() || "").includes(lowerQuery) ||
+      (session.serviceDate || "").includes(lowerQuery) ||
+      session.outboundRequests.some(req => (req.dealerName || "").toLowerCase().includes(lowerQuery))
+    );
+  }, [data, searchQuery]);
+
+  useMemo(() => {
+    setCurrentPage(1);
+  }, [searchQuery]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredData.length / ITEMS_PER_PAGE));
+  const paginatedData = filteredData.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
 
   async function runAction(
     action: () => Promise<unknown>,
@@ -89,70 +108,38 @@ export function ShippingSessionsBoard() {
     }
   }
 
-  async function handleGenerateByDay() {
-    try {
-      const result = await generateMutation.mutateAsync({ deliveryDay: generateDay });
-      toast.success(t("generateShippingSuccess", { count: result.sessions.length }));
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : t("actionError"));
+  async function handleStart(session: ShippingSession) {
+    if (!isTodayServiceDate(session.serviceDate)) {
+      toast.error(t("shippingServiceDateGuard"));
+      return;
     }
-  }
-
-  async function handleGenerateAll() {
-    try {
-      const result = await generateMutation.mutateAsync(undefined);
-      toast.success(t("generateShippingSuccess", { count: result.sessions.length }));
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : t("actionError"));
-    }
+    await runAction(() => startMutation.mutateAsync(session.id), "startSessionSuccess");
   }
 
   return (
     <div className="flex flex-col gap-4 xl:flex-row xl:items-start">
       <div className="min-w-0 flex-1 space-y-4">
-        <p className="text-body-md text-muted-foreground">{t("shippingIntro")}</p>
-
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-          <div className="grid grid-cols-3 gap-3 sm:max-w-md">
-            <StatPill label={t("shippingStatPending")} value={stats.pendingApproval} tone="warning" />
-            <StatPill label={t("shippingStatInProgress")} value={stats.inProgress} tone="default" />
-            <StatPill
-              label={t("shippingStatCompletedToday")}
-              value={stats.completedToday}
-              tone="muted"
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-body-md text-muted-foreground">{t("shippingIntro")}</p>
+          <div className="relative w-full sm:max-w-xs">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+            <Input
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search by ID, truck, dealer..."
+              className="pl-9 bg-card"
             />
           </div>
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-            <Select value={generateDay} onValueChange={setGenerateDay}>
-              <SelectTrigger className="w-full sm:w-[180px]">
-                <SelectValue placeholder={t("selectDay")} />
-              </SelectTrigger>
-              <SelectContent>
-                {DAYS_OF_WEEK.map((day) => (
-                  <SelectItem key={day} value={day}>
-                    {formatDayLabel(day)}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Button
-              type="button"
-              className={cn(PRIMARY_BUTTON_CLASS, "shrink-0")}
-              disabled={generateMutation.isPending}
-              onClick={() => void handleGenerateByDay()}
-            >
-              {generateMutation.isPending ? t("generating") : t("generateShippingByDay")}
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              className="shrink-0"
-              disabled={generateMutation.isPending}
-              onClick={() => void handleGenerateAll()}
-            >
-              {t("generateShippingAll")}
-            </Button>
-          </div>
+        </div>
+
+        <div className="grid grid-cols-3 gap-3 sm:max-w-md">
+          <StatPill label={t("shippingStatPending")} value={stats.pendingApproval} tone="warning" />
+          <StatPill label={t("shippingStatInProgress")} value={stats.inProgress} tone="default" />
+          <StatPill
+            label={t("shippingStatCompletedToday")}
+            value={stats.completedToday}
+            tone="muted"
+          />
         </div>
 
         {isError ? (
@@ -169,18 +156,21 @@ export function ShippingSessionsBoard() {
               <Skeleton key={i} className="h-36 w-full rounded-xl" />
             ))}
           </div>
-        ) : data.length === 0 ? (
+        ) : filteredData.length === 0 ? (
           <div className="rounded-xl border border-dashed border-[var(--color-surface-light-container)] bg-card px-4 py-12 text-center dark:border-[var(--color-surface-container-high)]">
             <p className="text-body-md text-muted-foreground">{t("noShippingSessions")}</p>
+            <p className="mt-2 text-body-sm text-muted-foreground">{t("shippingCreateFromTruckHint")}</p>
           </div>
         ) : (
-          <div className="space-y-3">
-            {data.map((session) => {
-              const remaining = Math.max(
-                0,
-                session.expectedTires - session.shippedTires - session.missingTires,
-              );
+          <div className="space-y-4">
+            <div className="space-y-3">
+              {paginatedData.map((session) => {
+                const remaining = Math.max(
+                  0,
+                  session.expectedTires - session.shippedTires - session.missingTires,
+                );
               const isSelected = selectedSessionId === session.id;
+              const canStartToday = isTodayServiceDate(session.serviceDate);
               return (
                 <article
                   key={session.id}
@@ -200,9 +190,13 @@ export function ShippingSessionsBoard() {
                       <div>
                         <p className="text-label-lg font-semibold text-foreground">
                           {t("shippingSessionLabel", { id: session.id })}
+                          {session.outboundTruckLabel
+                            ? ` · ${session.outboundTruckLabel}`
+                            : ""}
                         </p>
                         <p className="mt-1 text-body-sm text-muted-foreground">
                           {formatDealerSummary(session.outboundRequests, t("unknownDealer"))}
+                          {session.serviceDate ? ` · ${session.serviceDate}` : ""}
                           {session.deliveryDay
                             ? ` · ${formatDayLabel(session.deliveryDay)}`
                             : ""}
@@ -268,13 +262,9 @@ export function ShippingSessionsBoard() {
                         type="button"
                         size="sm"
                         variant="outline"
-                        disabled={startMutation.isPending}
-                        onClick={() =>
-                          void runAction(
-                            () => startMutation.mutateAsync(session.id),
-                            "startSessionSuccess",
-                          )
-                        }
+                        disabled={startMutation.isPending || !canStartToday}
+                        title={!canStartToday ? t("shippingServiceDateGuard") : undefined}
+                        onClick={() => void handleStart(session)}
                       >
                         <Play className="size-4" />
                         {t("startSession")}
@@ -301,6 +291,13 @@ export function ShippingSessionsBoard() {
                 </article>
               );
             })}
+            </div>
+            
+            <PaginationControls
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={setCurrentPage}
+            />
           </div>
         )}
       </div>
@@ -317,8 +314,8 @@ export function ShippingSessionsBoard() {
         onOpenChange={(open) => !open && setAssignSession(null)}
         title={t("assignShippingTitle")}
         description={t("assignShippingDescription", { id: assignSession?.id ?? "" })}
-        initialStaffIds={assignSession?.assignedStaffUserIds ?? []}
-        isPending={assignMutation.isPending}
+        initialStaffIds={detailData?.assignedStaffUserIds ?? assignSession?.assignedStaffUserIds ?? []}
+        isPending={assignMutation.isPending || isDetailFetching}
         translationNamespace="outboundSessions"
         onConfirm={async (staffUserIds) => {
           if (!assignSession) return;

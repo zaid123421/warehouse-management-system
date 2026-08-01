@@ -50,7 +50,10 @@ export function SchedulingCellDetailPanel({
   async function handleApprove() {
     if (!cellId) return;
     try {
-      await approveMutation.mutateAsync(cellId);
+      await approveMutation.mutateAsync({
+        cellId,
+        version: data?.version ?? 0,
+      });
       toast.success(t("approveCellSuccess"));
     } catch (err) {
       toast.error(err instanceof Error ? err.message : t("actionError"));

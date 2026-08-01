@@ -32,5 +32,6 @@ export function usePlanningTrucks(
       ),
     enabled,
     staleTime: 30_000,
+    refetchInterval: 15_000,
   });
 }

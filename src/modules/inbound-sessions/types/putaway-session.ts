@@ -27,6 +27,7 @@ export type PutawaySession = {
   assignedStaffUserIds?: number[];
   assignedStaffCount?: number;
   exceptionScanCount?: number;
+  version?: number;
   approvedAt?: string;
   createdAt?: string;
   lines: PutawaySessionLine[];
@@ -34,6 +35,7 @@ export type PutawaySession = {
 
 export type AssignPutawaySessionRequest = {
   staffUserIds: number[];
+  version: number;
 };
 
 export type PutawaySessionActionResult = PutawaySession;

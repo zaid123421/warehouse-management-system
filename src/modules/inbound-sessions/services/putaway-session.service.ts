@@ -1,6 +1,7 @@
 import api from "@/lib/api";
 import { ENDPOINTS } from "@/services/endpoints";
 import { toInboundError } from "@/modules/inbound-sessions/lib/inbound-error";
+import { toVersionBody } from "@/modules/inbound-sessions/lib/optimistic-lock";
 import {
   normalizePutawaySessionDetail,
   normalizePutawaySessionList,
@@ -37,10 +38,14 @@ export async function getPutawaySessionById(sessionId: number): Promise<PutawayS
   }
 }
 
-export async function approvePutawaySession(sessionId: number): Promise<PutawaySession> {
+export async function approvePutawaySession(
+  sessionId: number,
+  version?: number | null,
+): Promise<PutawaySession> {
   try {
     const { data } = await api.post<unknown>(
       ENDPOINTS.WMS_PUTAWAY_SESSIONS.APPROVE(sessionId),
+      toVersionBody(version),
     );
     const detail = normalizePutawaySessionDetail(data);
     if (!detail) throw new Error("Invalid approve putaway session response");
@@ -57,7 +62,10 @@ export async function assignPutawaySession(
   try {
     const { data } = await api.post<unknown>(
       ENDPOINTS.WMS_PUTAWAY_SESSIONS.ASSIGN(sessionId),
-      payload,
+      {
+        version: payload.version ?? 0,
+        staffUserIds: payload.staffUserIds,
+      },
     );
     const detail = normalizePutawaySessionDetail(data);
     if (!detail) throw new Error("Invalid assign putaway session response");
@@ -67,10 +75,14 @@ export async function assignPutawaySession(
   }
 }
 
-export async function startPutawaySession(sessionId: number): Promise<PutawaySession> {
+export async function startPutawaySession(
+  sessionId: number,
+  version?: number | null,
+): Promise<PutawaySession> {
   try {
     const { data } = await api.post<unknown>(
       ENDPOINTS.WMS_PUTAWAY_SESSIONS.START(sessionId),
+      toVersionBody(version),
     );
     const detail = normalizePutawaySessionDetail(data);
     if (!detail) throw new Error("Invalid start putaway session response");

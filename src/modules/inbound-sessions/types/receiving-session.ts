@@ -23,6 +23,7 @@ export type ReceivingSession = {
   assignedStaffUserIds?: number[];
   assignedStaffCount?: number;
   exceptionScanCount?: number;
+  version?: number;
   startedAt?: string;
   approvedAt?: string;
   completedAt?: string;
@@ -32,6 +33,7 @@ export type ReceivingSession = {
 
 export type AssignReceivingSessionRequest = {
   staffUserIds: number[];
+  version: number;
 };
 
 export type ReceivingSessionActionResult = ReceivingSession;
