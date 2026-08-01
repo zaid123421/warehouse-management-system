@@ -2,9 +2,12 @@ const STATUS_VARIANT: Record<string, "default" | "success" | "warning" | "danger
   PLANNED: "default",
   SCHEDULED: "default",
   SCHEDULE_APPROVED: "success",
+  TRUCK_ASSIGNED: "success",
   PICKING_SESSION_PENDING: "warning",
   PICKING_APPROVED: "success",
+  PICKING_IN_PROGRESS: "default",
   PICKING_COMPLETED: "success",
+  PARTIALLY_PICKED: "warning",
   PENDING_APPROVAL: "warning",
   APPROVED: "success",
   IN_PROGRESS: "default",
@@ -17,6 +20,7 @@ const STATUS_VARIANT: Record<string, "default" | "success" | "warning" | "danger
   SHIPPING_APPROVED: "success",
   SHIPPING_IN_PROGRESS: "default",
   PARTIALLY_SHIPPED: "warning",
+  SHIPPING: "default",
   MISSING: "danger",
 };
 
@@ -29,8 +33,26 @@ export function formatDayLabel(day: string): string {
   return day.charAt(0) + day.slice(1).toLowerCase();
 }
 
-export function canApproveOutboundSchedulingCell(status: string): boolean {
-  return status === "PLANNED";
+export function canApproveOutboundSchedulingCell(
+  status: string,
+  readyForApproval?: boolean,
+): boolean {
+  if (status !== "PLANNED") return false;
+  if (readyForApproval === false) return false;
+  return true;
+}
+
+export function canOpenOutboundTruckPlanning(status: string): boolean {
+  return status === "APPROVED" || status === "PLANNED";
+}
+
+export function isTodayServiceDate(serviceDate?: string | null): boolean {
+  if (!serviceDate) return true;
+  const today = new Date();
+  const yyyy = today.getFullYear();
+  const mm = String(today.getMonth() + 1).padStart(2, "0");
+  const dd = String(today.getDate()).padStart(2, "0");
+  return serviceDate === `${yyyy}-${mm}-${dd}`;
 }
 
 export function canApprovePickingSession(status: string): boolean {

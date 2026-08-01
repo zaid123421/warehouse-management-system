@@ -23,11 +23,17 @@ function useInvalidatePutaway(queryClient: ReturnType<typeof useQueryClient>) {
   };
 }
 
+type SessionVersionArgs = {
+  sessionId: number;
+  version?: number | null;
+};
+
 export function useApprovePutawaySession() {
   const queryClient = useQueryClient();
   const invalidate = useInvalidatePutaway(queryClient);
   return useMutation({
-    mutationFn: (sessionId: number) => approvePutawaySession(sessionId),
+    mutationFn: ({ sessionId, version }: SessionVersionArgs) =>
+      approvePutawaySession(sessionId, version),
     onSuccess: (data) => invalidate(data.id),
   });
 }
@@ -51,7 +57,8 @@ export function useStartPutawaySession() {
   const queryClient = useQueryClient();
   const invalidate = useInvalidatePutaway(queryClient);
   return useMutation({
-    mutationFn: (sessionId: number) => startPutawaySession(sessionId),
+    mutationFn: ({ sessionId, version }: SessionVersionArgs) =>
+      startPutawaySession(sessionId, version),
     onSuccess: (data) => invalidate(data.id),
   });
 }

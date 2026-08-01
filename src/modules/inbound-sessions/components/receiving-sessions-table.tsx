@@ -1,10 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
-import { Check, Eye, Play, Square, UserPlus, X } from "lucide-react";
+import { Check, Eye, Play, Search, Square, UserPlus, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -15,12 +15,14 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { ErrorAlert } from "@/components/ui/error-alert";
+import { Input } from "@/components/ui/input";
 import { StyledTable } from "@/components/ui/styled-table";
 import { ROUTES } from "@/constants/routes";
 import { PRIMARY_BUTTON_CLASS } from "@/lib/primary-button-styles";
 import { AssignStaffDialog } from "@/modules/inbound-sessions/components/shared/assign-staff-dialog";
 import { SessionProgressBar } from "@/modules/inbound-sessions/components/shared/session-progress-bar";
 import { SessionStatusBadge } from "@/modules/inbound-sessions/components/shared/session-status-badge";
+import { useReceivingSessionDetail } from "@/modules/inbound-sessions/hooks/use-receiving-session-detail";
 import {
   useApproveReceivingSession,
   useAssignReceivingSession,
@@ -47,6 +49,20 @@ export function ReceivingSessionsTable() {
   const completeMutation = useCompleteReceivingSession();
   const [assignSession, setAssignSession] = useState<ReceivingSession | null>(null);
   const [pendingReject, setPendingReject] = useState<ReceivingSession | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const { data: detailData, isFetching: isDetailFetching } = useReceivingSessionDetail(assignSession?.id ?? 0, {
+    enabled: assignSession != null,
+  });
+
+  const filteredData = useMemo(() => {
+    if (!searchQuery.trim()) return data;
+    const lowerQuery = searchQuery.toLowerCase();
+    return data.filter((session) => 
+      String(session.id).includes(lowerQuery) || 
+      (session.inboundTruckLabel?.toLowerCase() || "").includes(lowerQuery)
+    );
+  }, [data, searchQuery]);
 
   async function runAction(
     action: () => Promise<unknown>,
@@ -62,7 +78,18 @@ export function ReceivingSessionsTable() {
 
   return (
     <div className="space-y-4">
-      <p className="text-body-md text-muted-foreground">{t("receivingIntro")}</p>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <p className="text-body-md text-muted-foreground">{t("receivingIntro")}</p>
+        <div className="relative w-full sm:max-w-xs">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+          <Input
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search by ID, truck, assignee..."
+            className="pl-9 h-10 bg-card"
+          />
+        </div>
+      </div>
 
       {isError ? (
         <ErrorAlert
@@ -73,6 +100,7 @@ export function ReceivingSessionsTable() {
       ) : null}
 
       <StyledTable
+        rows={filteredData}
         columns={[
           { header: t("columnSession"), render: (row) => `#${row.id}` },
           {
@@ -113,7 +141,11 @@ export function ReceivingSessionsTable() {
                     disabled={approveMutation.isPending}
                     onClick={() =>
                       void runAction(
-                        () => approveMutation.mutateAsync(row.id),
+                        () =>
+                          approveMutation.mutateAsync({
+                            sessionId: row.id,
+                            version: row.version ?? 0,
+                          }),
                         "approveSessionSuccess",
                       )
                     }
@@ -153,7 +185,11 @@ export function ReceivingSessionsTable() {
                     disabled={startMutation.isPending}
                     onClick={() =>
                       void runAction(
-                        () => startMutation.mutateAsync(row.id),
+                        () =>
+                          startMutation.mutateAsync({
+                            sessionId: row.id,
+                            version: row.version ?? 0,
+                          }),
                         "startSessionSuccess",
                       )
                     }
@@ -170,7 +206,11 @@ export function ReceivingSessionsTable() {
                     disabled={completeMutation.isPending}
                     onClick={() =>
                       void runAction(
-                        () => completeMutation.mutateAsync(row.id),
+                        () =>
+                          completeMutation.mutateAsync({
+                            sessionId: row.id,
+                            version: row.version ?? 0,
+                          }),
                         "completeSessionSuccess",
                       )
                     }
@@ -183,7 +223,6 @@ export function ReceivingSessionsTable() {
             ),
           },
         ]}
-        rows={data}
         keyProp={(row) => row.id}
         isLoading={isPending}
         emptyText={t("noReceivingSessions")}
@@ -195,12 +234,19 @@ export function ReceivingSessionsTable() {
         onOpenChange={(open) => !open && setAssignSession(null)}
         title={t("assignReceivingTitle")}
         description={t("assignReceivingDescription", { id: assignSession?.id ?? "" })}
-        initialStaffIds={assignSession?.assignedStaffUserIds ?? []}
-        isPending={assignMutation.isPending}
+        initialStaffIds={detailData?.assignedStaffUserIds ?? assignSession?.assignedStaffUserIds ?? []}
+        isPending={assignMutation.isPending || isDetailFetching}
         onConfirm={async (staffUserIds) => {
           if (!assignSession) return;
           await runAction(
-            () => assignMutation.mutateAsync({ sessionId: assignSession.id, payload: { staffUserIds } }),
+            () =>
+              assignMutation.mutateAsync({
+                sessionId: assignSession.id,
+                payload: {
+                  staffUserIds,
+                  version: assignSession.version ?? 0,
+                },
+              }),
             "assignSuccess",
           );
           setAssignSession(null);
@@ -226,7 +272,10 @@ export function ReceivingSessionsTable() {
               onClick={() =>
                 void runAction(async () => {
                   if (!pendingReject) return;
-                  await rejectMutation.mutateAsync(pendingReject.id);
+                  await rejectMutation.mutateAsync({
+                    sessionId: pendingReject.id,
+                    version: pendingReject.version ?? 0,
+                  });
                   setPendingReject(null);
                 }, "rejectSessionSuccess")
               }

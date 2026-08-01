@@ -3,7 +3,7 @@
 import { useMemo } from "react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
-import { Check } from "lucide-react";
+import { ArrowRight, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { PRIMARY_BUTTON_CLASS } from "@/lib/primary-button-styles";
@@ -12,16 +12,21 @@ import { formatSchedulingDayLabel } from "@/shared/lib/scheduling-grid-utils";
 import { OutboundSessionStatusBadge } from "@/modules/outbound-sessions/components/shared/session-status-badge";
 import { useApproveOutboundSchedulingCell } from "@/modules/outbound-sessions/hooks/use-approve-outbound-scheduling-cell";
 import { useOutboundSchedulingCell } from "@/modules/outbound-sessions/hooks/use-outbound-scheduling-cell";
-import { canApproveOutboundSchedulingCell } from "@/modules/outbound-sessions/lib/status-utils";
+import {
+  canApproveOutboundSchedulingCell,
+  canOpenOutboundTruckPlanning,
+} from "@/modules/outbound-sessions/lib/status-utils";
 
 type OutboundSchedulingCellDetailPanelProps = {
   cellId: number | null;
   onClose?: () => void;
+  onOpenPlanning?: (cellId?: number) => void;
 };
 
 export function OutboundSchedulingCellDetailPanel({
   cellId,
   onClose,
+  onOpenPlanning,
 }: OutboundSchedulingCellDetailPanelProps) {
   const t = useTranslations("outboundSessions");
   const enabled = cellId != null && cellId > 0;
@@ -30,6 +35,7 @@ export function OutboundSchedulingCellDetailPanel({
   });
   const approveMutation = useApproveOutboundSchedulingCell();
 
+  const cityName = data?.regionCityName || data?.regionProvinceName || "—";
   const summaryLine = useMemo(() => {
     if (!data) return "";
     return t("cellDetailSummary", {
@@ -57,29 +63,52 @@ export function OutboundSchedulingCellDetailPanel({
     }
   }
 
+  const canApprove =
+    data != null &&
+    canApproveOutboundSchedulingCell(data.status, data.readyForApproval);
+
   return (
     <SchedulingCellDetailPanelFrame
       title={t("cellDetailTitle")}
       subtitle={
         data
-          ? `${formatSchedulingDayLabel(data.deliveryDay)} · ${data.regionProvinceName ?? "—"}`
+          ? [data.serviceDate, formatSchedulingDayLabel(String(data.deliveryDay)), cityName]
+              .filter(Boolean)
+              .join(" · ")
           : t("cellDetailLoading")
       }
       onClose={onClose}
       closeLabel={t("closePanel")}
       footer={
-        data && canApproveOutboundSchedulingCell(data.status) ? (
+        data ? (
           <>
-            <p className="text-body-sm text-muted-foreground">{t("cellDetailApproveHint")}</p>
-            <Button
-              type="button"
-              className={PRIMARY_BUTTON_CLASS}
-              disabled={approveMutation.isPending}
-              onClick={() => void handleApprove()}
-            >
-              <Check className="size-4" />
-              {t("approveCellGenerate")}
-            </Button>
+            {data.status === "PLANNED" && data.readyForApproval === false ? (
+              <p className="text-body-sm text-muted-foreground">{t("cellCutoffPendingHint")}</p>
+            ) : null}
+            {canApprove ? (
+              <>
+                <p className="text-body-sm text-muted-foreground">{t("cellDetailApproveHint")}</p>
+                <Button
+                  type="button"
+                  className={PRIMARY_BUTTON_CLASS}
+                  disabled={approveMutation.isPending}
+                  onClick={() => void handleApprove()}
+                >
+                  <Check className="size-4" />
+                  {t("approveCellGenerate")}
+                </Button>
+              </>
+            ) : null}
+            {canOpenOutboundTruckPlanning(data.status) ? (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => onOpenPlanning?.(data.cellId)}
+              >
+                <ArrowRight className="size-4" />
+                {t("openTruckPlanning")}
+              </Button>
+            ) : null}
           </>
         ) : undefined
       }
@@ -103,6 +132,11 @@ export function OutboundSchedulingCellDetailPanel({
             <OutboundSessionStatusBadge status={data.status} />
             <span className="text-body-sm text-muted-foreground">{summaryLine}</span>
           </div>
+          {data.cutoffAt ? (
+            <p className="text-body-sm text-muted-foreground">
+              {t("cellCutoffAt", { cutoff: data.cutoffAt })}
+            </p>
+          ) : null}
 
           <div className="space-y-2">
             <h4 className="text-body-sm font-semibold text-foreground">{t("cellRequestsTitle")}</h4>

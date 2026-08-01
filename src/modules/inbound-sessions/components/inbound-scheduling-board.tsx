@@ -35,8 +35,12 @@ export function InboundSchedulingBoard({ onOpenPlanning }: InboundSchedulingBoar
   const stats = useMemo(() => computeSchedulingBoardStats(gridCells), [gridCells]);
 
   async function handleApprove(cell: SchedulingGridCell) {
+    const source = data?.cells.find((item) => item.cellId === cell.cellId);
     try {
-      await approveMutation.mutateAsync(cell.cellId);
+      await approveMutation.mutateAsync({
+        cellId: cell.cellId,
+        version: source?.version ?? 0,
+      });
       toast.success(t("approveCellSuccess"));
     } catch (err) {
       toast.error(err instanceof Error ? err.message : t("actionError"));
@@ -64,7 +68,7 @@ export function InboundSchedulingBoard({ onOpenPlanning }: InboundSchedulingBoar
             selectedCellId={selectedCellId}
             onSelectCell={setSelectedCellId}
             onApproveCell={(cell) => void handleApprove(cell)}
-            canApprove={canApproveSchedulingCell}
+            canApprove={(cell) => canApproveSchedulingCell(cell.status)}
             isApprovePending={approveMutation.isPending}
             renderStatusBadge={(status) => <SessionStatusBadge status={status} />}
             translationNamespace="inboundSessions"

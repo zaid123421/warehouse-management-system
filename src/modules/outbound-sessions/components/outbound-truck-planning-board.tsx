@@ -11,24 +11,25 @@ import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
 import { PRIMARY_BUTTON_CLASS } from "@/lib/primary-button-styles";
 import { cn } from "@/lib/utils";
-import { useApproveInboundTruck } from "@/modules/inbound-sessions/hooks/use-inbound-truck-mutations";
+import { useApproveOutboundTruck } from "@/modules/outbound-sessions/hooks/use-outbound-truck-mutations";
 import {
-  inboundMutationInvalidationKeys,
-  inboundQueryKeys,
-} from "@/modules/inbound-sessions/hooks/query-keys";
-import { usePlanningPool } from "@/modules/inbound-sessions/hooks/use-planning-pool";
-import { usePlanningTrucks } from "@/modules/inbound-sessions/hooks/use-planning-trucks";
-import { useSchedulingCell } from "@/modules/inbound-sessions/hooks/use-scheduling-cell";
-import { getStatusLabel } from "@/modules/inbound-sessions/lib/status-utils";
+  outboundMutationInvalidationKeys,
+  outboundQueryKeys,
+} from "@/modules/outbound-sessions/hooks/query-keys";
+import { useOutboundPlanningPool } from "@/modules/outbound-sessions/hooks/use-outbound-planning-pool";
+import { useOutboundPlanningTrucks } from "@/modules/outbound-sessions/hooks/use-outbound-planning-trucks";
+import { useOutboundSchedulingCell } from "@/modules/outbound-sessions/hooks/use-outbound-scheduling-cell";
+import { getStatusLabel } from "@/modules/outbound-sessions/lib/status-utils";
+import { OutboundError } from "@/modules/outbound-sessions/lib/outbound-error";
 import {
-  assignRequestToTruck,
-  createInboundTruck,
-} from "@/modules/inbound-sessions/services/inbound-truck.service";
+  assignOutboundRequestToTruck,
+  createOutboundTruck,
+  deleteOutboundTruck,
+} from "@/modules/outbound-sessions/services/outbound-truck.service";
 import type {
-  InboundTruckRequestLink,
-  PlanningPoolRequest,
-} from "@/modules/inbound-sessions/types/inbound-truck";
-import { InboundError } from "@/modules/inbound-sessions/lib/inbound-error";
+  OutboundPlanningPoolRequest,
+  OutboundTruckRequestLink,
+} from "@/modules/outbound-sessions/types/outbound-truck";
 
 type DraftTruck = {
   localId: string;
@@ -37,7 +38,7 @@ type DraftTruck = {
   assignedRequestIds: number[];
 };
 
-type InboundTruckPlanningBoardProps = {
+type OutboundTruckPlanningBoardProps = {
   schedulingCellId: number;
 };
 
@@ -49,7 +50,7 @@ function toPersistedDraft(
   truck: {
     id: number;
     label?: string;
-    assignedRequests: InboundTruckRequestLink[];
+    assignedRequests: OutboundTruckRequestLink[];
   },
   fallbackLabel: string,
 ): DraftTruck {
@@ -57,13 +58,15 @@ function toPersistedDraft(
     localId: `server-${truck.id}`,
     serverTruckId: truck.id,
     label: truck.label ?? fallbackLabel,
-    assignedRequestIds: truck.assignedRequests.map((request) => request.inboundRequestId),
+    assignedRequestIds: truck.assignedRequests.map((request) => request.outboundRequestId),
   };
 }
 
-export function InboundTruckPlanningBoard({ schedulingCellId }: InboundTruckPlanningBoardProps) {
-  const t = useTranslations("inboundSessions");
-  const tStatus = useTranslations("inboundSessions.statuses");
+export function OutboundTruckPlanningBoard({
+  schedulingCellId,
+}: OutboundTruckPlanningBoardProps) {
+  const t = useTranslations("outboundSessions");
+  const tStatus = useTranslations("outboundSessions.statuses");
   const queryClient = useQueryClient();
   const {
     data: cell,
@@ -71,33 +74,34 @@ export function InboundTruckPlanningBoard({ schedulingCellId }: InboundTruckPlan
     isError: cellError,
     error: cellErr,
     refetch: refetchCell,
-  } = useSchedulingCell(schedulingCellId);
+  } = useOutboundSchedulingCell(schedulingCellId);
   const {
     data: poolData,
     isPending: poolPending,
     isError: poolError,
     error: poolErr,
     refetch: refetchPool,
-  } = usePlanningPool({ schedulingCellId });
+  } = useOutboundPlanningPool({ schedulingCellId });
   const {
     data: serverTrucks = [],
     isPending: trucksPending,
     isError: trucksError,
     error: trucksErr,
     refetch: refetchTrucks,
-  } = usePlanningTrucks(
+  } = useOutboundPlanningTrucks(
     {
       serviceDate: cell?.serviceDate,
-      receivingDay: cell?.receivingDay,
+      deliveryDay: cell?.deliveryDay,
     },
-    { enabled: Boolean(cell?.serviceDate && cell?.receivingDay) },
+    { enabled: Boolean(cell?.serviceDate) },
   );
 
-  const approveMutation = useApproveInboundTruck();
+  const approveMutation = useApproveOutboundTruck();
   const [localDrafts, setLocalDrafts] = useState<DraftTruck[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [dragOverLocalId, setDragOverLocalId] = useState<string | null>(null);
   const [dragOverPool, setDragOverPool] = useState(false);
+  const [deletingTruckId, setDeletingTruckId] = useState<number | null>(null);
 
   useEffect(() => {
     setLocalDrafts([]);
@@ -126,17 +130,17 @@ export function InboundTruckPlanningBoard({ schedulingCellId }: InboundTruckPlan
   }, [trucks]);
 
   const availablePool = useMemo(
-    () => pool.filter((request) => !assignedRequestIds.has(request.inboundRequestId)),
+    () => pool.filter((request) => !assignedRequestIds.has(request.outboundRequestId)),
     [pool, assignedRequestIds],
   );
 
   const requestById = useMemo(() => {
-    const map = new Map<number, PlanningPoolRequest | InboundTruckRequestLink>();
-    for (const request of pool) map.set(request.inboundRequestId, request);
+    const map = new Map<number, OutboundPlanningPoolRequest | OutboundTruckRequestLink>();
+    for (const request of pool) map.set(request.outboundRequestId, request);
     for (const truck of serverTrucks) {
       for (const request of truck.assignedRequests) {
-        if (!map.has(request.inboundRequestId)) {
-          map.set(request.inboundRequestId, request);
+        if (!map.has(request.outboundRequestId)) {
+          map.set(request.outboundRequestId, request);
         }
       }
     }
@@ -152,7 +156,7 @@ export function InboundTruckPlanningBoard({ schedulingCellId }: InboundTruckPlan
   }, [serverTrucks]);
 
   const hasPendingPlan = localDrafts.some((truck) => truck.assignedRequestIds.length > 0);
-  const isBusy = isSubmitting || approveMutation.isPending;
+  const isBusy = isSubmitting || approveMutation.isPending || deletingTruckId != null;
   const isLoadingBoard = cellPending || poolPending || (Boolean(cell?.serviceDate) && trucksPending);
 
   function handleAddTruck() {
@@ -170,31 +174,31 @@ export function InboundTruckPlanningBoard({ schedulingCellId }: InboundTruckPlan
     setLocalDrafts((prev) => prev.filter((truck) => truck.localId !== localId));
   }
 
-  function handleAssignLocal(localId: string, inboundRequestId: number) {
+  function handleAssignLocal(localId: string, outboundRequestId: number) {
     setLocalDrafts((prev) =>
       prev.map((truck) => {
         if (truck.localId === localId) {
-          if (truck.assignedRequestIds.includes(inboundRequestId)) return truck;
+          if (truck.assignedRequestIds.includes(outboundRequestId)) return truck;
           return {
             ...truck,
-            assignedRequestIds: [...truck.assignedRequestIds, inboundRequestId],
+            assignedRequestIds: [...truck.assignedRequestIds, outboundRequestId],
           };
         }
         return {
           ...truck,
-          assignedRequestIds: truck.assignedRequestIds.filter((id) => id !== inboundRequestId),
+          assignedRequestIds: truck.assignedRequestIds.filter((id) => id !== outboundRequestId),
         };
       }),
     );
   }
 
-  function handleUnassignLocal(localId: string, inboundRequestId: number) {
+  function handleUnassignLocal(localId: string, outboundRequestId: number) {
     setLocalDrafts((prev) =>
       prev.map((truck) =>
         truck.localId === localId
           ? {
               ...truck,
-              assignedRequestIds: truck.assignedRequestIds.filter((id) => id !== inboundRequestId),
+              assignedRequestIds: truck.assignedRequestIds.filter((id) => id !== outboundRequestId),
             }
           : truck,
       ),
@@ -202,13 +206,13 @@ export function InboundTruckPlanningBoard({ schedulingCellId }: InboundTruckPlan
   }
 
   async function invalidateAfterMutation() {
-    const keys = inboundMutationInvalidationKeys();
+    const keys = outboundMutationInvalidationKeys();
     void queryClient.invalidateQueries({
-      queryKey: [...inboundQueryKeys.all, "planning-pool"],
+      queryKey: [...outboundQueryKeys.all, "planning-pool"],
     });
     void queryClient.invalidateQueries({ queryKey: keys.planningTrucks });
-    void queryClient.invalidateQueries({ queryKey: keys.transit });
-    void queryClient.invalidateQueries({ queryKey: keys.dashboard });
+    void queryClient.invalidateQueries({ queryKey: keys.readyToShip });
+    void queryClient.invalidateQueries({ queryKey: keys.picking });
   }
 
   async function handleSubmitPlan() {
@@ -221,7 +225,7 @@ export function InboundTruckPlanningBoard({ schedulingCellId }: InboundTruckPlan
       return;
     }
 
-    const poolIds = new Set(pool.map((request) => request.inboundRequestId));
+    const poolIds = new Set(pool.map((request) => request.outboundRequestId));
     const toSubmit = localDrafts
       .map((truck) => ({
         ...truck,
@@ -239,24 +243,18 @@ export function InboundTruckPlanningBoard({ schedulingCellId }: InboundTruckPlan
       let createdCount = 0;
       let skippedAssignments = 0;
       for (const draft of toSubmit) {
-        const truck = await createInboundTruck({
+        const truck = await createOutboundTruck({
           schedulingCellId,
-          receivingDay: cell.receivingDay,
+          deliveryDay: String(cell.deliveryDay),
           serviceDate: cell.serviceDate,
         });
         let assignedOnTruck = 0;
-        let truckVersion = truck.version ?? 0;
-        for (const inboundRequestId of draft.assignedRequestIds) {
+        for (const outboundRequestId of draft.assignedRequestIds) {
           try {
-            const updated = await assignRequestToTruck(
-              truck.id,
-              inboundRequestId,
-              truckVersion,
-            );
-            truckVersion = updated.version ?? truckVersion + 1;
+            await assignOutboundRequestToTruck(truck.id, outboundRequestId);
             assignedOnTruck += 1;
           } catch (err) {
-            if (err instanceof InboundError && err.status === 409) {
+            if (err instanceof OutboundError && err.status === 409) {
               skippedAssignments += 1;
               continue;
             }
@@ -287,32 +285,41 @@ export function InboundTruckPlanningBoard({ schedulingCellId }: InboundTruckPlan
       toast.error(t("truckApproveNeedsRequests"));
       return;
     }
-    const truck = serverTrucks.find((item) => item.id === serverTruckId);
     try {
-      await approveMutation.mutateAsync({
-        truckId: serverTruckId,
-        version: truck?.version ?? 0,
-      });
+      await approveMutation.mutateAsync(serverTruckId);
       toast.success(t("truckApproveSuccess"));
     } catch (err) {
       toast.error(err instanceof Error ? err.message : t("actionError"));
     }
   }
 
+  async function handleDeletePersistedTruck(serverTruckId: number) {
+    setDeletingTruckId(serverTruckId);
+    try {
+      await deleteOutboundTruck(serverTruckId);
+      await invalidateAfterMutation();
+      toast.success(t("truckDeleteSuccess"));
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : t("actionError"));
+    } finally {
+      setDeletingTruckId(null);
+    }
+  }
+
   function handlePoolDragStart(
     event: React.DragEvent<HTMLDivElement>,
-    inboundRequestId: number,
+    outboundRequestId: number,
   ) {
-    event.dataTransfer.setData("text/plain", String(inboundRequestId));
+    event.dataTransfer.setData("text/plain", String(outboundRequestId));
     event.dataTransfer.setData("application/x-source", "pool");
   }
 
   function handleAssignedDragStart(
     event: React.DragEvent<HTMLDivElement>,
     localId: string,
-    inboundRequestId: number,
+    outboundRequestId: number,
   ) {
-    event.dataTransfer.setData("text/plain", String(inboundRequestId));
+    event.dataTransfer.setData("text/plain", String(outboundRequestId));
     event.dataTransfer.setData("application/x-source", "truck");
     event.dataTransfer.setData("application/x-truck-local-id", localId);
   }
@@ -322,21 +329,21 @@ export function InboundTruckPlanningBoard({ schedulingCellId }: InboundTruckPlan
     setDragOverLocalId(null);
     const truck = localDrafts.find((item) => item.localId === localId);
     if (!truck) return;
-    const inboundRequestId = Number(event.dataTransfer.getData("text/plain"));
+    const outboundRequestId = Number(event.dataTransfer.getData("text/plain"));
     const source = event.dataTransfer.getData("application/x-source");
-    if (!inboundRequestId || (source !== "pool" && source !== "truck")) return;
-    handleAssignLocal(localId, inboundRequestId);
+    if (!outboundRequestId || (source !== "pool" && source !== "truck")) return;
+    handleAssignLocal(localId, outboundRequestId);
   }
 
   function handlePoolDrop(event: React.DragEvent<HTMLDivElement>) {
     event.preventDefault();
     setDragOverPool(false);
-    const inboundRequestId = Number(event.dataTransfer.getData("text/plain"));
+    const outboundRequestId = Number(event.dataTransfer.getData("text/plain"));
     const source = event.dataTransfer.getData("application/x-source");
     const sourceLocalId = event.dataTransfer.getData("application/x-truck-local-id");
-    if (!inboundRequestId || source !== "truck" || !sourceLocalId) return;
+    if (!outboundRequestId || source !== "truck" || !sourceLocalId) return;
     if (!localDrafts.some((truck) => truck.localId === sourceLocalId)) return;
-    handleUnassignLocal(sourceLocalId, inboundRequestId);
+    handleUnassignLocal(sourceLocalId, outboundRequestId);
   }
 
   const loadError = cellError || poolError || trucksError;
@@ -349,7 +356,10 @@ export function InboundTruckPlanningBoard({ schedulingCellId }: InboundTruckPlan
   return (
     <div className="space-y-4">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <p className="text-body-md text-muted-foreground">{t("truckPlanningIntro")}</p>
+        <div className="space-y-1">
+          <p className="text-body-md text-muted-foreground">{t("truckPlanningIntro")}</p>
+          <p className="text-body-sm text-muted-foreground">{t("truckApproveLockHint")}</p>
+        </div>
         <Button
           type="button"
           className={cn(PRIMARY_BUTTON_CLASS, "shrink-0")}
@@ -404,10 +414,10 @@ export function InboundTruckPlanningBoard({ schedulingCellId }: InboundTruckPlan
             <div className="space-y-2">
               {availablePool.map((request) => (
                 <div
-                  key={request.inboundRequestId}
+                  key={request.outboundRequestId}
                   draggable={!isBusy}
                   onDragStart={(event) =>
-                    handlePoolDragStart(event, request.inboundRequestId)
+                    handlePoolDragStart(event, request.outboundRequestId)
                   }
                   className={cn(
                     "rounded-lg border border-[var(--color-surface-light-container)] bg-muted/40 px-3 py-2.5 text-body-sm text-foreground dark:border-[var(--color-surface-container-high)]",
@@ -415,7 +425,13 @@ export function InboundTruckPlanningBoard({ schedulingCellId }: InboundTruckPlan
                   )}
                 >
                   <span className="font-medium">
-                    {t("requestShortLabel", { id: request.inboundRequestId })}
+                    {t("requestShortLabel", { id: request.outboundRequestId })}
+                    {request.dealerName ? (
+                      <span className="font-normal text-muted-foreground">
+                        {" "}
+                        · {request.dealerName}
+                      </span>
+                    ) : null}
                   </span>
                   <span className="text-muted-foreground">
                     {" "}
@@ -488,25 +504,43 @@ export function InboundTruckPlanningBoard({ schedulingCellId }: InboundTruckPlan
                       </div>
                       <div className="flex shrink-0 items-center gap-1">
                         {isPersisted ? (
-                          <Button
-                            type="button"
-                            variant="link"
-                            size="sm"
-                            className="h-auto px-0 text-primary"
-                            disabled={isBusy || (truck.assignedRequestIds.length === 0 &&
-                              (requestCountByTruckId.get(truck.serverTruckId as number) ?? 0) === 0)}
-                            onClick={() =>
-                              void handleApprove(
-                                truck.serverTruckId as number,
-                                Math.max(
-                                  truck.assignedRequestIds.length,
-                                  requestCountByTruckId.get(truck.serverTruckId as number) ?? 0,
-                                ),
-                              )
-                            }
-                          >
-                            {t("approveTruck")}
-                          </Button>
+                          <>
+                            <Button
+                              type="button"
+                              variant="link"
+                              size="sm"
+                              className="h-auto px-0 text-primary"
+                              disabled={
+                                isBusy ||
+                                (truck.assignedRequestIds.length === 0 &&
+                                  (requestCountByTruckId.get(truck.serverTruckId as number) ??
+                                    0) === 0)
+                              }
+                              onClick={() =>
+                                void handleApprove(
+                                  truck.serverTruckId as number,
+                                  Math.max(
+                                    truck.assignedRequestIds.length,
+                                    requestCountByTruckId.get(truck.serverTruckId as number) ??
+                                      0,
+                                  ),
+                                )
+                              }
+                            >
+                              {t("approveTruck")}
+                            </Button>
+                            <button
+                              type="button"
+                              className="rounded p-1 text-muted-foreground transition hover:bg-muted hover:text-foreground"
+                              aria-label={t("deleteTruck")}
+                              disabled={isBusy}
+                              onClick={() =>
+                                void handleDeletePersistedTruck(truck.serverTruckId as number)
+                              }
+                            >
+                              <Trash2 className="size-3.5" />
+                            </button>
+                          </>
                         ) : (
                           <button
                             type="button"
@@ -526,9 +560,10 @@ export function InboundTruckPlanningBoard({ schedulingCellId }: InboundTruckPlan
                         {isPersisted &&
                         (requestCountByTruckId.get(truck.serverTruckId as number) ?? 0) > 0
                           ? t("truckAssignedRequestsCount", {
-                              count: requestCountByTruckId.get(
-                                truck.serverTruckId as number,
-                              ) ?? 0,
+                              count:
+                                requestCountByTruckId.get(
+                                  truck.serverTruckId as number,
+                                ) ?? 0,
                             })
                           : t("truckDropHint")}
                       </p>

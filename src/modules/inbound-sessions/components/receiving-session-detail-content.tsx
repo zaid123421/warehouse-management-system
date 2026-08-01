@@ -11,6 +11,7 @@ import { ROUTES } from "@/constants/routes";
 import { SessionProgressBar } from "@/modules/inbound-sessions/components/shared/session-progress-bar";
 import { SessionStatusBadge } from "@/modules/inbound-sessions/components/shared/session-status-badge";
 import { useReceivingSessionDetail } from "@/modules/inbound-sessions/hooks/use-receiving-session-detail";
+import { InboundRequestDetailExpandedRow } from "@/modules/inbound-sessions/components/inbound-request-detail-expanded-row";
 
 type ReceivingSessionDetailContentProps = {
   sessionId: number;
@@ -86,15 +87,12 @@ export function ReceivingSessionDetailContent({ sessionId }: ReceivingSessionDet
                   header: t("columnStatus"),
                   render: (row) => <SessionStatusBadge status={row.status} />,
                 },
-                {
-                  header: t("columnActions"),
-                  render: () => "—",
-                },
               ]}
               rows={data.inboundRequests}
               keyProp={(row) => row.inboundRequestId}
               emptyText={t("noLinkedRequests")}
               horizontalScroll
+              renderExpanded={(row) => <InboundRequestDetailExpandedRow requestId={row.inboundRequestId} />}
             />
           </section>
         </div>

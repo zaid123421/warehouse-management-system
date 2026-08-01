@@ -1,18 +1,20 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
-import { Check, Eye, Play, UserPlus } from "lucide-react";
+import { Check, Eye, Play, Search, UserPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ErrorAlert } from "@/components/ui/error-alert";
+import { Input } from "@/components/ui/input";
 import { StyledTable } from "@/components/ui/styled-table";
 import { ROUTES } from "@/constants/routes";
 import { PRIMARY_BUTTON_CLASS } from "@/lib/primary-button-styles";
 import { AssignStaffDialog } from "@/modules/inbound-sessions/components/shared/assign-staff-dialog";
 import { SessionProgressBar } from "@/modules/inbound-sessions/components/shared/session-progress-bar";
 import { SessionStatusBadge } from "@/modules/inbound-sessions/components/shared/session-status-badge";
+import { usePutawaySessionDetail } from "@/modules/inbound-sessions/hooks/use-putaway-session-detail";
 import {
   useApprovePutawaySession,
   useAssignPutawaySession,
@@ -33,10 +35,28 @@ export function PutawaySessionsTable() {
   const assignMutation = useAssignPutawaySession();
   const startMutation = useStartPutawaySession();
   const [assignSession, setAssignSession] = useState<PutawaySession | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
 
-  async function handleApprove(sessionId: number) {
+  const { data: detailData, isFetching: isDetailFetching } = usePutawaySessionDetail(assignSession?.id ?? 0, {
+    enabled: assignSession != null,
+  });
+
+  const filteredData = useMemo(() => {
+    if (!data) return [];
+    if (!searchQuery.trim()) return data;
+    const lowerQuery = searchQuery.toLowerCase();
+    return data.filter((session) => 
+      String(session.id).includes(lowerQuery) || 
+      (session.zoneName?.toLowerCase() || "").includes(lowerQuery)
+    );
+  }, [data, searchQuery]);
+
+  async function handleApprove(session: PutawaySession) {
     try {
-      await approveMutation.mutateAsync(sessionId);
+      await approveMutation.mutateAsync({
+        sessionId: session.id,
+        version: session.version ?? 0,
+      });
       toast.success(t("approveSessionSuccess"));
     } catch (err) {
       toast.error(err instanceof Error ? err.message : t("actionError"));
@@ -45,7 +65,18 @@ export function PutawaySessionsTable() {
 
   return (
     <div className="space-y-4">
-      <p className="text-body-md text-muted-foreground">{t("putawayIntro")}</p>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <p className="text-body-md text-muted-foreground">{t("putawayIntro")}</p>
+        <div className="relative w-full sm:max-w-xs">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+          <Input
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search by ID, zone, assignee..."
+            className="pl-9 h-10 bg-card"
+          />
+        </div>
+      </div>
 
       {isError ? (
         <ErrorAlert
@@ -56,6 +87,7 @@ export function PutawaySessionsTable() {
       ) : null}
 
       <StyledTable<PutawaySession>
+        rows={filteredData}
         columns={[
           { header: t("columnSession"), render: (row) => `#${row.id}` },
           { header: t("columnZone"), render: (row) => row.zoneName ?? "—" },
@@ -87,7 +119,7 @@ export function PutawaySessionsTable() {
                     size="sm"
                     className={PRIMARY_BUTTON_CLASS}
                     disabled={approveMutation.isPending}
-                    onClick={() => void handleApprove(row.id)}
+                    onClick={() => void handleApprove(row)}
                   >
                     <Check className="size-4" />
                     {t("approveSession")}
@@ -112,7 +144,10 @@ export function PutawaySessionsTable() {
                     disabled={startMutation.isPending}
                     onClick={async () => {
                       try {
-                        await startMutation.mutateAsync(row.id);
+                        await startMutation.mutateAsync({
+                          sessionId: row.id,
+                          version: row.version ?? 0,
+                        });
                         toast.success(t("startSessionSuccess"));
                       } catch (err) {
                         toast.error(err instanceof Error ? err.message : t("actionError"));
@@ -127,7 +162,6 @@ export function PutawaySessionsTable() {
             ),
           },
         ]}
-        rows={data ?? []}
         keyProp={(row) => row.id}
         isLoading={isPending}
         emptyText={t("noPutawaySessions")}
@@ -139,14 +173,17 @@ export function PutawaySessionsTable() {
         onOpenChange={(open) => !open && setAssignSession(null)}
         title={t("assignPutawayTitle")}
         description={t("assignPutawayDescription", { id: assignSession?.id ?? "" })}
-        initialStaffIds={assignSession?.assignedStaffUserIds ?? []}
-        isPending={assignMutation.isPending}
+        initialStaffIds={detailData?.assignedStaffUserIds ?? assignSession?.assignedStaffUserIds ?? []}
+        isPending={assignMutation.isPending || isDetailFetching}
         onConfirm={async (staffUserIds) => {
           if (!assignSession) return;
           try {
             await assignMutation.mutateAsync({
               sessionId: assignSession.id,
-              payload: { staffUserIds },
+              payload: {
+                staffUserIds,
+                version: assignSession.version ?? 0,
+              },
             });
             toast.success(t("assignSuccess"));
             setAssignSession(null);

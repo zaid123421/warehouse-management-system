@@ -26,11 +26,17 @@ function useInvalidateReceiving(queryClient: ReturnType<typeof useQueryClient>) 
   };
 }
 
+type SessionVersionArgs = {
+  sessionId: number;
+  version?: number | null;
+};
+
 export function useApproveReceivingSession() {
   const queryClient = useQueryClient();
   const invalidate = useInvalidateReceiving(queryClient);
   return useMutation({
-    mutationFn: (sessionId: number) => approveReceivingSession(sessionId),
+    mutationFn: ({ sessionId, version }: SessionVersionArgs) =>
+      approveReceivingSession(sessionId, version),
     onSuccess: (data) => invalidate(data.id),
   });
 }
@@ -39,7 +45,8 @@ export function useRejectReceivingSession() {
   const queryClient = useQueryClient();
   const invalidate = useInvalidateReceiving(queryClient);
   return useMutation({
-    mutationFn: (sessionId: number) => rejectReceivingSession(sessionId),
+    mutationFn: ({ sessionId, version }: SessionVersionArgs) =>
+      rejectReceivingSession(sessionId, version),
     onSuccess: (data) => invalidate(data.id),
   });
 }
@@ -63,7 +70,8 @@ export function useStartReceivingSession() {
   const queryClient = useQueryClient();
   const invalidate = useInvalidateReceiving(queryClient);
   return useMutation({
-    mutationFn: (sessionId: number) => startReceivingSession(sessionId),
+    mutationFn: ({ sessionId, version }: SessionVersionArgs) =>
+      startReceivingSession(sessionId, version),
     onSuccess: (data) => invalidate(data.id),
   });
 }
@@ -72,7 +80,8 @@ export function useCompleteReceivingSession() {
   const queryClient = useQueryClient();
   const invalidate = useInvalidateReceiving(queryClient);
   return useMutation({
-    mutationFn: (sessionId: number) => completeReceivingSession(sessionId),
+    mutationFn: ({ sessionId, version }: SessionVersionArgs) =>
+      completeReceivingSession(sessionId, version),
     onSuccess: (data) => invalidate(data.id),
   });
 }

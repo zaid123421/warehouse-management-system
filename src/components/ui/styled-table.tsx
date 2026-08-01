@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { ChevronDown, ChevronRight, Inbox } from "lucide-react";
 import {
   TableBody,
   TableCell,
@@ -22,9 +23,12 @@ interface StyledTableProps<T> {
   keyProp: (row: T) => number | string;
   isLoading?: boolean;
   emptyText?: string;
+  emptyIcon?: React.ReactNode;
   /** Enable horizontal scroll when columns exceed container width. */
   horizontalScroll?: boolean;
   className?: string;
+  /** Render expandable content below the row */
+  renderExpanded?: (row: T) => React.ReactNode;
 }
 
 export function StyledTable<T>({
@@ -33,10 +37,22 @@ export function StyledTable<T>({
   keyProp,
   isLoading = false,
   emptyText = "No items",
+  emptyIcon,
   horizontalScroll = false,
   className,
+  renderExpanded,
 }: StyledTableProps<T>) {
+  const [expandedRows, setExpandedRows] = React.useState<Set<string | number>>(new Set());
   const borderColor = "border-[var(--color-surface-light-container)] dark:border-[var(--color-surface-container-high)]";
+
+  function toggleExpand(key: string | number) {
+    setExpandedRows((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+  }
 
   return (
     <div
@@ -47,6 +63,9 @@ export function StyledTable<T>({
       >
         <TableHeader>
           <TableRow className="hover:bg-transparent">
+            {renderExpanded && (
+              <TableHead className={`w-10 bg-[var(--color-surface-light-container)] dark:bg-[var(--color-surface-container-high)] border-b-2 ${borderColor} rounded-ss-xl`} />
+            )}
             {columns.map((col, idx) => (
               <TableHead
                 key={idx}
@@ -56,7 +75,7 @@ export function StyledTable<T>({
                 } bg-[var(--color-surface-light-container)] dark:bg-[var(--color-surface-container-high)] text-foreground text-body-sm font-semibold tracking-wide py-3 px-4 border-b-2 ${borderColor} ${
                   horizontalScroll ? "whitespace-nowrap" : ""
                 } ${
-                  idx === 0 ? "rounded-ss-xl" : ""
+                  idx === 0 && !renderExpanded ? "rounded-ss-xl" : ""
                 } ${idx === columns.length - 1 ? "rounded-se-xl" : ""}`}
               >
                 {col.header}
@@ -78,38 +97,74 @@ export function StyledTable<T>({
             <TableRow>
               <TableCell
                 colSpan={columns.length}
-                className="text-body-md text-muted-foreground h-32 text-center rounded-es-xl rounded-ee-xl"
+                className="h-48 text-center rounded-es-xl rounded-ee-xl align-middle"
               >
-                {emptyText}
+                <div className="flex flex-col items-center justify-center text-muted-foreground">
+                  {emptyIcon ?? <Inbox className="mb-3 size-10 opacity-40" />}
+                  <span className="text-body-md font-medium">{emptyText}</span>
+                </div>
               </TableCell>
             </TableRow>
           ) : (
-            rows.map((row, rowIndex) => (
-              <TableRow
-                key={String(keyProp(row))}
-                className={`hover:bg-[var(--color-surface-light)] dark:hover:bg-[var(--color-surface-bright)]/10 transition-colors ${
-                  rowIndex === rows.length - 1 ? "" : "border-b-2 " + borderColor
-                }`}
-              >
-                {columns.map((col, ci) => (
-                  <TableCell
-                    key={ci}
-                    className={`${col.className ?? ""} ${
-                      col.align === "right" ? "text-right" :
-                      col.align === "left" ? "text-left" : "text-center"
-                    } text-foreground py-3 px-4 align-middle text-sm ${
-                      horizontalScroll ? "whitespace-nowrap" : ""
-                    } ${
-                      rowIndex === rows.length - 1 ? "" : "border-b-2 " + borderColor
-                    } ${
-                      rowIndex === rows.length - 1 && ci === 0 ? "rounded-es-xl" : ""
-                    } ${rowIndex === rows.length - 1 && ci === columns.length - 1 ? "rounded-ee-xl" : ""}`}
+            rows.map((row, rowIndex) => {
+              const rowKey = keyProp(row);
+              const isExpanded = expandedRows.has(rowKey);
+              const isLastRow = rowIndex === rows.length - 1;
+              const hasBorder = !isLastRow || isExpanded;
+              
+              return (
+                <React.Fragment key={String(rowKey)}>
+                  <TableRow
+                    className={`hover:bg-[var(--color-surface-light)] dark:hover:bg-[var(--color-surface-bright)]/10 transition-colors ${
+                      hasBorder && !isExpanded ? "border-b-2 " + borderColor : ""
+                    }`}
                   >
-                    {col.render(row)}
-                  </TableCell>
-                ))}
-              </TableRow>
-            ))
+                    {renderExpanded && (
+                      <TableCell 
+                        className={`w-10 px-2 py-3 align-middle ${hasBorder && !isExpanded ? "border-b-2 " + borderColor : ""} ${isLastRow && !isExpanded ? "rounded-es-xl" : ""}`}
+                      >
+                        <button
+                          type="button"
+                          onClick={() => toggleExpand(rowKey)}
+                          className="flex size-6 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+                        >
+                          {isExpanded ? <ChevronDown className="size-4" /> : <ChevronRight className="size-4" />}
+                        </button>
+                      </TableCell>
+                    )}
+                    {columns.map((col, ci) => (
+                      <TableCell
+                        key={ci}
+                        className={`${col.className ?? ""} ${
+                          col.align === "right" ? "text-right" :
+                          col.align === "left" ? "text-left" : "text-center"
+                        } text-foreground py-3 px-4 align-middle text-sm ${
+                          horizontalScroll ? "whitespace-nowrap" : ""
+                        } ${
+                          hasBorder && !isExpanded ? "border-b-2 " + borderColor : ""
+                        } ${
+                          isLastRow && !renderExpanded && ci === 0 && !isExpanded ? "rounded-es-xl" : ""
+                        } ${isLastRow && ci === columns.length - 1 && !isExpanded ? "rounded-ee-xl" : ""}`}
+                      >
+                        {col.render(row)}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                  {renderExpanded && isExpanded && (
+                    <TableRow className={`bg-[var(--color-surface-light)]/40 dark:bg-[var(--color-surface-bright)]/5 ${!isLastRow ? "border-b-2 " + borderColor : ""}`}>
+                      <TableCell 
+                        colSpan={columns.length + 1} 
+                        className={`p-0 ${isLastRow ? "rounded-es-xl rounded-ee-xl" : ""}`}
+                      >
+                        <div className="animate-in slide-in-from-top-2 fade-in duration-200">
+                          {renderExpanded(row)}
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </React.Fragment>
+              );
+            })
           )}
         </TableBody>
       </table>

@@ -10,6 +10,7 @@ import { InboundSchedulingBoard } from "@/modules/inbound-sessions/components/in
 import { InboundTransitBoard } from "@/modules/inbound-sessions/components/inbound-transit-board";
 import { PutawaySessionsTable } from "@/modules/inbound-sessions/components/putaway-sessions-table";
 import { ReceivingSessionsTable } from "@/modules/inbound-sessions/components/receiving-sessions-table";
+import { useTransitTrucks } from "@/modules/inbound-sessions/hooks/use-transit-trucks";
 
 const TAB_VALUES = new Set([
   "overview",
@@ -27,6 +28,9 @@ export function InboundSessionsPageContent() {
   const [activeTab, setActiveTab] = useState(() =>
     tabFromUrl && TAB_VALUES.has(tabFromUrl) ? tabFromUrl : "overview",
   );
+
+  const { data: transitTrucks = [] } = useTransitTrucks();
+  const transitCount = transitTrucks.filter(t => t.ready).length;
 
   useEffect(() => {
     if (tabFromUrl && TAB_VALUES.has(tabFromUrl) && tabFromUrl !== activeTab) {
@@ -61,7 +65,14 @@ export function InboundSessionsPageContent() {
         <TabsList className="h-auto w-full flex-wrap justify-start gap-1">
           <TabsTrigger value="overview">{t("tabOverview")}</TabsTrigger>
           <TabsTrigger value="scheduling">{t("tabScheduling")}</TabsTrigger>
-          <TabsTrigger value="transit">{t("tabTransit")}</TabsTrigger>
+          <TabsTrigger value="transit" className="flex items-center gap-2">
+            {t("tabTransit")}
+            {transitCount > 0 && (
+              <span className="flex items-center justify-center rounded-full bg-primary px-1.5 py-0.5 text-[10px] font-bold text-primary-foreground min-w-[1.25rem]">
+                {transitCount}
+              </span>
+            )}
+          </TabsTrigger>
           <TabsTrigger value="receiving">{t("tabReceiving")}</TabsTrigger>
           <TabsTrigger value="putaway">{t("tabPutaway")}</TabsTrigger>
         </TabsList>

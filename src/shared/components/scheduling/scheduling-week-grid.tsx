@@ -20,7 +20,7 @@ type SchedulingWeekGridProps = {
   selectedCellId: number | null;
   onSelectCell: (cellId: number) => void;
   onApproveCell: (cell: SchedulingGridCell) => void;
-  canApprove: (status: string) => boolean;
+  canApprove: (cell: SchedulingGridCell) => boolean;
   isApprovePending?: boolean;
   renderStatusBadge: (status: string) => ReactNode;
   translationNamespace: string;
@@ -114,7 +114,7 @@ export function SchedulingWeekGrid({
                 }
 
                 const isSelected = selectedCellId === cell.cellId;
-                const showApprove = canApprove(cell.status);
+                const showApprove = canApprove(cell);
 
                 return (
                   <td

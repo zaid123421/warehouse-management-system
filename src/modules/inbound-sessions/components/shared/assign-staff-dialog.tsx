@@ -44,7 +44,8 @@ export function AssignStaffDialog({
 
   useEffect(() => {
     if (open) setSelected(initialStaffIds);
-  }, [open, initialStaffIds]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, JSON.stringify(initialStaffIds)]);
 
   function toggleStaff(userId: number) {
     setSelected((prev) =>
