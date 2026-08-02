@@ -9,12 +9,12 @@ import { ErrorAlert } from "@/components/ui/error-alert";
 import { StyledTable } from "@/components/ui/styled-table";
 import { ROUTES } from "@/constants/routes";
 import { PRIMARY_BUTTON_CLASS } from "@/lib/primary-button-styles";
+import { formatCount } from "@/lib/format-number";
 import { OutboundSessionStatusBadge } from "@/modules/outbound-sessions/components/shared/session-status-badge";
 import { useCreateShippingFromTruck } from "@/modules/outbound-sessions/hooks/use-outbound-truck-mutations";
 import { useReadyToShipTrucks } from "@/modules/outbound-sessions/hooks/use-ready-to-ship-trucks";
 import {
   formatDayLabel,
-  isTodayServiceDate,
 } from "@/modules/outbound-sessions/lib/status-utils";
 
 export function OutboundReadyToShipBoard() {
@@ -23,10 +23,6 @@ export function OutboundReadyToShipBoard() {
   const createShippingMutation = useCreateShippingFromTruck();
 
   async function handleCreateShipping(truckId: number, serviceDate?: string) {
-    if (!isTodayServiceDate(serviceDate)) {
-      toast.error(t("shippingServiceDateGuard"));
-      return;
-    }
     try {
       const session = await createShippingMutation.mutateAsync(truckId);
       toast.success(
@@ -68,7 +64,7 @@ export function OutboundReadyToShipBoard() {
           },
           {
             header: t("columnTires"),
-            render: (row) => (row.assignedTires ?? 0).toLocaleString(),
+            render: (row) => formatCount(row.assignedTires ?? 0),
           },
           {
             header: t("columnStatus"),
@@ -89,24 +85,31 @@ export function OutboundReadyToShipBoard() {
           },
           {
             header: t("columnActions"),
-            render: (row) => (
-              <div className="flex flex-wrap items-center justify-center gap-2">
-                <Button
-                  type="button"
-                  size="sm"
-                  className={PRIMARY_BUTTON_CLASS}
-                  disabled={
-                    createShippingMutation.isPending ||
-                    !row.ready ||
-                    !isTodayServiceDate(row.serviceDate)
-                  }
-                  onClick={() => void handleCreateShipping(row.truckId, row.serviceDate)}
-                >
-                  <PackagePlus className="size-4" />
-                  {t("createShippingSession")}
-                </Button>
-              </div>
-            ),
+            render: (row) => {
+              const isDisabled = createShippingMutation.isPending || !row.ready;
+              
+              let tooltipTitle = undefined;
+              if (!row.ready) {
+                tooltipTitle = t("readyToShipNotReady");
+              }
+
+              return (
+                <div className="flex flex-wrap items-center justify-center gap-2">
+                  <div title={tooltipTitle}>
+                    <Button
+                      type="button"
+                      size="sm"
+                      className={PRIMARY_BUTTON_CLASS}
+                      disabled={isDisabled}
+                      onClick={() => void handleCreateShipping(row.truckId, row.serviceDate)}
+                    >
+                      <PackagePlus className="size-4" />
+                      {t("createShippingSession")}
+                    </Button>
+                  </div>
+                </div>
+              );
+            },
           },
         ]}
         rows={data}

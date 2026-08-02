@@ -106,6 +106,7 @@ export const ENDPOINTS = {
     BY_ID: (truckId: number) => `/v1/wms/my-warehouse/outbound-trucks/${truckId}`,
     ASSIGN: (truckId: number, outboundRequestId: number) =>
       `/v1/wms/my-warehouse/outbound-trucks/${truckId}/assign/${outboundRequestId}`,
+    CONFIRM_PLAN: "/v1/wms/my-warehouse/outbound-trucks/confirm-plan",
     APPROVE: (truckId: number) =>
       `/v1/wms/my-warehouse/outbound-trucks/${truckId}/approve`,
     CREATE_SHIPPING_SESSION: (truckId: number) =>

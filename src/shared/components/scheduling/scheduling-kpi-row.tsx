@@ -1,6 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
+import { formatCount } from "@/lib/format-number";
 import { cn } from "@/lib/utils";
 import type { SchedulingBoardStats } from "@/shared/lib/scheduling-grid-utils";
 
@@ -51,7 +52,7 @@ export function SchedulingKpiRow({
               item.emphasis === "warning" ? "text-amber-700 dark:text-amber-400" : "text-foreground",
             )}
           >
-            {item.value.toLocaleString()}
+            {formatCount(item.value)}
           </p>
         </div>
       ))}

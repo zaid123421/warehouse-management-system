@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { Skeleton } from "@/components/ui/skeleton";
 import { StyledTable } from "@/components/ui/styled-table";
 import { SchedulingCellDetailPanelFrame } from "@/shared/components/scheduling/scheduling-cell-detail-panel-frame";
+import { formatCount } from "@/lib/format-number";
 import { SessionProgressBar } from "@/modules/inbound-sessions/components/shared/session-progress-bar";
 import { useWarehouseStaff } from "@/modules/employees/hooks/use-warehouse-staff";
 import { staffFullName } from "@/modules/employees/lib/warehouse-staff-dto";
@@ -196,7 +197,7 @@ function Metric({ label, value }: { label: string; value: number }) {
   return (
     <div className="rounded-lg border border-[var(--color-surface-light-container)] bg-muted/20 px-2 py-2 text-center dark:border-[var(--color-surface-container-high)]">
       <p className="text-body-sm text-muted-foreground">{label}</p>
-      <p className="text-body-md font-semibold text-foreground">{value.toLocaleString()}</p>
+      <p className="text-body-md font-semibold text-foreground">{formatCount(value)}</p>
     </div>
   );
 }

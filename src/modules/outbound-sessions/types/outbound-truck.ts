@@ -46,6 +46,16 @@ export type CreateOutboundTruckRequest = {
   serviceDate?: string;
 };
 
+export type ConfirmOutboundTruckPlanRequest = {
+  schedulingCellId?: number;
+  trucks: Array<{ requestIds: number[] }>;
+};
+
+export type ConfirmOutboundTruckPlanResult = {
+  trucks: OutboundTruck[];
+  pickingSessionCount: number;
+};
+
 export type ApproveOutboundTruckResult = {
   status: string;
   requests: OutboundTruckRequestLink[];

@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { ErrorAlert } from "@/components/ui/error-alert";
 import { StyledTable } from "@/components/ui/styled-table";
 import { ROUTES } from "@/constants/routes";
+import { formatCount } from "@/lib/format-number";
 import { PRIMARY_BUTTON_CLASS } from "@/lib/primary-button-styles";
 import { SessionStatusBadge } from "@/modules/inbound-sessions/components/shared/session-status-badge";
 import { useCreateReceivingFromTruck } from "@/modules/inbound-sessions/hooks/use-inbound-truck-mutations";
@@ -65,7 +66,7 @@ export function InboundTransitBoard() {
           {
             header: t("columnTires"),
             render: (row) =>
-              (row.assignedTires ?? row.expectedTires ?? 0).toLocaleString(),
+              formatCount(row.assignedTires ?? row.expectedTires ?? 0),
           },
           {
             header: t("columnStatus"),
