@@ -1,10 +1,17 @@
-import { asRecord, pickNumber, pickString, str, unwrapPayload } from "@/shared/lib/dto-utils";
+import {
+  asRecord,
+  bool,
+  pickNumber,
+  pickString,
+  str,
+  unwrapPayload,
+} from "@/shared/lib/dto-utils";
 import type {
-  ApproveSchedulingCellResult,
   GenerateReceivingSessionsResult,
   GeneratedReceivingSession,
   SchedulingBoard,
   SchedulingCell,
+  SchedulingCellDealer,
   SchedulingCellDetail,
   SchedulingCellRequest,
 } from "@/modules/inbound-sessions/types/scheduling";
@@ -16,11 +23,31 @@ function normalizeSchedulingCellRequest(raw: unknown): SchedulingCellRequest | n
   if (!inboundRequestId) return null;
   return {
     inboundRequestId,
+    shipmentRequestId: pickNumber(rec, "shipmentRequestId") || undefined,
+    dealerId: pickNumber(rec, "dealerId") || undefined,
+    dealerName: pickString(rec, "dealerName"),
+    serviceDate: pickString(rec, "serviceDate"),
+    receivingDay: pickString(rec, "receivingDay"),
+    regionCityId: pickNumber(rec, "regionCityId") || undefined,
+    regionCityName: pickString(rec, "regionCityName"),
+    totalVolume: pickNumber(rec, "totalVolume") || undefined,
     status: str(rec.status),
     scheduleStatus: pickString(rec, "scheduleStatus"),
-    dealerName: pickString(rec, "dealerName"),
-    totalVolume: pickNumber(rec, "totalVolume") || undefined,
-    receivingDay: pickString(rec, "receivingDay"),
+  };
+}
+
+function normalizeSchedulingCellDealer(raw: unknown): SchedulingCellDealer | null {
+  const rec = asRecord(raw);
+  if (!rec) return null;
+  const dealerId = pickNumber(rec, "dealerId");
+  if (!dealerId) return null;
+  return {
+    dealerId,
+    dealerName: pickString(rec, "dealerName") || "—",
+    requestCount: pickNumber(rec, "requestCount"),
+    totalVolume: pickNumber(rec, "totalVolume"),
+    approved: bool(rec.approved),
+    readyForApproval: bool(rec.readyForApproval),
   };
 }
 
@@ -43,7 +70,10 @@ function normalizeSchedulingCell(raw: unknown): SchedulingCell | null {
     totalVolume: pickNumber(rec, "totalVolume"),
     estimatedTrucks: pickNumber(rec, "estimatedTrucks"),
     status: str(rec.status),
-    requestCount: pickNumber(rec, "requestCount"),
+    requestCount:
+      pickNumber(rec, "requestCount") ||
+      pickNumber(rec, "totalDealerCount") ||
+      0,
     version: pickNumber(rec, "version"),
   };
 }
@@ -67,31 +97,29 @@ export function normalizeSchedulingCellDetail(data: unknown): SchedulingCellDeta
   const payload = unwrapPayload(data);
   const cellId = pickNumber(payload, "cellId") || pickNumber(payload, "id");
   if (!cellId) return null;
+  const dealersRaw = Array.isArray(payload.dealers) ? payload.dealers : [];
   const requestsRaw = Array.isArray(payload.requests) ? payload.requests : [];
+  const regionCityName =
+    pickString(payload, "regionCityName") ||
+    pickString(payload, "regionProvinceName");
   return {
     cellId,
-    receivingDay: str(payload.receivingDay),
     serviceDate: pickString(payload, "serviceDate"),
-    regionProvinceName:
-      pickString(payload, "regionCityName") ||
-      pickString(payload, "regionProvinceName"),
-    totalVolume: pickNumber(payload, "totalVolume") || undefined,
-    estimatedTrucks: pickNumber(payload, "estimatedTrucks") || undefined,
+    receivingDay: str(payload.receivingDay),
+    regionCityId: pickNumber(payload, "regionCityId") || undefined,
+    regionCityName,
+    regionProvinceName: regionCityName,
+    totalVolume: pickNumber(payload, "totalVolume"),
+    estimatedTrucks: pickNumber(payload, "estimatedTrucks"),
     status: str(payload.status),
+    approvedDealerCount: pickNumber(payload, "approvedDealerCount"),
+    totalDealerCount: pickNumber(payload, "totalDealerCount"),
+    cutoffAt: pickString(payload, "cutoffAt"),
+    readyForApproval: bool(payload.readyForApproval),
     version: pickNumber(payload, "version"),
-    requests: requestsRaw
-      .map((item) => normalizeSchedulingCellRequest(item))
-      .filter((item): item is SchedulingCellRequest => item != null),
-  };
-}
-
-export function normalizeApproveSchedulingCellResult(
-  data: unknown,
-): ApproveSchedulingCellResult {
-  const payload = unwrapPayload(data);
-  const requestsRaw = Array.isArray(payload.requests) ? payload.requests : [];
-  return {
-    status: str(payload.status),
+    dealers: dealersRaw
+      .map((item) => normalizeSchedulingCellDealer(item))
+      .filter((item): item is SchedulingCellDealer => item != null),
     requests: requestsRaw
       .map((item) => normalizeSchedulingCellRequest(item))
       .filter((item): item is SchedulingCellRequest => item != null),

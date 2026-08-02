@@ -62,7 +62,9 @@ export function computeSchedulingBoardStats(
     (acc, cell) => ({
       totalRequests: acc.totalRequests + cell.requestCount,
       totalTires: acc.totalTires + cell.totalVolume,
-      awaitingApproval: acc.awaitingApproval + (cell.status === "PLANNED" ? 1 : 0),
+      awaitingApproval:
+        acc.awaitingApproval +
+        (cell.status === "PLANNED" || cell.status === "PARTIAL_APPROVAL" ? 1 : 0),
       estimatedTrucks: acc.estimatedTrucks + cell.estimatedTrucks,
     }),
     { totalRequests: 0, totalTires: 0, awaitingApproval: 0, estimatedTrucks: 0 },

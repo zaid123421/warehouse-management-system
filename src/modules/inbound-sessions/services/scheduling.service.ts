@@ -3,12 +3,10 @@ import { ENDPOINTS } from "@/services/endpoints";
 import { toInboundError } from "@/modules/inbound-sessions/lib/inbound-error";
 import { toVersionBody } from "@/modules/inbound-sessions/lib/optimistic-lock";
 import {
-  normalizeApproveSchedulingCellResult,
   normalizeSchedulingBoard,
   normalizeSchedulingCellDetail,
 } from "@/modules/inbound-sessions/lib/scheduling-dto";
 import type {
-  ApproveSchedulingCellResult,
   SchedulingBoard,
   SchedulingCellDetail,
 } from "@/modules/inbound-sessions/types/scheduling";
@@ -33,16 +31,17 @@ export async function getSchedulingCellDetail(cellId: number): Promise<Schedulin
   }
 }
 
-export async function approveSchedulingCell(
+export async function approveSchedulingCellDealer(
   cellId: number,
+  dealerId: number,
   version?: number | null,
-): Promise<ApproveSchedulingCellResult> {
+): Promise<SchedulingCellDetail | null> {
   try {
     const { data } = await api.post<unknown>(
-      ENDPOINTS.WMS_INBOUND_SCHEDULING.APPROVE_CELL(cellId),
+      ENDPOINTS.WMS_INBOUND_SCHEDULING.APPROVE_DEALER(cellId, dealerId),
       toVersionBody(version),
     );
-    return normalizeApproveSchedulingCellResult(data);
+    return normalizeSchedulingCellDetail(data);
   } catch (err: unknown) {
     toInboundError(err);
   }

@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import {
   Check,
   Eye,
+  PackagePlus,
   Play,
   Search,
   Square,
@@ -27,13 +28,12 @@ import { Input } from "@/components/ui/input";
 import { PaginationControls } from "@/components/ui/pagination-controls";
 import { StyledTable } from "@/components/ui/styled-table";
 import { ROUTES } from "@/constants/routes";
+import { formatCount } from "@/lib/format-number";
 import { PRIMARY_BUTTON_CLASS } from "@/lib/primary-button-styles";
-import { cn } from "@/lib/utils";
 import { AssignStaffDialog } from "@/modules/inbound-sessions/components/shared/assign-staff-dialog";
 import { SessionProgressBar } from "@/modules/inbound-sessions/components/shared/session-progress-bar";
 import { OutboundSessionStatusBadge } from "@/modules/outbound-sessions/components/shared/session-status-badge";
 import { usePickingSessionDetail } from "@/modules/outbound-sessions/hooks/use-picking-session-detail";
-import { useGeneratePickingSessions } from "@/modules/outbound-sessions/hooks/use-generate-picking-sessions";
 import {
   useApprovePickingSession,
   useAssignPickingSession,
@@ -55,7 +55,6 @@ import type { PickingSession } from "@/modules/outbound-sessions/types/picking-s
 export function PickingSessionsTable() {
   const t = useTranslations("outboundSessions");
   const { data = [], isPending, isError, error, refetch } = usePickingSessions();
-  const generateMutation = useGeneratePickingSessions();
   const approveMutation = useApprovePickingSession();
   const cancelMutation = useCancelPickingSession();
   const assignMutation = useAssignPickingSession();
@@ -63,7 +62,6 @@ export function PickingSessionsTable() {
   const completeMutation = useCompletePickingSession();
   const [assignSession, setAssignSession] = useState<PickingSession | null>(null);
   const [pendingCancel, setPendingCancel] = useState<PickingSession | null>(null);
-  const [generateServiceDate, setGenerateServiceDate] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const ITEMS_PER_PAGE = 10;
@@ -105,22 +103,6 @@ export function PickingSessionsTable() {
     }
   }
 
-  async function handleGenerateByDate() {
-    try {
-      const payload = generateServiceDate.trim()
-        ? { serviceDate: generateServiceDate.trim() }
-        : undefined;
-      const result = await generateMutation.mutateAsync(payload);
-      if (result.sessions.length === 0) {
-        toast.warning(t("generatePickingEmpty"));
-        return;
-      }
-      toast.success(t("generatePickingSuccess", { count: result.sessions.length }));
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : t("actionError"));
-    }
-  }
-
   return (
     <div className="space-y-4">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
@@ -135,23 +117,6 @@ export function PickingSessionsTable() {
               className="pl-9 h-10 w-full bg-card"
             />
           </div>
-        </div>
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-          <Input
-            type="date"
-            value={generateServiceDate}
-            onChange={(event) => setGenerateServiceDate(event.target.value)}
-            className="w-full sm:w-[180px] h-10"
-            aria-label={t("selectServiceDate")}
-          />
-          <Button
-            type="button"
-            className={cn(PRIMARY_BUTTON_CLASS, "shrink-0 h-10")}
-            disabled={generateMutation.isPending}
-            onClick={() => void handleGenerateByDate()}
-          >
-            {generateMutation.isPending ? t("generating") : t("generatePickingSessions")}
-          </Button>
         </div>
       </div>
 
@@ -171,6 +136,12 @@ export function PickingSessionsTable() {
             {
               header: t("columnServiceDate"),
               render: (row) => row.serviceDate ?? "—",
+            },
+            {
+              header: t("columnTruck"),
+              render: (row) =>
+                row.outboundTruckLabel ??
+                (row.outboundTruckId ? `#${row.outboundTruckId}` : "—"),
             },
             {
               header: t("columnDay"),
@@ -194,7 +165,7 @@ export function PickingSessionsTable() {
             {
               header: t("columnRequests"),
               render: (row) =>
-                (row.outboundRequestCount ?? row.outboundRequests.length).toLocaleString(),
+                formatCount(row.outboundRequestCount ?? row.outboundRequests.length),
             },
             {
               header: t("columnActions"),
@@ -278,6 +249,20 @@ export function PickingSessionsTable() {
                     >
                       <Square className="size-4" />
                       {t("completeSession")}
+                    </Button>
+                  ) : null}
+                  {row.status === "COMPLETED" ? (
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      className="border-emerald-500/30 text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700 dark:text-emerald-400 dark:hover:bg-emerald-500/10 dark:hover:text-emerald-300"
+                      asChild
+                    >
+                      <Link href={`${ROUTES.DASHBOARD.OUTBOUND_SESSIONS.LIST}?tab=ready-to-ship`}>
+                        <PackagePlus className="size-4" />
+                        {t("readyToShipHintAction") || "Check Ready Trucks"}
+                      </Link>
                     </Button>
                   ) : null}
                 </div>

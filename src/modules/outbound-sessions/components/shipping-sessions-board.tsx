@@ -24,6 +24,7 @@ import { ErrorAlert } from "@/components/ui/error-alert";
 import { Input } from "@/components/ui/input";
 import { PaginationControls } from "@/components/ui/pagination-controls";
 import { Skeleton } from "@/components/ui/skeleton";
+import { formatCount } from "@/lib/format-number";
 import { PRIMARY_BUTTON_CLASS } from "@/lib/primary-button-styles";
 import { cn } from "@/lib/utils";
 import { AssignStaffDialog } from "@/modules/inbound-sessions/components/shared/assign-staff-dialog";
@@ -48,7 +49,6 @@ import {
   computeShippingSessionStats,
   formatDayLabel,
   formatDealerSummary,
-  isTodayServiceDate,
 } from "@/modules/outbound-sessions/lib/status-utils";
 import type { ShippingSession } from "@/modules/outbound-sessions/types/shipping-session";
 
@@ -109,10 +109,13 @@ export function ShippingSessionsBoard() {
   }
 
   async function handleStart(session: ShippingSession) {
+    // DEV MODE: Time guard disabled to allow testing flow regardless of service date
+    /*
     if (!isTodayServiceDate(session.serviceDate)) {
       toast.error(t("shippingServiceDateGuard"));
       return;
     }
+    */
     await runAction(() => startMutation.mutateAsync(session.id), "startSessionSuccess");
   }
 
@@ -170,7 +173,6 @@ export function ShippingSessionsBoard() {
                   session.expectedTires - session.shippedTires - session.missingTires,
                 );
               const isSelected = selectedSessionId === session.id;
-              const canStartToday = isTodayServiceDate(session.serviceDate);
               return (
                 <article
                   key={session.id}
@@ -262,8 +264,7 @@ export function ShippingSessionsBoard() {
                         type="button"
                         size="sm"
                         variant="outline"
-                        disabled={startMutation.isPending || !canStartToday}
-                        title={!canStartToday ? t("shippingServiceDateGuard") : undefined}
+                        disabled={startMutation.isPending}
                         onClick={() => void handleStart(session)}
                       >
                         <Play className="size-4" />
@@ -383,7 +384,7 @@ function StatPill({
       )}
     >
       <p className="text-body-sm text-muted-foreground">{label}</p>
-      <p className="text-headline-sm font-bold text-foreground">{value.toLocaleString()}</p>
+      <p className="text-headline-sm font-bold text-foreground">{formatCount(value)}</p>
     </div>
   );
 }

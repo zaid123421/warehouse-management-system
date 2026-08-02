@@ -41,7 +41,7 @@ export function SchedulingBoardShell({
       <div className="flex flex-col gap-4 xl:flex-row xl:items-start">
         <div className="min-w-0 flex-1">{grid}</div>
         {detailPanel ? (
-          <aside className="w-full shrink-0 xl:w-[22rem]">{detailPanel}</aside>
+          <aside className="w-full shrink-0 xl:w-[28rem]">{detailPanel}</aside>
         ) : null}
       </div>
     </div>

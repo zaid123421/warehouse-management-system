@@ -4,14 +4,11 @@ import {
   outboundQueryKeys,
 } from "@/modules/outbound-sessions/hooks/query-keys";
 import {
-  approveOutboundTruck,
-  assignOutboundRequestToTruck,
-  createOutboundTruck,
+  confirmOutboundTruckPlan,
   createShippingSessionFromTruck,
   deleteOutboundTruck,
-  unassignOutboundRequestFromTruck,
 } from "@/modules/outbound-sessions/services/outbound-truck.service";
-import type { CreateOutboundTruckRequest } from "@/modules/outbound-sessions/types/outbound-truck";
+import type { ConfirmOutboundTruckPlanRequest } from "@/modules/outbound-sessions/types/outbound-truck";
 
 function useInvalidateTruckMutations(queryClient: ReturnType<typeof useQueryClient>) {
   const keys = outboundMutationInvalidationKeys();
@@ -27,50 +24,12 @@ function useInvalidateTruckMutations(queryClient: ReturnType<typeof useQueryClie
   };
 }
 
-export function useCreateOutboundTruck() {
+export function useConfirmOutboundTruckPlan() {
   const queryClient = useQueryClient();
   const invalidate = useInvalidateTruckMutations(queryClient);
   return useMutation({
-    mutationFn: (payload: CreateOutboundTruckRequest) => createOutboundTruck(payload),
-    onSuccess: invalidate,
-  });
-}
-
-export function useAssignOutboundRequestToTruck() {
-  const queryClient = useQueryClient();
-  const invalidate = useInvalidateTruckMutations(queryClient);
-  return useMutation({
-    mutationFn: ({
-      truckId,
-      outboundRequestId,
-    }: {
-      truckId: number;
-      outboundRequestId: number;
-    }) => assignOutboundRequestToTruck(truckId, outboundRequestId),
-    onSuccess: invalidate,
-  });
-}
-
-export function useUnassignOutboundRequestFromTruck() {
-  const queryClient = useQueryClient();
-  const invalidate = useInvalidateTruckMutations(queryClient);
-  return useMutation({
-    mutationFn: ({
-      truckId,
-      outboundRequestId,
-    }: {
-      truckId: number;
-      outboundRequestId: number;
-    }) => unassignOutboundRequestFromTruck(truckId, outboundRequestId),
-    onSuccess: invalidate,
-  });
-}
-
-export function useApproveOutboundTruck() {
-  const queryClient = useQueryClient();
-  const invalidate = useInvalidateTruckMutations(queryClient);
-  return useMutation({
-    mutationFn: (truckId: number) => approveOutboundTruck(truckId),
+    mutationFn: (payload: ConfirmOutboundTruckPlanRequest) =>
+      confirmOutboundTruckPlan(payload),
     onSuccess: invalidate,
   });
 }

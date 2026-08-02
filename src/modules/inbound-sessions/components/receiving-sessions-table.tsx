@@ -19,6 +19,7 @@ import { Input } from "@/components/ui/input";
 import { PaginationControls } from "@/components/ui/pagination-controls";
 import { StyledTable } from "@/components/ui/styled-table";
 import { ROUTES } from "@/constants/routes";
+import { formatCount } from "@/lib/format-number";
 import { PRIMARY_BUTTON_CLASS } from "@/lib/primary-button-styles";
 import { AssignStaffDialog } from "@/modules/inbound-sessions/components/shared/assign-staff-dialog";
 import { SessionProgressBar } from "@/modules/inbound-sessions/components/shared/session-progress-bar";
@@ -150,7 +151,7 @@ export function ReceivingSessionsTable() {
             },
             {
               header: t("columnRequests"),
-              render: (row) => row.inboundRequests.length.toLocaleString(),
+              render: (row) => formatCount(row.inboundRequests.length),
             },
             {
               header: t("columnActions"),

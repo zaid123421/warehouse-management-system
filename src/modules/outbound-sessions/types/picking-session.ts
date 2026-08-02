@@ -27,6 +27,10 @@ export type PickingSession = {
   status: PickingSessionStatus;
   deliveryDay?: string;
   serviceDate?: string;
+  dealerId?: number;
+  dealerName?: string;
+  outboundTruckId?: number;
+  outboundTruckLabel?: string;
   expectedTires: number;
   pickedTires?: number;
   completedCount?: number;

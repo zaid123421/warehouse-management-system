@@ -7,7 +7,11 @@ export type DayOfWeek =
   | "SATURDAY"
   | "SUNDAY";
 
-export type SchedulingCellStatus = "PLANNED" | "APPROVED" | string;
+export type SchedulingCellStatus =
+  | "PLANNED"
+  | "PARTIAL_APPROVAL"
+  | "APPROVED"
+  | string;
 
 export type SchedulingCell = {
   cellId: number;
@@ -28,27 +32,44 @@ export type SchedulingBoard = {
 
 export type SchedulingCellRequest = {
   inboundRequestId: number;
+  shipmentRequestId?: number;
+  dealerId?: number;
+  dealerName?: string;
+  serviceDate?: string;
+  receivingDay?: string;
+  regionCityId?: number;
+  regionCityName?: string;
+  totalVolume?: number;
   status: string;
   scheduleStatus?: string;
-  dealerName?: string;
-  totalVolume?: number;
-  receivingDay?: string;
+};
+
+export type SchedulingCellDealer = {
+  dealerId: number;
+  dealerName: string;
+  requestCount: number;
+  totalVolume: number;
+  approved: boolean;
+  readyForApproval: boolean;
 };
 
 export type SchedulingCellDetail = {
   cellId: number;
-  receivingDay: DayOfWeek | string;
   serviceDate?: string;
+  receivingDay: DayOfWeek | string;
+  regionCityId?: number;
+  regionCityName?: string;
+  /** @deprecated Prefer regionCityName; kept for board/grid helpers. */
   regionProvinceName?: string;
-  totalVolume?: number;
-  estimatedTrucks?: number;
+  totalVolume: number;
+  estimatedTrucks: number;
   status: SchedulingCellStatus;
-  version?: number;
-  requests: SchedulingCellRequest[];
-};
-
-export type ApproveSchedulingCellResult = {
-  status: string;
+  approvedDealerCount: number;
+  totalDealerCount: number;
+  cutoffAt?: string;
+  readyForApproval: boolean;
+  version: number;
+  dealers: SchedulingCellDealer[];
   requests: SchedulingCellRequest[];
 };
 

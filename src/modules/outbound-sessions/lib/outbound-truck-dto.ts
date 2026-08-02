@@ -2,6 +2,7 @@ import { asRecord, pickNumber, pickString, str, unwrapPayload } from "@/shared/l
 import { normalizeArray } from "@/modules/outbound-sessions/lib/scheduling-dto";
 import type {
   ApproveOutboundTruckResult,
+  ConfirmOutboundTruckPlanResult,
   CreateShippingFromTruckResult,
   OutboundTruck,
   OutboundTruckRequestLink,
@@ -112,6 +113,21 @@ export function normalizeApproveOutboundTruckResult(
     requests: requestsRaw
       .map((item) => normalizeRequestLink(item))
       .filter((item): item is OutboundTruckRequestLink => item != null),
+  };
+}
+
+export function normalizeConfirmOutboundTruckPlanResult(
+  data: unknown,
+): ConfirmOutboundTruckPlanResult {
+  const payload = asRecord(unwrapPayload(data)) ?? asRecord(data);
+  const trucksRaw = Array.isArray(payload?.trucks) ? payload.trucks : [];
+  const pickingRaw = asRecord(payload?.pickingSessions);
+  const sessionsRaw = Array.isArray(pickingRaw?.sessions) ? pickingRaw.sessions : [];
+  return {
+    trucks: trucksRaw
+      .map((item) => normalizeOutboundTruck(item))
+      .filter((item): item is OutboundTruck => item != null),
+    pickingSessionCount: sessionsRaw.length,
   };
 }
 

@@ -1,5 +1,6 @@
 const STATUS_VARIANT: Record<string, "default" | "success" | "warning" | "danger" | "muted"> = {
   PLANNED: "default",
+  PARTIAL_APPROVAL: "warning",
   SCHEDULED: "default",
   SCHEDULE_APPROVED: "success",
   TRUCK_ASSIGNED: "default",
@@ -13,6 +14,7 @@ const STATUS_VARIANT: Record<string, "default" | "success" | "warning" | "danger
   RECEIVING_IN_PROGRESS: "default",
   RECEIVING_COMPLETED: "success",
   PARTIALLY_RECEIVED: "warning",
+  PUTAWAY_PENDING_APPROVAL: "warning",
   PUTAWAY_APPROVED: "success",
   PUTAWAY_IN_PROGRESS: "default",
   APPROVED: "success",
@@ -25,6 +27,8 @@ const STATUS_VARIANT: Record<string, "default" | "success" | "warning" | "danger
   MISSING: "danger",
   PUTAWAY_PENDING: "warning",
   AT_STAGING: "default",
+  NO_SHOW: "danger",
+  UNSCHEDULED: "muted",
 };
 
 export function getStatusVariant(status: string): "default" | "success" | "warning" | "danger" | "muted" {
@@ -64,8 +68,15 @@ export function canStartPutawaySession(status: string): boolean {
   return status === "APPROVED";
 }
 
-export function canApproveSchedulingCell(status: string): boolean {
-  return status === "PLANNED";
+export function canApproveSchedulingDealer(dealer: {
+  approved: boolean;
+  readyForApproval: boolean;
+}): boolean {
+  return !dealer.approved && dealer.readyForApproval;
+}
+
+export function canOpenInboundTruckPlanning(status: string): boolean {
+  return status === "APPROVED" || status === "PARTIAL_APPROVAL";
 }
 
 export function canAssignToInboundTruck(status: string): boolean {

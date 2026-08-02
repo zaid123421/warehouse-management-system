@@ -8,6 +8,7 @@ import { ErrorAlert } from "@/components/ui/error-alert";
 import { Skeleton } from "@/components/ui/skeleton";
 import { StyledTable } from "@/components/ui/styled-table";
 import { ROUTES } from "@/constants/routes";
+import { formatCount } from "@/lib/format-number";
 import { SessionProgressBar } from "@/modules/inbound-sessions/components/shared/session-progress-bar";
 import { OutboundSessionStatusBadge } from "@/modules/outbound-sessions/components/shared/session-status-badge";
 import { usePickingSessionDetail } from "@/modules/outbound-sessions/hooks/use-picking-session-detail";
@@ -62,12 +63,12 @@ export function PickingSessionDetailContent({ sessionId }: PickingSessionDetailC
             />
             <DetailField
               label={t("columnAssignedStaff")}
-              value={(data.assignedStaffCount ?? data.assignedStaffUserIds?.length ?? 0).toLocaleString()}
+              value={formatCount(data.assignedStaffCount ?? data.assignedStaffUserIds?.length ?? 0)}
             />
             {data.exceptionScanCount != null ? (
               <DetailField
                 label={t("columnExceptions")}
-                value={data.exceptionScanCount.toLocaleString()}
+                value={formatCount(data.exceptionScanCount)}
               />
             ) : null}
           </div>
@@ -88,7 +89,7 @@ export function PickingSessionDetailContent({ sessionId }: PickingSessionDetailC
                 },
                 {
                   header: t("columnVolume"),
-                  render: (row) => (row.totalVolume ?? 0).toLocaleString(),
+                  render: (row) => formatCount(row.totalVolume ?? 0),
                 },
                 {
                   header: t("columnStatus"),

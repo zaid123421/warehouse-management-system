@@ -11,7 +11,7 @@ import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
 import { PRIMARY_BUTTON_CLASS } from "@/lib/primary-button-styles";
 import { cn } from "@/lib/utils";
-import { useApproveOutboundTruck } from "@/modules/outbound-sessions/hooks/use-outbound-truck-mutations";
+import { useConfirmOutboundTruckPlan } from "@/modules/outbound-sessions/hooks/use-outbound-truck-mutations";
 import {
   outboundMutationInvalidationKeys,
   outboundQueryKeys,
@@ -20,12 +20,7 @@ import { useOutboundPlanningPool } from "@/modules/outbound-sessions/hooks/use-o
 import { useOutboundPlanningTrucks } from "@/modules/outbound-sessions/hooks/use-outbound-planning-trucks";
 import { useOutboundSchedulingCell } from "@/modules/outbound-sessions/hooks/use-outbound-scheduling-cell";
 import { getStatusLabel } from "@/modules/outbound-sessions/lib/status-utils";
-import { OutboundError } from "@/modules/outbound-sessions/lib/outbound-error";
-import {
-  assignOutboundRequestToTruck,
-  createOutboundTruck,
-  deleteOutboundTruck,
-} from "@/modules/outbound-sessions/services/outbound-truck.service";
+import { deleteOutboundTruck } from "@/modules/outbound-sessions/services/outbound-truck.service";
 import type {
   OutboundPlanningPoolRequest,
   OutboundTruckRequestLink,
@@ -96,7 +91,7 @@ export function OutboundTruckPlanningBoard({
     { enabled: Boolean(cell?.serviceDate) },
   );
 
-  const approveMutation = useApproveOutboundTruck();
+  const confirmPlanMutation = useConfirmOutboundTruckPlan();
   const [localDrafts, setLocalDrafts] = useState<DraftTruck[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [dragOverLocalId, setDragOverLocalId] = useState<string | null>(null);
@@ -156,7 +151,8 @@ export function OutboundTruckPlanningBoard({
   }, [serverTrucks]);
 
   const hasPendingPlan = localDrafts.some((truck) => truck.assignedRequestIds.length > 0);
-  const isBusy = isSubmitting || approveMutation.isPending || deletingTruckId != null;
+  const isBusy =
+    isSubmitting || confirmPlanMutation.isPending || deletingTruckId != null;
   const isLoadingBoard = cellPending || poolPending || (Boolean(cell?.serviceDate) && trucksPending);
 
   function handleAddTruck() {
@@ -240,56 +236,27 @@ export function OutboundTruckPlanningBoard({
 
     setIsSubmitting(true);
     try {
-      let createdCount = 0;
-      let skippedAssignments = 0;
-      for (const draft of toSubmit) {
-        const truck = await createOutboundTruck({
-          schedulingCellId,
-          deliveryDay: String(cell.deliveryDay),
-          serviceDate: cell.serviceDate,
-        });
-        let assignedOnTruck = 0;
-        for (const outboundRequestId of draft.assignedRequestIds) {
-          try {
-            await assignOutboundRequestToTruck(truck.id, outboundRequestId);
-            assignedOnTruck += 1;
-          } catch (err) {
-            if (err instanceof OutboundError && err.status === 409) {
-              skippedAssignments += 1;
-              continue;
-            }
-            throw err;
-          }
-        }
-        if (assignedOnTruck > 0) createdCount += 1;
-      }
-
+      const result = await confirmPlanMutation.mutateAsync({
+        schedulingCellId,
+        trucks: toSubmit.map((draft) => ({
+          requestIds: draft.assignedRequestIds,
+        })),
+      });
       setLocalDrafts((prev) =>
         prev.filter((truck) => !toSubmit.some((submitted) => submitted.localId === truck.localId)),
       );
       await invalidateAfterMutation();
-      if (skippedAssignments > 0) {
-        toast.warning(t("truckPlanSubmitPartialConflict", { skipped: skippedAssignments }));
-      }
-      toast.success(t("truckPlanSubmitSuccess", { count: createdCount }));
+      toast.success(
+        t("truckPlanConfirmSuccess", {
+          trucks: result.trucks.length,
+          sessions: result.pickingSessionCount,
+        }),
+      );
     } catch (err) {
       await invalidateAfterMutation();
       toast.error(err instanceof Error ? err.message : t("actionError"));
     } finally {
       setIsSubmitting(false);
-    }
-  }
-
-  async function handleApprove(serverTruckId: number, assignedCount: number) {
-    if (assignedCount === 0) {
-      toast.error(t("truckApproveNeedsRequests"));
-      return;
-    }
-    try {
-      await approveMutation.mutateAsync(serverTruckId);
-      toast.success(t("truckApproveSuccess"));
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : t("actionError"));
     }
   }
 
@@ -358,7 +325,7 @@ export function OutboundTruckPlanningBoard({
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="space-y-1">
           <p className="text-body-md text-muted-foreground">{t("truckPlanningIntro")}</p>
-          <p className="text-body-sm text-muted-foreground">{t("truckApproveLockHint")}</p>
+          <p className="text-body-sm text-muted-foreground">{t("truckConfirmLockHint")}</p>
         </div>
         <Button
           type="button"
@@ -503,43 +470,17 @@ export function OutboundTruckPlanningBoard({
                       </div>
                       <div className="flex shrink-0 items-center gap-1">
                         {isPersisted ? (
-                          <>
-                            <Button
-                              type="button"
-                              variant="link"
-                              size="sm"
-                              className="h-auto px-0 text-primary"
-                              disabled={
-                                isBusy ||
-                                (truck.assignedRequestIds.length === 0 &&
-                                  (requestCountByTruckId.get(truck.serverTruckId as number) ??
-                                    0) === 0)
-                              }
-                              onClick={() =>
-                                void handleApprove(
-                                  truck.serverTruckId as number,
-                                  Math.max(
-                                    truck.assignedRequestIds.length,
-                                    requestCountByTruckId.get(truck.serverTruckId as number) ??
-                                      0,
-                                  ),
-                                )
-                              }
-                            >
-                              {t("approveTruck")}
-                            </Button>
-                            <button
-                              type="button"
-                              className="rounded p-1 text-muted-foreground transition hover:bg-muted hover:text-foreground"
-                              aria-label={t("deleteTruck")}
-                              disabled={isBusy}
-                              onClick={() =>
-                                void handleDeletePersistedTruck(truck.serverTruckId as number)
-                              }
-                            >
-                              <Trash2 className="size-3.5" />
-                            </button>
-                          </>
+                          <button
+                            type="button"
+                            className="rounded p-1 text-muted-foreground transition hover:bg-muted hover:text-foreground"
+                            aria-label={t("deleteTruck")}
+                            disabled={isBusy}
+                            onClick={() =>
+                              void handleDeletePersistedTruck(truck.serverTruckId as number)
+                            }
+                          >
+                            <Trash2 className="size-3.5" />
+                          </button>
                         ) : (
                           <button
                             type="button"
