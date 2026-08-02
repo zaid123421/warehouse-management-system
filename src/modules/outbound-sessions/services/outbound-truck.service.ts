@@ -3,6 +3,7 @@ import { ENDPOINTS } from "@/services/endpoints";
 import { toOutboundError } from "@/modules/outbound-sessions/lib/outbound-error";
 import {
   normalizeApproveOutboundTruckResult,
+  normalizeConfirmOutboundTruckPlanResult,
   normalizeCreateShippingFromTruckResult,
   normalizeOutboundPlanningPoolList,
   normalizeOutboundTruckDetail,
@@ -11,6 +12,8 @@ import {
 } from "@/modules/outbound-sessions/lib/outbound-truck-dto";
 import type {
   ApproveOutboundTruckResult,
+  ConfirmOutboundTruckPlanRequest,
+  ConfirmOutboundTruckPlanResult,
   CreateOutboundTruckRequest,
   CreateShippingFromTruckResult,
   OutboundTruck,
@@ -110,6 +113,20 @@ export async function unassignOutboundRequestFromTruck(
       ENDPOINTS.WMS_OUTBOUND_TRUCKS.ASSIGN(truckId, outboundRequestId),
     );
     return normalizeOutboundTruckDetail(data);
+  } catch (err: unknown) {
+    toOutboundError(err);
+  }
+}
+
+export async function confirmOutboundTruckPlan(
+  payload: ConfirmOutboundTruckPlanRequest,
+): Promise<ConfirmOutboundTruckPlanResult> {
+  try {
+    const { data } = await api.post<unknown>(
+      ENDPOINTS.WMS_OUTBOUND_TRUCKS.CONFIRM_PLAN,
+      payload,
+    );
+    return normalizeConfirmOutboundTruckPlanResult(data);
   } catch (err: unknown) {
     toOutboundError(err);
   }

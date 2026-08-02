@@ -6,6 +6,7 @@ import { ErrorAlert } from "@/components/ui/error-alert";
 import { Skeleton } from "@/components/ui/skeleton";
 import { StyledTable } from "@/components/ui/styled-table";
 import { ROUTES } from "@/constants/routes";
+import { formatCount } from "@/lib/format-number";
 import { SessionProgressBar } from "@/modules/inbound-sessions/components/shared/session-progress-bar";
 import { SessionStatusBadge } from "@/modules/inbound-sessions/components/shared/session-status-badge";
 import { useOperationsDashboard } from "@/modules/inbound-sessions/hooks/use-operations-dashboard";
@@ -54,7 +55,7 @@ export function InboundOperationsDashboard() {
             className="rounded-lg border border-[var(--color-surface-light-container)] bg-card px-3 py-2.5 dark:border-[var(--color-surface-container-high)]"
           >
             <p className="text-body-sm text-muted-foreground">{item.label}</p>
-            <p className="text-headline-sm font-bold text-foreground">{item.value.toLocaleString()}</p>
+            <p className="text-headline-sm font-bold text-foreground">{formatCount(item.value)}</p>
           </div>
         ))}
       </div>

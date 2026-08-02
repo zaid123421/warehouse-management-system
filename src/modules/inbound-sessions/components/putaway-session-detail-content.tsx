@@ -8,6 +8,7 @@ import { ErrorAlert } from "@/components/ui/error-alert";
 import { Skeleton } from "@/components/ui/skeleton";
 import { StyledTable } from "@/components/ui/styled-table";
 import { ROUTES } from "@/constants/routes";
+import { formatCount } from "@/lib/format-number";
 import { SessionProgressBar } from "@/modules/inbound-sessions/components/shared/session-progress-bar";
 import { SessionStatusBadge } from "@/modules/inbound-sessions/components/shared/session-status-badge";
 import { usePutawaySessionDetail } from "@/modules/inbound-sessions/hooks/use-putaway-session-detail";
@@ -56,7 +57,7 @@ export function PutawaySessionDetailContent({ sessionId }: PutawaySessionDetailC
             />
             <DetailField
               label={t("columnAssignedStaff")}
-              value={(data.assignedStaffCount ?? data.assignedStaffUserIds?.length ?? 0).toLocaleString()}
+              value={formatCount(data.assignedStaffCount ?? data.assignedStaffUserIds?.length ?? 0)}
             />
           </div>
 

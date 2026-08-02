@@ -8,6 +8,7 @@ import { ErrorAlert } from "@/components/ui/error-alert";
 import { Skeleton } from "@/components/ui/skeleton";
 import { StyledTable } from "@/components/ui/styled-table";
 import { ROUTES } from "@/constants/routes";
+import { formatCount } from "@/lib/format-number";
 import { SessionProgressBar } from "@/modules/inbound-sessions/components/shared/session-progress-bar";
 import { SessionStatusBadge } from "@/modules/inbound-sessions/components/shared/session-status-badge";
 import { useReceivingSessionDetail } from "@/modules/inbound-sessions/hooks/use-receiving-session-detail";
@@ -56,12 +57,12 @@ export function ReceivingSessionDetailContent({ sessionId }: ReceivingSessionDet
             />
             <DetailField
               label={t("columnAssignedStaff")}
-              value={(data.assignedStaffCount ?? data.assignedStaffUserIds?.length ?? 0).toLocaleString()}
+              value={formatCount(data.assignedStaffCount ?? data.assignedStaffUserIds?.length ?? 0)}
             />
             {data.exceptionScanCount != null ? (
               <DetailField
                 label={t("columnExceptions")}
-                value={data.exceptionScanCount.toLocaleString()}
+                value={formatCount(data.exceptionScanCount)}
               />
             ) : null}
           </div>
