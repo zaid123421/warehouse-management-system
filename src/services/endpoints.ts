@@ -36,8 +36,8 @@ export const ENDPOINTS = {
   WMS_INBOUND_SCHEDULING: {
     BOARD: "/v1/wms/my-warehouse/scheduling/board",
     CELL: (cellId: number) => `/v1/wms/my-warehouse/scheduling/cells/${cellId}`,
-    APPROVE_CELL: (cellId: number) =>
-      `/v1/wms/my-warehouse/scheduling/cells/${cellId}/approve`,
+    APPROVE_DEALER: (cellId: number, dealerId: number) =>
+      `/v1/wms/my-warehouse/scheduling/cells/${cellId}/dealers/${dealerId}/approve`,
   },
 
   WMS_INBOUND_REQUESTS: {
