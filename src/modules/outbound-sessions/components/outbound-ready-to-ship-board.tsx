@@ -22,9 +22,12 @@ export function OutboundReadyToShipBoard() {
   const { data = [], isPending, isError, error, refetch } = useReadyToShipTrucks();
   const createShippingMutation = useCreateShippingFromTruck();
 
-  async function handleCreateShipping(truckId: number, serviceDate?: string) {
+  async function handleCreateShipping(truckId: number, version?: number) {
     try {
-      const session = await createShippingMutation.mutateAsync(truckId);
+      const session = await createShippingMutation.mutateAsync({
+        truckId,
+        version: version ?? 0,
+      });
       toast.success(
         t("createShippingFromTruckSuccess", {
           sessionId: session.id,
@@ -101,7 +104,7 @@ export function OutboundReadyToShipBoard() {
                       size="sm"
                       className={PRIMARY_BUTTON_CLASS}
                       disabled={isDisabled}
-                      onClick={() => void handleCreateShipping(row.truckId, row.serviceDate)}
+                      onClick={() => void handleCreateShipping(row.truckId, row.version)}
                     >
                       <PackagePlus className="size-4" />
                       {t("createShippingSession")}

@@ -85,6 +85,7 @@ export function OutboundTruckPlanningBoard({
     refetch: refetchTrucks,
   } = useOutboundPlanningTrucks(
     {
+      schedulingCellId,
       serviceDate: cell?.serviceDate,
       deliveryDay: cell?.deliveryDay,
     },
@@ -263,7 +264,8 @@ export function OutboundTruckPlanningBoard({
   async function handleDeletePersistedTruck(serverTruckId: number) {
     setDeletingTruckId(serverTruckId);
     try {
-      await deleteOutboundTruck(serverTruckId);
+      const truck = serverTrucks.find((item) => item.id === serverTruckId);
+      await deleteOutboundTruck(serverTruckId, truck?.version ?? 0);
       await invalidateAfterMutation();
       toast.success(t("truckDeleteSuccess"));
     } catch (err) {

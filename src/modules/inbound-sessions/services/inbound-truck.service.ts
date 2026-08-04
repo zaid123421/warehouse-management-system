@@ -36,11 +36,16 @@ export async function getPlanningPool(
 }
 
 export async function getPlanningTrucks(params?: {
+  schedulingCellId?: number;
   serviceDate?: string;
   receivingDay?: string;
 }): Promise<InboundTruck[]> {
   try {
-    const { data } = await api.get<unknown>(ENDPOINTS.WMS_INBOUND_TRUCKS.PLANNING);
+    const { data } = await api.get<unknown>(ENDPOINTS.WMS_INBOUND_TRUCKS.PLANNING, {
+      params: params?.schedulingCellId
+        ? { schedulingCellId: params.schedulingCellId }
+        : undefined,
+    });
     let trucks = normalizeInboundTruckList(data);
     if (params?.serviceDate || params?.receivingDay) {
       trucks = trucks.filter(

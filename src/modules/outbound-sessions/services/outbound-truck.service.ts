@@ -1,6 +1,7 @@
 import api from "@/lib/api";
 import { ENDPOINTS } from "@/services/endpoints";
 import { toOutboundError } from "@/modules/outbound-sessions/lib/outbound-error";
+import { toVersionBody } from "@/modules/outbound-sessions/lib/optimistic-lock";
 import {
   normalizeApproveOutboundTruckResult,
   normalizeConfirmOutboundTruckPlanResult,
@@ -38,11 +39,16 @@ export async function getOutboundPlanningPool(
 }
 
 export async function getOutboundPlanningTrucks(params?: {
+  schedulingCellId?: number;
   serviceDate?: string;
   deliveryDay?: string;
 }): Promise<OutboundTruck[]> {
   try {
-    const { data } = await api.get<unknown>(ENDPOINTS.WMS_OUTBOUND_TRUCKS.PLANNING);
+    const { data } = await api.get<unknown>(ENDPOINTS.WMS_OUTBOUND_TRUCKS.PLANNING, {
+      params: params?.schedulingCellId
+        ? { schedulingCellId: params.schedulingCellId }
+        : undefined,
+    });
     let trucks = normalizeOutboundTruckList(data);
     if (params?.serviceDate || params?.deliveryDay) {
       trucks = trucks.filter(
@@ -91,10 +97,12 @@ export async function createOutboundTruck(
 export async function assignOutboundRequestToTruck(
   truckId: number,
   outboundRequestId: number,
+  version?: number | null,
 ): Promise<OutboundTruck> {
   try {
     const { data } = await api.post<unknown>(
       ENDPOINTS.WMS_OUTBOUND_TRUCKS.ASSIGN(truckId, outboundRequestId),
+      toVersionBody(version),
     );
     const detail = normalizeOutboundTruckDetail(data);
     if (!detail) throw new Error("Invalid assign outbound truck response");
@@ -107,10 +115,12 @@ export async function assignOutboundRequestToTruck(
 export async function unassignOutboundRequestFromTruck(
   truckId: number,
   outboundRequestId: number,
+  version?: number | null,
 ): Promise<OutboundTruck | null> {
   try {
     const { data } = await api.delete<unknown>(
       ENDPOINTS.WMS_OUTBOUND_TRUCKS.ASSIGN(truckId, outboundRequestId),
+      { data: toVersionBody(version) },
     );
     return normalizeOutboundTruckDetail(data);
   } catch (err: unknown) {
@@ -134,10 +144,12 @@ export async function confirmOutboundTruckPlan(
 
 export async function approveOutboundTruck(
   truckId: number,
+  version?: number | null,
 ): Promise<ApproveOutboundTruckResult> {
   try {
     const { data } = await api.post<unknown>(
       ENDPOINTS.WMS_OUTBOUND_TRUCKS.APPROVE(truckId),
+      toVersionBody(version),
     );
     return normalizeApproveOutboundTruckResult(data);
   } catch (err: unknown) {
@@ -145,9 +157,14 @@ export async function approveOutboundTruck(
   }
 }
 
-export async function deleteOutboundTruck(truckId: number): Promise<void> {
+export async function deleteOutboundTruck(
+  truckId: number,
+  version?: number | null,
+): Promise<void> {
   try {
-    await api.delete(ENDPOINTS.WMS_OUTBOUND_TRUCKS.DELETE(truckId));
+    await api.delete(ENDPOINTS.WMS_OUTBOUND_TRUCKS.DELETE(truckId), {
+      data: toVersionBody(version),
+    });
   } catch (err: unknown) {
     toOutboundError(err);
   }
@@ -164,10 +181,12 @@ export async function getReadyToShipTrucks(): Promise<ReadyToShipTruck[]> {
 
 export async function createShippingSessionFromTruck(
   truckId: number,
+  version?: number | null,
 ): Promise<CreateShippingFromTruckResult> {
   try {
     const { data } = await api.post<unknown>(
       ENDPOINTS.WMS_OUTBOUND_TRUCKS.CREATE_SHIPPING_SESSION(truckId),
+      toVersionBody(version),
     );
     const result = normalizeCreateShippingFromTruckResult(data);
     if (!result) throw new Error("Invalid create shipping session response");

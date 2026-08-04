@@ -185,7 +185,11 @@ export function PickingSessionsTable() {
                       disabled={approveMutation.isPending}
                       onClick={() =>
                         void runAction(
-                          () => approveMutation.mutateAsync(row.id),
+                          () =>
+                            approveMutation.mutateAsync({
+                              sessionId: row.id,
+                              version: row.version ?? 0,
+                            }),
                           "approveSessionSuccess",
                         )
                       }
@@ -225,7 +229,11 @@ export function PickingSessionsTable() {
                       disabled={startMutation.isPending}
                       onClick={() =>
                         void runAction(
-                          () => startMutation.mutateAsync(row.id),
+                          () =>
+                            startMutation.mutateAsync({
+                              sessionId: row.id,
+                              version: row.version ?? 0,
+                            }),
                           "startSessionSuccess",
                         )
                       }
@@ -242,7 +250,11 @@ export function PickingSessionsTable() {
                       disabled={completeMutation.isPending}
                       onClick={() =>
                         void runAction(
-                          () => completeMutation.mutateAsync(row.id),
+                          () =>
+                            completeMutation.mutateAsync({
+                              sessionId: row.id,
+                              version: row.version ?? 0,
+                            }),
                           "completeSessionSuccess",
                         )
                       }
@@ -296,7 +308,10 @@ export function PickingSessionsTable() {
             () =>
               assignMutation.mutateAsync({
                 sessionId: assignSession.id,
-                payload: { staffUserIds },
+                payload: {
+                  staffUserIds,
+                  version: detailData?.version ?? assignSession.version ?? 0,
+                },
               }),
             "assignSuccess",
           );
@@ -323,7 +338,10 @@ export function PickingSessionsTable() {
               onClick={() =>
                 void runAction(async () => {
                   if (!pendingCancel) return;
-                  await cancelMutation.mutateAsync(pendingCancel.id);
+                  await cancelMutation.mutateAsync({
+                    sessionId: pendingCancel.id,
+                    version: pendingCancel.version ?? 0,
+                  });
                   setPendingCancel(null);
                 }, "cancelSessionSuccess")
               }

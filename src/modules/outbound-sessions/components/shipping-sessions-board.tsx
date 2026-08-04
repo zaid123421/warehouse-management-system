@@ -116,7 +116,14 @@ export function ShippingSessionsBoard() {
       return;
     }
     */
-    await runAction(() => startMutation.mutateAsync(session.id), "startSessionSuccess");
+    await runAction(
+      () =>
+        startMutation.mutateAsync({
+          sessionId: session.id,
+          version: session.version ?? 0,
+        }),
+      "startSessionSuccess",
+    );
   }
 
   return (
@@ -227,7 +234,11 @@ export function ShippingSessionsBoard() {
                         disabled={approveMutation.isPending}
                         onClick={() =>
                           void runAction(
-                            () => approveMutation.mutateAsync(session.id),
+                            () =>
+                              approveMutation.mutateAsync({
+                                sessionId: session.id,
+                                version: session.version ?? 0,
+                              }),
                             "approveSessionSuccess",
                           )
                         }
@@ -279,7 +290,11 @@ export function ShippingSessionsBoard() {
                         disabled={completeMutation.isPending}
                         onClick={() =>
                           void runAction(
-                            () => completeMutation.mutateAsync(session.id),
+                            () =>
+                              completeMutation.mutateAsync({
+                                sessionId: session.id,
+                                version: session.version ?? 0,
+                              }),
                             "completeSessionSuccess",
                           )
                         }
@@ -324,7 +339,10 @@ export function ShippingSessionsBoard() {
             () =>
               assignMutation.mutateAsync({
                 sessionId: assignSession.id,
-                payload: { staffUserIds },
+                payload: {
+                  staffUserIds,
+                  version: detailData?.version ?? assignSession.version ?? 0,
+                },
               }),
             "assignSuccess",
           );
@@ -351,7 +369,10 @@ export function ShippingSessionsBoard() {
               onClick={() =>
                 void runAction(async () => {
                   if (!pendingCancel) return;
-                  await cancelMutation.mutateAsync(pendingCancel.id);
+                  await cancelMutation.mutateAsync({
+                    sessionId: pendingCancel.id,
+                    version: pendingCancel.version ?? 0,
+                  });
                   setPendingCancel(null);
                 }, "cancelSessionSuccess")
               }

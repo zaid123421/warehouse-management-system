@@ -79,6 +79,7 @@ export function normalizePickingSession(raw: unknown): PickingSession | null {
     completedAt: pickString(rec, "completedAt"),
     dispatchedAt: pickString(rec, "dispatchedAt"),
     createdAt: pickString(rec, "createdAt"),
+    version: pickNumber(rec, "version"),
     outboundRequests: outboundRaw
       .map((item) => normalizeOutboundLink(item))
       .filter((item): item is PickingSessionOutboundLink => item != null),

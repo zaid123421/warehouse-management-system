@@ -37,6 +37,7 @@ export type OutboundTruck = {
   ready?: boolean;
   createdAt?: string;
   approvedAt?: string;
+  version?: number;
   assignedRequests: OutboundTruckRequestLink[];
 };
 
@@ -72,6 +73,7 @@ export type ReadyToShipTruck = {
   capacityTires?: number;
   requestCount?: number;
   shippingSessionId?: number;
+  version?: number;
 };
 
 export type CreateShippingFromTruckResult = {

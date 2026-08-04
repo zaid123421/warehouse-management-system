@@ -1,5 +1,6 @@
 const STATUS_VARIANT: Record<string, "default" | "success" | "warning" | "danger" | "muted"> = {
   PLANNED: "default",
+  PARTIAL_APPROVAL: "warning",
   SCHEDULED: "default",
   SCHEDULE_APPROVED: "success",
   TRUCK_ASSIGNED: "success",
@@ -37,13 +38,20 @@ export function canApproveOutboundSchedulingCell(
   status: string,
   readyForApproval?: boolean,
 ): boolean {
-  if (status !== "PLANNED") return false;
+  if (status !== "PLANNED" && status !== "PARTIAL_APPROVAL") return false;
   if (readyForApproval === false) return false;
   return true;
 }
 
+export function canApproveOutboundSchedulingDealer(dealer: {
+  approved: boolean;
+  readyForApproval: boolean;
+}): boolean {
+  return !dealer.approved && dealer.readyForApproval;
+}
+
 export function canOpenOutboundTruckPlanning(status: string): boolean {
-  return status === "APPROVED" || status === "PLANNED";
+  return status === "APPROVED" || status === "PARTIAL_APPROVAL";
 }
 
 export function isTodayServiceDate(serviceDate?: string | null): boolean {

@@ -93,6 +93,8 @@ export const ENDPOINTS = {
       `/v1/wms/my-warehouse/outbound-scheduling/cells/${cellId}`,
     APPROVE_CELL: (cellId: number) =>
       `/v1/wms/my-warehouse/outbound-scheduling/cells/${cellId}/approve`,
+    APPROVE_DEALER: (cellId: number, dealerId: number) =>
+      `/v1/wms/my-warehouse/outbound-scheduling/cells/${cellId}/dealers/${dealerId}/approve`,
     GENERATE_PICKING: "/v1/wms/my-warehouse/outbound-scheduling/generate-picking-sessions",
   },
 

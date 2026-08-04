@@ -89,6 +89,7 @@ export function normalizeShippingSession(raw: unknown): ShippingSession | null {
     approvedAt: pickString(rec, "approvedAt"),
     completedAt: pickString(rec, "completedAt"),
     createdAt: pickString(rec, "createdAt"),
+    version: pickNumber(rec, "version"),
     outboundRequests: outboundRaw
       .map((item) => normalizeOutboundLink(item))
       .filter((item): item is ShippingSessionOutboundLink => item != null),

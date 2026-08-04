@@ -1,6 +1,7 @@
 import api from "@/lib/api";
 import { ENDPOINTS } from "@/services/endpoints";
 import { toOutboundError } from "@/modules/outbound-sessions/lib/outbound-error";
+import { toVersionBody } from "@/modules/outbound-sessions/lib/optimistic-lock";
 import {
   normalizePickingSessionDetail,
   normalizePickingSessionList,
@@ -30,9 +31,15 @@ export async function getPickingSessionById(sessionId: number): Promise<PickingS
   }
 }
 
-export async function approvePickingSession(sessionId: number): Promise<PickingSession> {
+export async function approvePickingSession(
+  sessionId: number,
+  version?: number | null,
+): Promise<PickingSession> {
   try {
-    const { data } = await api.post<unknown>(ENDPOINTS.WMS_PICKING_SESSIONS.APPROVE(sessionId));
+    const { data } = await api.post<unknown>(
+      ENDPOINTS.WMS_PICKING_SESSIONS.APPROVE(sessionId),
+      toVersionBody(version),
+    );
     const detail = normalizePickingSessionDetail(data);
     if (!detail) throw new Error("Invalid approve picking session response");
     return detail;
@@ -41,9 +48,15 @@ export async function approvePickingSession(sessionId: number): Promise<PickingS
   }
 }
 
-export async function cancelPickingSession(sessionId: number): Promise<PickingSession> {
+export async function cancelPickingSession(
+  sessionId: number,
+  version?: number | null,
+): Promise<PickingSession> {
   try {
-    const { data } = await api.post<unknown>(ENDPOINTS.WMS_PICKING_SESSIONS.CANCEL(sessionId));
+    const { data } = await api.post<unknown>(
+      ENDPOINTS.WMS_PICKING_SESSIONS.CANCEL(sessionId),
+      toVersionBody(version),
+    );
     const detail = normalizePickingSessionDetail(data);
     if (!detail) throw new Error("Invalid cancel picking session response");
     return detail;
@@ -57,10 +70,10 @@ export async function assignPickingSession(
   payload: AssignPickingSessionRequest,
 ): Promise<PickingSession> {
   try {
-    const { data } = await api.post<unknown>(
-      ENDPOINTS.WMS_PICKING_SESSIONS.ASSIGN(sessionId),
-      payload,
-    );
+    const { data } = await api.post<unknown>(ENDPOINTS.WMS_PICKING_SESSIONS.ASSIGN(sessionId), {
+      version: payload.version ?? 0,
+      staffUserIds: payload.staffUserIds,
+    });
     const detail = normalizePickingSessionDetail(data);
     if (!detail) throw new Error("Invalid assign picking session response");
     return detail;
@@ -69,9 +82,15 @@ export async function assignPickingSession(
   }
 }
 
-export async function startPickingSession(sessionId: number): Promise<PickingSession> {
+export async function startPickingSession(
+  sessionId: number,
+  version?: number | null,
+): Promise<PickingSession> {
   try {
-    const { data } = await api.post<unknown>(ENDPOINTS.WMS_PICKING_SESSIONS.START(sessionId));
+    const { data } = await api.post<unknown>(
+      ENDPOINTS.WMS_PICKING_SESSIONS.START(sessionId),
+      toVersionBody(version),
+    );
     const detail = normalizePickingSessionDetail(data);
     if (!detail) throw new Error("Invalid start picking session response");
     return detail;
@@ -80,9 +99,15 @@ export async function startPickingSession(sessionId: number): Promise<PickingSes
   }
 }
 
-export async function completePickingSession(sessionId: number): Promise<PickingSession> {
+export async function completePickingSession(
+  sessionId: number,
+  version?: number | null,
+): Promise<PickingSession> {
   try {
-    const { data } = await api.post<unknown>(ENDPOINTS.WMS_PICKING_SESSIONS.COMPLETE(sessionId));
+    const { data } = await api.post<unknown>(
+      ENDPOINTS.WMS_PICKING_SESSIONS.COMPLETE(sessionId),
+      toVersionBody(version),
+    );
     const detail = normalizePickingSessionDetail(data);
     if (!detail) throw new Error("Invalid complete picking session response");
     return detail;
@@ -91,9 +116,15 @@ export async function completePickingSession(sessionId: number): Promise<Picking
   }
 }
 
-export async function dispatchPickingSession(sessionId: number): Promise<PickingSession> {
+export async function dispatchPickingSession(
+  sessionId: number,
+  version?: number | null,
+): Promise<PickingSession> {
   try {
-    const { data } = await api.post<unknown>(ENDPOINTS.WMS_PICKING_SESSIONS.DISPATCH(sessionId));
+    const { data } = await api.post<unknown>(
+      ENDPOINTS.WMS_PICKING_SESSIONS.DISPATCH(sessionId),
+      toVersionBody(version),
+    );
     const detail = normalizePickingSessionDetail(data);
     if (!detail) throw new Error("Invalid dispatch picking session response");
     return detail;

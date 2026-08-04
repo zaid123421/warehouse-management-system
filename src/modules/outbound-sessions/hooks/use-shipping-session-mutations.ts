@@ -12,6 +12,11 @@ import {
 } from "@/modules/outbound-sessions/services/shipping-session.service";
 import type { AssignShippingSessionRequest } from "@/modules/outbound-sessions/types/shipping-session";
 
+type SessionVersionArgs = {
+  sessionId: number;
+  version?: number | null;
+};
+
 function useInvalidateShipping(queryClient: ReturnType<typeof useQueryClient>) {
   const keys = outboundMutationInvalidationKeys();
   return (sessionId?: number) => {
@@ -29,7 +34,8 @@ export function useApproveShippingSession() {
   const queryClient = useQueryClient();
   const invalidate = useInvalidateShipping(queryClient);
   return useMutation({
-    mutationFn: (sessionId: number) => approveShippingSession(sessionId),
+    mutationFn: ({ sessionId, version }: SessionVersionArgs) =>
+      approveShippingSession(sessionId, version),
     onSuccess: (data) => invalidate(data.id),
   });
 }
@@ -38,7 +44,8 @@ export function useCancelShippingSession() {
   const queryClient = useQueryClient();
   const invalidate = useInvalidateShipping(queryClient);
   return useMutation({
-    mutationFn: (sessionId: number) => cancelShippingSession(sessionId),
+    mutationFn: ({ sessionId, version }: SessionVersionArgs) =>
+      cancelShippingSession(sessionId, version),
     onSuccess: (data) => invalidate(data.id),
   });
 }
@@ -62,7 +69,8 @@ export function useStartShippingSession() {
   const queryClient = useQueryClient();
   const invalidate = useInvalidateShipping(queryClient);
   return useMutation({
-    mutationFn: (sessionId: number) => startShippingSession(sessionId),
+    mutationFn: ({ sessionId, version }: SessionVersionArgs) =>
+      startShippingSession(sessionId, version),
     onSuccess: (data) => invalidate(data.id),
   });
 }
@@ -71,7 +79,8 @@ export function useCompleteShippingSession() {
   const queryClient = useQueryClient();
   const invalidate = useInvalidateShipping(queryClient);
   return useMutation({
-    mutationFn: (sessionId: number) => completeShippingSession(sessionId),
+    mutationFn: ({ sessionId, version }: SessionVersionArgs) =>
+      completeShippingSession(sessionId, version),
     onSuccess: (data) => invalidate(data.id),
   });
 }

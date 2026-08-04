@@ -11,10 +11,15 @@ export const outboundQueryKeys = {
     [...outboundQueryKeys.all, "shipping-session", sessionId] as const,
   planningPool: (schedulingCellId?: number) =>
     [...outboundQueryKeys.all, "planning-pool", schedulingCellId ?? "all"] as const,
-  planningTrucks: (filter?: { serviceDate?: string; deliveryDay?: string }) =>
+  planningTrucks: (filter?: {
+    schedulingCellId?: number;
+    serviceDate?: string;
+    deliveryDay?: string;
+  }) =>
     [
       ...outboundQueryKeys.all,
       "planning-trucks",
+      filter?.schedulingCellId ?? "all",
       filter?.serviceDate ?? "all",
       filter?.deliveryDay ?? "all",
     ] as const,
