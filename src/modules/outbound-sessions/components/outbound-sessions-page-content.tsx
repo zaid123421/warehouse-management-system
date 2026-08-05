@@ -57,26 +57,26 @@ export function OutboundSessionsPageContent() {
       <Tabs value={activeTab} onValueChange={handleTabChange} className="min-h-0 flex-1">
         <TabsList className="h-auto w-full flex-wrap justify-start gap-1">
           <TabsTrigger value="scheduling">{t("tabScheduling")}</TabsTrigger>
-          <TabsTrigger value="ready-to-ship" className="flex items-center gap-2">
+          <TabsTrigger value="picking">{t("tabPicking")}</TabsTrigger>
+          <TabsTrigger value="ready-to-ship" className="group flex items-center gap-2">
             {t("tabReadyToShip")}
             {readyCount > 0 && (
-              <span className="flex items-center justify-center rounded-full bg-primary px-1.5 py-0.5 text-[10px] font-bold text-primary-foreground min-w-[1.25rem]">
+              <span className="flex min-w-[1.25rem] items-center justify-center rounded-full bg-primary px-1.5 py-0.5 text-[10px] font-bold text-primary-foreground group-data-[state=active]:bg-primary-foreground group-data-[state=active]:text-primary">
                 {readyCount}
               </span>
             )}
           </TabsTrigger>
-          <TabsTrigger value="picking">{t("tabPicking")}</TabsTrigger>
           <TabsTrigger value="shipping">{t("tabShipping")}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="scheduling" className="mt-4">
           <OutboundSchedulingBoard onOpenPlanning={handleOpenPlanning} />
         </TabsContent>
-        <TabsContent value="ready-to-ship" className="mt-4">
-          <OutboundReadyToShipBoard />
-        </TabsContent>
         <TabsContent value="picking" className="mt-4">
           <PickingSessionsTable />
+        </TabsContent>
+        <TabsContent value="ready-to-ship" className="mt-4">
+          <OutboundReadyToShipBoard />
         </TabsContent>
         <TabsContent value="shipping" className="mt-4">
           <ShippingSessionsBoard />

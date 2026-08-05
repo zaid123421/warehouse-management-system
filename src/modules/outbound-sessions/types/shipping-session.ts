@@ -43,12 +43,14 @@ export type ShippingSession = {
   approvedAt?: string;
   completedAt?: string;
   createdAt?: string;
+  version?: number;
   outboundRequests: ShippingSessionOutboundLink[];
   lines: ShippingSessionLine[];
 };
 
 export type AssignShippingSessionRequest = {
   staffUserIds: number[];
+  version: number;
 };
 
 export type GenerateShippingSessionsRequest = {

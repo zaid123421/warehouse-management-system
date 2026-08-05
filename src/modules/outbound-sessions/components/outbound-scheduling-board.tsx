@@ -2,7 +2,6 @@
 
 import { useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
-import { toast } from "sonner";
 import { ErrorAlert } from "@/components/ui/error-alert";
 import { SchedulingBoardShell } from "@/shared/components/scheduling/scheduling-board-shell";
 import { SchedulingKpiRow } from "@/shared/components/scheduling/scheduling-kpi-row";
@@ -10,13 +9,10 @@ import { SchedulingWeekGrid } from "@/shared/components/scheduling/scheduling-we
 import {
   computeSchedulingBoardStats,
   toSchedulingGridCells,
-  type SchedulingGridCell,
 } from "@/shared/lib/scheduling-grid-utils";
 import { OutboundSchedulingCellDetailPanel } from "@/modules/outbound-sessions/components/outbound-scheduling-cell-detail-panel";
 import { OutboundSessionStatusBadge } from "@/modules/outbound-sessions/components/shared/session-status-badge";
-import { useApproveOutboundSchedulingCell } from "@/modules/outbound-sessions/hooks/use-approve-outbound-scheduling-cell";
 import { useOutboundSchedulingBoard } from "@/modules/outbound-sessions/hooks/use-outbound-scheduling-board";
-import { canApproveOutboundSchedulingCell } from "@/modules/outbound-sessions/lib/status-utils";
 
 type OutboundSchedulingBoardProps = {
   onOpenPlanning?: (cellId?: number) => void;
@@ -25,16 +21,7 @@ type OutboundSchedulingBoardProps = {
 export function OutboundSchedulingBoard({ onOpenPlanning }: OutboundSchedulingBoardProps) {
   const t = useTranslations("outboundSessions");
   const { data, isPending, isError, error, refetch } = useOutboundSchedulingBoard();
-  const approveMutation = useApproveOutboundSchedulingCell();
   const [selectedCellId, setSelectedCellId] = useState<number | null>(null);
-
-  const readyByCellId = useMemo(() => {
-    const map = new Map<number, boolean | undefined>();
-    for (const cell of data?.cells ?? []) {
-      map.set(cell.cellId, cell.readyForApproval);
-    }
-    return map;
-  }, [data?.cells]);
 
   const gridCells = useMemo(
     () =>
@@ -48,19 +35,6 @@ export function OutboundSchedulingBoard({ onOpenPlanning }: OutboundSchedulingBo
     [data?.cells],
   );
   const stats = useMemo(() => computeSchedulingBoardStats(gridCells), [gridCells]);
-
-  async function handleApprove(cell: SchedulingGridCell) {
-    if (!canApproveOutboundSchedulingCell(cell.status, readyByCellId.get(cell.cellId))) {
-      toast.error(t("cellCutoffPendingHint"));
-      return;
-    }
-    try {
-      await approveMutation.mutateAsync(cell.cellId);
-      toast.success(t("approveCellSuccess"));
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : t("actionError"));
-    }
-  }
 
   return (
     <SchedulingBoardShell
@@ -84,11 +58,6 @@ export function OutboundSchedulingBoard({ onOpenPlanning }: OutboundSchedulingBo
             cells={gridCells}
             selectedCellId={selectedCellId}
             onSelectCell={setSelectedCellId}
-            onApproveCell={(cell) => void handleApprove(cell)}
-            canApprove={(cell) =>
-              canApproveOutboundSchedulingCell(cell.status, readyByCellId.get(cell.cellId))
-            }
-            isApprovePending={approveMutation.isPending}
             renderStatusBadge={(status) => <OutboundSessionStatusBadge status={status} />}
             translationNamespace="outboundSessions"
             isLoading={isPending}

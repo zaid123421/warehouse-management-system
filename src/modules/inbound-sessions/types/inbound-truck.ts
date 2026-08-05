@@ -56,6 +56,7 @@ export type TransitTruck = {
   receivingDay?: string;
   assignedTires?: number;
   expectedTires?: number;
+  receivingSessionId?: number;
   version?: number;
 };
 

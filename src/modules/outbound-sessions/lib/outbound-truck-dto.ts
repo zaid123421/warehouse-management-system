@@ -56,6 +56,7 @@ function normalizeOutboundTruck(raw: unknown): OutboundTruck | null {
     ready: rec.ready === true ? true : rec.ready === false ? false : undefined,
     createdAt: pickString(rec, "createdAt"),
     approvedAt: pickString(rec, "approvedAt"),
+    version: pickNumber(rec, "version"),
     assignedRequests: requestsRaw
       .map((item) => normalizeRequestLink(item))
       .filter((item): item is OutboundTruckRequestLink => item != null),
@@ -150,6 +151,7 @@ export function normalizeReadyToShipTruck(raw: unknown): ReadyToShipTruck | null
     capacityTires: pickNumber(rec, "capacityTires") || undefined,
     requestCount: pickNumber(rec, "requestCount") || undefined,
     shippingSessionId: pickNumber(rec, "shippingSessionId") || undefined,
+    version: pickNumber(rec, "version"),
   };
 }
 

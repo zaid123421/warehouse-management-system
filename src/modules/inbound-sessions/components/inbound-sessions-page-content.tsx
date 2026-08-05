@@ -65,10 +65,10 @@ export function InboundSessionsPageContent() {
         <TabsList className="h-auto w-full flex-wrap justify-start gap-1">
           <TabsTrigger value="overview">{t("tabOverview")}</TabsTrigger>
           <TabsTrigger value="scheduling">{t("tabScheduling")}</TabsTrigger>
-          <TabsTrigger value="transit" className="flex items-center gap-2">
+          <TabsTrigger value="transit" className="group flex items-center gap-2">
             {t("tabTransit")}
             {transitCount > 0 && (
-              <span className="flex items-center justify-center rounded-full bg-primary px-1.5 py-0.5 text-[10px] font-bold text-primary-foreground min-w-[1.25rem]">
+              <span className="flex min-w-[1.25rem] items-center justify-center rounded-full bg-primary px-1.5 py-0.5 text-[10px] font-bold text-primary-foreground group-data-[state=active]:bg-primary-foreground group-data-[state=active]:text-primary">
                 {transitCount}
               </span>
             )}

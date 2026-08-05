@@ -44,10 +44,12 @@ export type PickingSession = {
   completedAt?: string;
   dispatchedAt?: string;
   createdAt?: string;
+  version?: number;
   outboundRequests: PickingSessionOutboundLink[];
   lines: PickingSessionLine[];
 };
 
 export type AssignPickingSessionRequest = {
   staffUserIds: number[];
+  version: number;
 };

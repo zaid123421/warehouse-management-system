@@ -38,7 +38,13 @@ export function useDeleteOutboundTruck() {
   const queryClient = useQueryClient();
   const invalidate = useInvalidateTruckMutations(queryClient);
   return useMutation({
-    mutationFn: (truckId: number) => deleteOutboundTruck(truckId),
+    mutationFn: ({
+      truckId,
+      version,
+    }: {
+      truckId: number;
+      version?: number | null;
+    }) => deleteOutboundTruck(truckId, version),
     onSuccess: invalidate,
   });
 }
@@ -47,7 +53,13 @@ export function useCreateShippingFromTruck() {
   const queryClient = useQueryClient();
   const keys = outboundMutationInvalidationKeys();
   return useMutation({
-    mutationFn: (truckId: number) => createShippingSessionFromTruck(truckId),
+    mutationFn: ({
+      truckId,
+      version,
+    }: {
+      truckId: number;
+      version?: number | null;
+    }) => createShippingSessionFromTruck(truckId, version),
     onSuccess: (data) => {
       void queryClient.invalidateQueries({ queryKey: keys.shipping });
       void queryClient.invalidateQueries({ queryKey: keys.readyToShip });

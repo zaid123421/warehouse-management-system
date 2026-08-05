@@ -121,6 +121,7 @@ export function normalizeTransitTruck(raw: unknown): TransitTruck | null {
     receivingDay: pickString(rec, "receivingDay"),
     assignedTires: pickNumber(rec, "assignedTires") || undefined,
     expectedTires: pickNumber(rec, "expectedTires") || undefined,
+    receivingSessionId: pickNumber(rec, "receivingSessionId") || undefined,
     version: pickNumber(rec, "version"),
   };
 }

@@ -13,6 +13,11 @@ import {
 } from "@/modules/outbound-sessions/services/picking-session.service";
 import type { AssignPickingSessionRequest } from "@/modules/outbound-sessions/types/picking-session";
 
+type SessionVersionArgs = {
+  sessionId: number;
+  version?: number | null;
+};
+
 function useInvalidatePicking(queryClient: ReturnType<typeof useQueryClient>) {
   const keys = outboundMutationInvalidationKeys();
   return (sessionId?: number) => {
@@ -30,7 +35,8 @@ export function useApprovePickingSession() {
   const queryClient = useQueryClient();
   const invalidate = useInvalidatePicking(queryClient);
   return useMutation({
-    mutationFn: (sessionId: number) => approvePickingSession(sessionId),
+    mutationFn: ({ sessionId, version }: SessionVersionArgs) =>
+      approvePickingSession(sessionId, version),
     onSuccess: (data) => invalidate(data.id),
   });
 }
@@ -39,7 +45,8 @@ export function useCancelPickingSession() {
   const queryClient = useQueryClient();
   const invalidate = useInvalidatePicking(queryClient);
   return useMutation({
-    mutationFn: (sessionId: number) => cancelPickingSession(sessionId),
+    mutationFn: ({ sessionId, version }: SessionVersionArgs) =>
+      cancelPickingSession(sessionId, version),
     onSuccess: (data) => invalidate(data.id),
   });
 }
@@ -63,7 +70,8 @@ export function useStartPickingSession() {
   const queryClient = useQueryClient();
   const invalidate = useInvalidatePicking(queryClient);
   return useMutation({
-    mutationFn: (sessionId: number) => startPickingSession(sessionId),
+    mutationFn: ({ sessionId, version }: SessionVersionArgs) =>
+      startPickingSession(sessionId, version),
     onSuccess: (data) => invalidate(data.id),
   });
 }
@@ -72,7 +80,8 @@ export function useCompletePickingSession() {
   const queryClient = useQueryClient();
   const invalidate = useInvalidatePicking(queryClient);
   return useMutation({
-    mutationFn: (sessionId: number) => completePickingSession(sessionId),
+    mutationFn: ({ sessionId, version }: SessionVersionArgs) =>
+      completePickingSession(sessionId, version),
     onSuccess: (data) => invalidate(data.id),
   });
 }
@@ -81,7 +90,8 @@ export function useDispatchPickingSession() {
   const queryClient = useQueryClient();
   const invalidate = useInvalidatePicking(queryClient);
   return useMutation({
-    mutationFn: (sessionId: number) => dispatchPickingSession(sessionId),
+    mutationFn: ({ sessionId, version }: SessionVersionArgs) =>
+      dispatchPickingSession(sessionId, version),
     onSuccess: (data) => invalidate(data.id),
   });
 }

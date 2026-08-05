@@ -1,3 +1,5 @@
+import { getSchedulingCellTone, type SchedulingCellTone } from "@/shared/lib/scheduling-cell-tone";
+
 export const SCHEDULING_DAYS_OF_WEEK = [
   "MONDAY",
   "TUESDAY",
@@ -18,6 +20,8 @@ export type SchedulingGridCell = {
   estimatedTrucks: number;
   requestCount: number;
   status: string;
+  serviceDate?: string;
+  tone: SchedulingCellTone;
 };
 
 export type SchedulingBoardStats = {
@@ -40,19 +44,36 @@ export function cellMatrixKey(region: string, day: string): string {
   return `${region}::${day}`;
 }
 
-export function toSchedulingGridCells<T extends { cellId: number; totalVolume: number; estimatedTrucks: number; requestCount: number; status: string; regionProvinceName?: string }>(
-  cells: T[],
-  getDay: (cell: T) => string,
-): SchedulingGridCell[] {
-  return cells.map((cell) => ({
-    cellId: cell.cellId,
-    day: getDay(cell).toUpperCase(),
-    regionProvinceName: cell.regionProvinceName?.trim() || "—",
-    totalVolume: cell.totalVolume,
-    estimatedTrucks: cell.estimatedTrucks,
-    requestCount: cell.requestCount,
-    status: cell.status,
-  }));
+export function toSchedulingGridCells<
+  T extends {
+    cellId: number;
+    totalVolume: number;
+    estimatedTrucks: number;
+    requestCount: number;
+    status: string;
+    regionProvinceName?: string;
+    serviceDate?: string | null;
+  },
+>(cells: T[], getDay: (cell: T) => string): SchedulingGridCell[] {
+  return cells.map((cell) => {
+    const day = getDay(cell).toUpperCase();
+    const serviceDate = cell.serviceDate?.trim() || undefined;
+    return {
+      cellId: cell.cellId,
+      day,
+      regionProvinceName: cell.regionProvinceName?.trim() || "—",
+      totalVolume: cell.totalVolume,
+      estimatedTrucks: cell.estimatedTrucks,
+      requestCount: cell.requestCount,
+      status: cell.status,
+      serviceDate,
+      tone: getSchedulingCellTone({
+        status: cell.status,
+        serviceDate,
+        weekday: day,
+      }),
+    };
+  });
 }
 
 export function computeSchedulingBoardStats(

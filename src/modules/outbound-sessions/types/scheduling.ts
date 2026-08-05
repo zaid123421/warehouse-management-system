@@ -7,7 +7,11 @@ export type DayOfWeek =
   | "SATURDAY"
   | "SUNDAY";
 
-export type OutboundSchedulingCellStatus = "PLANNED" | "APPROVED" | string;
+export type OutboundSchedulingCellStatus =
+  | "PLANNED"
+  | "PARTIAL_APPROVAL"
+  | "APPROVED"
+  | string;
 
 export type OutboundSchedulingCell = {
   cellId: number;
@@ -24,6 +28,7 @@ export type OutboundSchedulingCell = {
   requestCount: number;
   cutoffAt?: string;
   readyForApproval?: boolean;
+  version?: number;
 };
 
 export type OutboundSchedulingBoard = {
@@ -35,10 +40,20 @@ export type OutboundSchedulingCellRequest = {
   outboundRequestId: number;
   status: string;
   scheduleStatus?: string;
+  dealerId?: number;
   dealerName?: string;
   totalVolume?: number;
   deliveryDay?: string;
   serviceDate?: string;
+};
+
+export type OutboundSchedulingCellDealer = {
+  dealerId: number;
+  dealerName: string;
+  requestCount: number;
+  totalVolume: number;
+  approved: boolean;
+  readyForApproval: boolean;
 };
 
 export type OutboundSchedulingCellDetail = {
@@ -51,8 +66,12 @@ export type OutboundSchedulingCellDetail = {
   totalVolume?: number;
   estimatedTrucks?: number;
   status: OutboundSchedulingCellStatus;
+  approvedDealerCount?: number;
+  totalDealerCount?: number;
   cutoffAt?: string;
   readyForApproval?: boolean;
+  version: number;
+  dealers: OutboundSchedulingCellDealer[];
   requests: OutboundSchedulingCellRequest[];
 };
 

@@ -87,6 +87,7 @@ export function InboundTruckPlanningBoard({ schedulingCellId }: InboundTruckPlan
     refetch: refetchTrucks,
   } = usePlanningTrucks(
     {
+      schedulingCellId,
       serviceDate: cell?.serviceDate,
       receivingDay: cell?.receivingDay,
     },

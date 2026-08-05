@@ -1,10 +1,18 @@
-import { asRecord, pickNumber, pickString, str, unwrapPayload } from "@/shared/lib/dto-utils";
+import {
+  asRecord,
+  bool,
+  pickNumber,
+  pickString,
+  str,
+  unwrapPayload,
+} from "@/shared/lib/dto-utils";
 import type {
   ApproveOutboundSchedulingCellResult,
   GeneratePickingSessionsResult,
   GeneratedPickingSession,
   OutboundSchedulingBoard,
   OutboundSchedulingCell,
+  OutboundSchedulingCellDealer,
   OutboundSchedulingCellDetail,
   OutboundSchedulingCellRequest,
 } from "@/modules/outbound-sessions/types/scheduling";
@@ -45,10 +53,26 @@ function normalizeCellRequest(raw: unknown): OutboundSchedulingCellRequest | nul
     outboundRequestId,
     status: str(rec.status),
     scheduleStatus: pickString(rec, "scheduleStatus"),
+    dealerId: pickNumber(rec, "dealerId") || undefined,
     dealerName: pickString(rec, "dealerName"),
     totalVolume: pickNumber(rec, "totalVolume") || undefined,
     deliveryDay: pickString(rec, "deliveryDay"),
     serviceDate: pickString(rec, "serviceDate"),
+  };
+}
+
+function normalizeCellDealer(raw: unknown): OutboundSchedulingCellDealer | null {
+  const rec = asRecord(raw);
+  if (!rec) return null;
+  const dealerId = pickNumber(rec, "dealerId");
+  if (!dealerId) return null;
+  return {
+    dealerId,
+    dealerName: pickString(rec, "dealerName") || "—",
+    requestCount: pickNumber(rec, "requestCount"),
+    totalVolume: pickNumber(rec, "totalVolume"),
+    approved: bool(rec.approved),
+    readyForApproval: bool(rec.readyForApproval),
   };
 }
 
@@ -77,6 +101,7 @@ function normalizeCell(raw: unknown): OutboundSchedulingCell | null {
         : rec.readyForApproval === false
           ? false
           : undefined,
+    version: pickNumber(rec, "version"),
   };
 }
 
@@ -101,6 +126,7 @@ export function normalizeOutboundSchedulingCellDetail(
   const payload = unwrapPayload(data);
   const cellId = pickNumber(payload, "cellId") || pickNumber(payload, "id");
   if (!cellId) return null;
+  const dealersRaw = Array.isArray(payload.dealers) ? payload.dealers : [];
   const requestsRaw = Array.isArray(payload.requests) ? payload.requests : [];
   const regionCityName = regionCityNameFrom(payload);
   return {
@@ -113,6 +139,8 @@ export function normalizeOutboundSchedulingCellDetail(
     totalVolume: pickNumber(payload, "totalVolume") || undefined,
     estimatedTrucks: pickNumber(payload, "estimatedTrucks") || undefined,
     status: str(payload.status),
+    approvedDealerCount: pickNumber(payload, "approvedDealerCount"),
+    totalDealerCount: pickNumber(payload, "totalDealerCount"),
     cutoffAt: pickString(payload, "cutoffAt"),
     readyForApproval:
       payload.readyForApproval === true
@@ -120,6 +148,10 @@ export function normalizeOutboundSchedulingCellDetail(
         : payload.readyForApproval === false
           ? false
           : undefined,
+    version: pickNumber(payload, "version"),
+    dealers: dealersRaw
+      .map((item) => normalizeCellDealer(item))
+      .filter((item): item is OutboundSchedulingCellDealer => item != null),
     requests: requestsRaw
       .map((item) => normalizeCellRequest(item))
       .filter((item): item is OutboundSchedulingCellRequest => item != null),
