@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
-import { ArrowLeft, Check, Play, Square, X } from "lucide-react";
+import { ArrowLeft, Check, Play, Square, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -18,61 +18,63 @@ import { ErrorAlert } from "@/components/ui/error-alert";
 import { Skeleton } from "@/components/ui/skeleton";
 import { StyledTable } from "@/components/ui/styled-table";
 import { ROUTES } from "@/constants/routes";
+import { formatCount } from "@/lib/format-number";
 import { PRIMARY_BUTTON_CLASS } from "@/lib/primary-button-styles";
 import { AssignStaffDialog } from "@/modules/inbound-sessions/components/shared/assign-staff-dialog";
 import { SessionProgressBar } from "@/modules/inbound-sessions/components/shared/session-progress-bar";
-import { SessionStatusBadge } from "@/modules/inbound-sessions/components/shared/session-status-badge";
-import { InboundRequestDetailExpandedRow } from "@/modules/inbound-sessions/components/inbound-request-detail-expanded-row";
-import { usePutawaySessions } from "@/modules/inbound-sessions/hooks/use-putaway-sessions";
-import { useReceivingSessionDetail } from "@/modules/inbound-sessions/hooks/use-receiving-session-detail";
+import { OutboundSessionStatusBadge } from "@/modules/outbound-sessions/components/shared/session-status-badge";
+import { useShippingSessionDetail } from "@/modules/outbound-sessions/hooks/use-shipping-session-detail";
 import {
-  useApproveReceivingSession,
-  useAssignReceivingSession,
-  useCompleteReceivingSession,
-  useRejectReceivingSession,
-  useStartReceivingSession,
-} from "@/modules/inbound-sessions/hooks/use-receiving-session-mutations";
+  useApproveShippingSession,
+  useAssignShippingSession,
+  useCancelShippingSession,
+  useCompleteShippingSession,
+  useStartShippingSession,
+} from "@/modules/outbound-sessions/hooks/use-shipping-session-mutations";
 import {
-  canApproveReceivingSession,
-  canAssignReceivingSession,
-  canCompleteReceivingSession,
-  canStartReceivingSession,
-} from "@/modules/inbound-sessions/lib/status-utils";
+  canApproveShippingSession,
+  canAssignShippingSession,
+  canCancelShippingSession,
+  canCompleteShippingSession,
+  canStartShippingSession,
+  formatDayLabel,
+  formatDealerSummary,
+} from "@/modules/outbound-sessions/lib/status-utils";
 import { AssignedStaffRow } from "@/shared/components/sessions/assigned-staff-row";
 import {
   formatSessionTimestamp,
   SessionTimeline,
 } from "@/shared/components/sessions/session-timeline";
-import { buildTabHighlightHref } from "@/shared/hooks/use-highlight-id";
 import { useStaffNameMap } from "@/shared/hooks/use-staff-name-map";
 
-type ReceivingSessionDetailContentProps = {
+type ShippingSessionDetailContentProps = {
   sessionId: number;
 };
 
-export function ReceivingSessionDetailContent({ sessionId }: ReceivingSessionDetailContentProps) {
-  const t = useTranslations("inboundSessions");
-  const { data, isPending, isError, error, refetch } = useReceivingSessionDetail(sessionId);
-  const { data: putawaySessions = [] } = usePutawaySessions();
+export function ShippingSessionDetailContent({ sessionId }: ShippingSessionDetailContentProps) {
+  const t = useTranslations("outboundSessions");
+  const { data, isPending, isError, error, refetch } = useShippingSessionDetail(sessionId);
   const { resolveNames } = useStaffNameMap(true);
-  const approveMutation = useApproveReceivingSession();
-  const rejectMutation = useRejectReceivingSession();
-  const assignMutation = useAssignReceivingSession();
-  const startMutation = useStartReceivingSession();
-  const completeMutation = useCompleteReceivingSession();
+  const approveMutation = useApproveShippingSession();
+  const cancelMutation = useCancelShippingSession();
+  const assignMutation = useAssignShippingSession();
+  const startMutation = useStartShippingSession();
+  const completeMutation = useCompleteShippingSession();
   const [assignOpen, setAssignOpen] = useState(false);
-  const [rejectOpen, setRejectOpen] = useState(false);
+  const [cancelOpen, setCancelOpen] = useState(false);
 
-  const linkedPutawayId = useMemo(() => {
-    const match = putawaySessions.find((session) => session.receivingSessionId === sessionId);
-    return match?.id ?? null;
-  }, [putawaySessions, sessionId]);
+  const staffNames = resolveNames(data?.assignedStaffUserIds);
+
+  const remainingTires = useMemo(() => {
+    if (!data) return 0;
+    return Math.max(0, data.expectedTires - data.shippedTires - data.missingTires);
+  }, [data]);
 
   async function runAction(
     action: () => Promise<unknown>,
     successKey:
       | "approveSessionSuccess"
-      | "rejectSessionSuccess"
+      | "cancelSessionSuccess"
       | "assignSuccess"
       | "startSessionSuccess"
       | "completeSessionSuccess",
@@ -86,21 +88,19 @@ export function ReceivingSessionDetailContent({ sessionId }: ReceivingSessionDet
     }
   }
 
-  const staffNames = resolveNames(data?.assignedStaffUserIds);
-
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-4">
       <div>
         <Button type="button" variant="ghost" size="sm" className="mb-2 -ms-2" asChild>
-          <Link href={`${ROUTES.DASHBOARD.INBOUND_SESSIONS.LIST}?tab=receiving`}>
+          <Link href={`${ROUTES.DASHBOARD.OUTBOUND_SESSIONS.LIST}?tab=shipping`}>
             <ArrowLeft className="size-4" />
-            {t("backToInbound")}
+            {t("backToOutbound")}
           </Link>
         </Button>
         <h1 className="text-headline-sm font-bold text-foreground">
-          {t("receivingDetailTitle", { id: sessionId })}
+          {t("shippingDetailTitle", { id: sessionId })}
         </h1>
-        <p className="mt-1 text-body-md text-muted-foreground">{t("receivingDetailIntro")}</p>
+        <p className="mt-1 text-body-md text-muted-foreground">{t("shippingDetailIntro")}</p>
       </div>
 
       {isError ? (
@@ -117,17 +117,30 @@ export function ReceivingSessionDetailContent({ sessionId }: ReceivingSessionDet
         <div className="space-y-6">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
             <div className="flex min-w-0 flex-wrap items-center gap-2">
-              <SessionStatusBadge status={data.status} />
-              {data.inboundTruckLabel ? (
-                <span className="text-body-sm text-muted-foreground">{data.inboundTruckLabel}</span>
+              <OutboundSessionStatusBadge status={data.status} />
+              {data.outboundTruckLabel ? (
+                <span className="text-body-sm text-muted-foreground">{data.outboundTruckLabel}</span>
+              ) : null}
+              {data.serviceDate ? (
+                <span className="text-body-sm text-muted-foreground">
+                  {t("columnServiceDate")}: {data.serviceDate}
+                </span>
+              ) : null}
+              {data.deliveryDay ? (
+                <span className="text-body-sm text-muted-foreground">
+                  {formatDayLabel(data.deliveryDay)}
+                </span>
               ) : null}
               <span className="text-body-sm text-muted-foreground">
-                {t("columnRequests")}: {data.inboundRequests.length}
+                {t("columnRequests")}: {data.outboundRequests.length}
+              </span>
+              <span className="text-body-sm text-muted-foreground">
+                {formatDealerSummary(data.outboundRequests, t("unknownDealer"))}
               </span>
             </div>
 
             <div className="flex flex-wrap gap-2 sm:justify-end">
-              {canApproveReceivingSession(data.status) ? (
+              {canApproveShippingSession(data.status) ? (
                 <Button
                   type="button"
                   size="sm"
@@ -148,19 +161,19 @@ export function ReceivingSessionDetailContent({ sessionId }: ReceivingSessionDet
                   {t("approveSession")}
                 </Button>
               ) : null}
-              {data.status === "PENDING_APPROVAL" ? (
+              {canCancelShippingSession(data.status) ? (
                 <Button
                   type="button"
                   size="sm"
                   variant="destructive"
-                  disabled={rejectMutation.isPending}
-                  onClick={() => setRejectOpen(true)}
+                  disabled={cancelMutation.isPending}
+                  onClick={() => setCancelOpen(true)}
                 >
-                  <X className="size-4" />
-                  {t("rejectSession")}
+                  <Trash2 className="size-4" />
+                  {t("cancelSession")}
                 </Button>
               ) : null}
-              {canStartReceivingSession(data.status) ? (
+              {canStartShippingSession(data.status) ? (
                 <Button
                   type="button"
                   size="sm"
@@ -181,7 +194,7 @@ export function ReceivingSessionDetailContent({ sessionId }: ReceivingSessionDet
                   {t("startSession")}
                 </Button>
               ) : null}
-              {canCompleteReceivingSession(data.status) ? (
+              {canCompleteShippingSession(data.status) ? (
                 <Button
                   type="button"
                   size="sm"
@@ -202,30 +215,6 @@ export function ReceivingSessionDetailContent({ sessionId }: ReceivingSessionDet
                   {t("completeSession")}
                 </Button>
               ) : null}
-              {data.status === "COMPLETED" ? (
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="outline"
-                  className="border-emerald-500/30 text-emerald-600 hover:bg-emerald-50 disabled:opacity-40 dark:text-emerald-400 dark:hover:bg-emerald-500/10"
-                  disabled={!linkedPutawayId}
-                  asChild={Boolean(linkedPutawayId)}
-                >
-                  {linkedPutawayId ? (
-                    <Link
-                      href={buildTabHighlightHref(
-                        ROUTES.DASHBOARD.INBOUND_SESSIONS.LIST,
-                        "putaway",
-                        linkedPutawayId,
-                      )}
-                    >
-                      {t("goToPutawayAction")}
-                    </Link>
-                  ) : (
-                    <span>{t("goToPutawayAction")}</span>
-                  )}
-                </Button>
-              ) : null}
             </div>
           </div>
 
@@ -235,28 +224,33 @@ export function ReceivingSessionDetailContent({ sessionId }: ReceivingSessionDet
             assignedLabel={t("assignedStaffLabel")}
             assignLabel={t("assignStaff")}
             addStaffLabel={t("addStaff")}
-            canAssign={canAssignReceivingSession(data.status)}
+            canAssign={canAssignShippingSession(data.status)}
             onAssign={() => setAssignOpen(true)}
           />
 
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            <DetailField
-              label={t("columnTires")}
-              value={`${data.receivedTires}/${data.expectedTires}`}
-            />
-            <DetailField
-              label={t("columnRequests")}
-              value={String(data.inboundRequests.length)}
-            />
-            {data.exceptionScanCount != null ? (
-              <DetailField
-                label={t("columnExceptions")}
-                value={String(data.exceptionScanCount)}
-              />
-            ) : null}
+            <DetailField label={t("shippingTotalTires")} value={formatCount(data.expectedTires)} />
+            <DetailField label={t("shippingScanned")} value={formatCount(data.shippedTires)} />
+            <DetailField label={t("shippingRemaining")} value={formatCount(remainingTires)} />
           </div>
 
-          <SessionProgressBar value={data.progressPercent ?? 0} label={t("columnProgress")} />
+          {data.missingTires > 0 ? (
+            <p className="text-body-sm text-amber-700 dark:text-amber-400">
+              {t("shippingMissingCount", { count: data.missingTires })}
+            </p>
+          ) : (
+            <p className="text-body-sm text-emerald-700 dark:text-emerald-400">
+              {t("shippingNoMissing")}
+            </p>
+          )}
+
+          <SessionProgressBar
+            value={data.progressPercent ?? 0}
+            label={t("shippingScanProgress", {
+              shipped: data.shippedTires,
+              expected: data.expectedTires,
+            })}
+          />
 
           <SessionTimeline
             steps={[
@@ -284,41 +278,81 @@ export function ReceivingSessionDetailContent({ sessionId }: ReceivingSessionDet
           />
 
           <section className="space-y-3">
-            <h2 className="text-label-lg font-semibold text-foreground">{t("linkedRequestsTitle")}</h2>
+            <h2 className="text-label-lg font-semibold text-foreground">
+              {t("shippingLinkedRequestsTitle")}
+            </h2>
             <StyledTable
               columns={[
                 {
                   header: t("columnRequestId"),
-                  render: (row) => `#${row.inboundRequestId}`,
+                  render: (row) => `#${row.outboundRequestId}`,
                 },
                 {
                   header: t("columnDealer"),
-                  render: (row) => row.dealerName ?? "—",
+                  render: (row) => row.dealerName ?? t("unknownDealer"),
                 },
                 {
                   header: t("columnStatus"),
-                  render: (row) => <SessionStatusBadge status={row.status} />,
+                  render: (row) => <OutboundSessionStatusBadge status={row.status} />,
                 },
               ]}
-              rows={data.inboundRequests}
-              keyProp={(row) => row.inboundRequestId}
+              rows={data.outboundRequests}
+              keyProp={(row) => row.outboundRequestId}
               emptyText={t("noLinkedRequests")}
               horizontalScroll
-              renderExpanded={(row) => (
-                <InboundRequestDetailExpandedRow requestId={row.inboundRequestId} />
-              )}
             />
           </section>
+
+          {data.lines.length > 0 ? (
+            <section className="space-y-3">
+              <h2 className="text-label-lg font-semibold text-foreground">
+                {t("shippingManifestTitle")}
+              </h2>
+              <StyledTable
+                columns={[
+                  {
+                    header: t("columnTireId"),
+                    render: (row) =>
+                      row.tireUniqueId ?? (row.tireId ? `#${row.tireId}` : "—"),
+                  },
+                  {
+                    header: t("shippingColumnCustomer"),
+                    render: (row) => row.customerName ?? row.dealerName ?? "—",
+                  },
+                  {
+                    header: t("columnStatus"),
+                    render: (row) => (
+                      <OutboundSessionStatusBadge
+                        status={row.lineStatus ?? row.status ?? "—"}
+                      />
+                    ),
+                  },
+                  {
+                    header: t("shippingColumnScannedAt"),
+                    render: (row) => row.scannedAt ?? "—",
+                  },
+                ]}
+                rows={data.lines}
+                keyProp={(row) =>
+                  row.tireUniqueId ??
+                  String(row.outboundRequestLineId ?? row.tireId ?? "line")
+                }
+                emptyText={t("shippingNoManifestLines")}
+                horizontalScroll
+              />
+            </section>
+          ) : null}
         </div>
       )}
 
       <AssignStaffDialog
         open={assignOpen}
         onOpenChange={setAssignOpen}
-        title={t("assignReceivingTitle")}
-        description={t("assignReceivingDescription", { id: sessionId })}
+        title={t("assignShippingTitle")}
+        description={t("assignShippingDescription", { id: sessionId })}
         initialStaffIds={data?.assignedStaffUserIds ?? []}
         isPending={assignMutation.isPending}
+        translationNamespace="outboundSessions"
         onConfirm={async (staffUserIds) => {
           if (!data) return;
           await runAction(
@@ -333,34 +367,34 @@ export function ReceivingSessionDetailContent({ sessionId }: ReceivingSessionDet
         }}
       />
 
-      <Dialog open={rejectOpen} onOpenChange={setRejectOpen}>
+      <Dialog open={cancelOpen} onOpenChange={setCancelOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{t("rejectSessionConfirmTitle")}</DialogTitle>
+            <DialogTitle>{t("cancelShippingConfirmTitle")}</DialogTitle>
             <DialogDescription>
-              {t("rejectSessionConfirmDescription", { id: sessionId })}
+              {t("cancelShippingConfirmDescription", { id: sessionId })}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => setRejectOpen(false)}>
+            <Button type="button" variant="outline" onClick={() => setCancelOpen(false)}>
               {t("cancel")}
             </Button>
             <Button
               type="button"
               variant="destructive"
-              disabled={rejectMutation.isPending}
+              disabled={cancelMutation.isPending}
               onClick={() =>
                 void runAction(async () => {
                   if (!data) return;
-                  await rejectMutation.mutateAsync({
+                  await cancelMutation.mutateAsync({
                     sessionId: data.id,
                     version: data.version ?? 0,
                   });
-                  setRejectOpen(false);
-                }, "rejectSessionSuccess")
+                  setCancelOpen(false);
+                }, "cancelSessionSuccess")
               }
             >
-              {rejectMutation.isPending ? t("saving") : t("rejectSession")}
+              {cancelMutation.isPending ? t("saving") : t("cancelSession")}
             </Button>
           </DialogFooter>
         </DialogContent>

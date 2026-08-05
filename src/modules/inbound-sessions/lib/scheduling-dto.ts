@@ -59,6 +59,7 @@ function normalizeSchedulingCell(raw: unknown): SchedulingCell | null {
   return {
     cellId,
     receivingDay: str(rec.receivingDay),
+    serviceDate: pickString(rec, "serviceDate"),
     regionProvinceId:
       pickNumber(rec, "regionCityId") ||
       pickNumber(rec, "regionProvinceId") ||

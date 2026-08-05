@@ -16,6 +16,7 @@ export type SchedulingCellStatus =
 export type SchedulingCell = {
   cellId: number;
   receivingDay: DayOfWeek | string;
+  serviceDate?: string;
   regionProvinceId?: number;
   regionProvinceName: string;
   totalVolume: number;

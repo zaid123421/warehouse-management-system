@@ -35,6 +35,7 @@ export const ROUTES = {
       TRUCK_PLANNING: (cellId: string | number) =>
         `/dashboard/outbound-sessions/truck-planning/${cellId}`,
       PICKING_DETAIL: (id: string | number) => `/dashboard/outbound-sessions/picking/${id}`,
+      SHIPPING_DETAIL: (id: string | number) => `/dashboard/outbound-sessions/shipping/${id}`,
     },
     EMPLOYEES: "/dashboard/employees",
     REPORTS: "/dashboard/reports",
