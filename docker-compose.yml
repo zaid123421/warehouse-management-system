@@ -1,0 +1,28 @@
+# VPS: copy .env.example → .env in the same directory as this file, then:
+#   docker compose up -d --build
+
+services:
+  wms-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_BACKEND_URL_FOR_CLIENT_REQUESTS: ${NEXT_PUBLIC_BACKEND_URL_FOR_CLIENT_REQUESTS}
+        NEXT_PUBLIC_BACKEND_URL_FOR_SERVER_REQUESTS: ${NEXT_PUBLIC_BACKEND_URL_FOR_SERVER_REQUESTS}
+    image: wms-app:latest
+    container_name: wms-frontend
+    restart: unless-stopped
+    ports:
+      - "${HOST_PORT:-3000}:3000"
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      HOSTNAME: 0.0.0.0
+      NEXT_PUBLIC_BACKEND_URL_FOR_CLIENT_REQUESTS: ${NEXT_PUBLIC_BACKEND_URL_FOR_CLIENT_REQUESTS}
+      NEXT_PUBLIC_BACKEND_URL_FOR_SERVER_REQUESTS: ${NEXT_PUBLIC_BACKEND_URL_FOR_SERVER_REQUESTS}
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3000/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
