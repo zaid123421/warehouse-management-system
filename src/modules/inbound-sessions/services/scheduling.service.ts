@@ -11,9 +11,11 @@ import type {
   SchedulingCellDetail,
 } from "@/modules/inbound-sessions/types/scheduling";
 
-export async function getSchedulingBoard(): Promise<SchedulingBoard> {
+export async function getSchedulingBoard(weekStart?: string): Promise<SchedulingBoard> {
   try {
-    const { data } = await api.get<unknown>(ENDPOINTS.WMS_INBOUND_SCHEDULING.BOARD);
+    const { data } = await api.get<unknown>(ENDPOINTS.WMS_INBOUND_SCHEDULING.BOARD, {
+      params: weekStart ? { weekStart } : undefined,
+    });
     return normalizeSchedulingBoard(data);
   } catch (err: unknown) {
     toInboundError(err);

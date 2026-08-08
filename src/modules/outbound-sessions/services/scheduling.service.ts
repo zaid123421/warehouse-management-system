@@ -16,9 +16,13 @@ import type {
   OutboundSchedulingCellDetail,
 } from "@/modules/outbound-sessions/types/scheduling";
 
-export async function getOutboundSchedulingBoard(): Promise<OutboundSchedulingBoard> {
+export async function getOutboundSchedulingBoard(
+  weekStart?: string,
+): Promise<OutboundSchedulingBoard> {
   try {
-    const { data } = await api.get<unknown>(ENDPOINTS.WMS_OUTBOUND_SCHEDULING.BOARD);
+    const { data } = await api.get<unknown>(ENDPOINTS.WMS_OUTBOUND_SCHEDULING.BOARD, {
+      params: weekStart ? { weekStart } : undefined,
+    });
     return normalizeOutboundSchedulingBoard(data);
   } catch (err: unknown) {
     toOutboundError(err);

@@ -1,6 +1,10 @@
 export const inboundQueryKeys = {
   all: ["inbound-sessions"] as const,
-  schedulingBoard: () => [...inboundQueryKeys.all, "scheduling-board"] as const,
+  /** Omit weekStart to get the prefix that invalidates every cached week. */
+  schedulingBoard: (weekStart?: string) =>
+    weekStart
+      ? ([...inboundQueryKeys.all, "scheduling-board", weekStart] as const)
+      : ([...inboundQueryKeys.all, "scheduling-board"] as const),
   schedulingCell: (cellId: number) =>
     [...inboundQueryKeys.all, "scheduling-cell", cellId] as const,
   receivingSessions: () => [...inboundQueryKeys.all, "receiving-sessions"] as const,

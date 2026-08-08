@@ -114,6 +114,8 @@ export function normalizeOutboundSchedulingBoard(data: unknown): OutboundSchedul
       : [];
   return {
     warehouseId: pickNumber(payload, "warehouseId"),
+    weekStart: pickString(payload, "weekStart"),
+    weekEnd: pickString(payload, "weekEnd"),
     cells: cellsRaw
       .map((item) => normalizeCell(item))
       .filter((item): item is OutboundSchedulingCell => item != null),
