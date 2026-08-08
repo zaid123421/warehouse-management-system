@@ -53,7 +53,7 @@ export function InboundRequestDetailExpandedRow({ requestId }: { requestId: numb
   }
 
   return (
-    <div className="p-4 sm:p-6 bg-[var(--color-surface-container)] rounded-lg m-3 sm:m-4 border border-black/5 dark:border-white/5 shadow-sm">
+    <div className="m-3 rounded-lg border border-border bg-muted p-4 shadow-sm sm:m-4 sm:p-6">
       <div className="mb-6 flex items-center justify-between">
         <h4 className="text-body-md font-bold text-primary flex items-center gap-2">
           {t("requestTireSetsTitle", { id: requestId })}
@@ -73,15 +73,15 @@ export function InboundRequestDetailExpandedRow({ requestId }: { requestId: numb
         <div className="overflow-x-auto rounded-lg">
           <table className="w-full text-left text-sm">
             <thead>
-              <tr className="border-b border-black/5 dark:border-white/5 text-muted-foreground">
+              <tr className="border-b border-border text-muted-foreground">
                 <th className="py-3 px-4 font-semibold tracking-wide">{t("columnTireId")}</th>
                 <th className="py-3 px-4 font-semibold tracking-wide">{t("columnLocation")}</th>
                 <th className="py-3 px-4 font-semibold tracking-wide text-right">{t("columnStatus")}</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-black/5 dark:divide-white/5 text-foreground">
+            <tbody className="divide-y divide-border text-foreground">
               {data.lines.map((line: InboundRequestLine) => (
-                <tr key={line.id} className="group hover:bg-[var(--color-surface-light)] dark:hover:bg-muted/10 transition-colors">
+                <tr key={line.id} className="group transition-colors hover:bg-background/80">
                   <td className="py-3 px-4 whitespace-nowrap">
                     <div className="flex items-center gap-2">
                       <span className="inline-flex h-1.5 w-1.5 rounded-full bg-primary"></span>

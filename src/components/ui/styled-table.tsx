@@ -151,7 +151,7 @@ export function StyledTable<T>({
                     ))}
                   </TableRow>
                   {renderExpanded && isExpanded && (
-                    <TableRow className={`border-0 bg-[var(--color-surface-container)] dark:bg-[var(--color-surface-container)] ${!isLastRow ? "border-b border-black/5 dark:border-white/5" : ""}`}>
+                    <TableRow className={`border-0 bg-muted ${!isLastRow ? "border-b border-border" : ""}`}>
                       <TableCell 
                         colSpan={columns.length + 1} 
                         className={`p-0 border-l-[3px] border-primary ${isLastRow ? "rounded-es-xl rounded-ee-xl" : ""}`}
