@@ -15,10 +15,11 @@
     --secondary: var(--color-secondary-main);
     --secondary-foreground: var(--color-secondary-on-surface);
 
-    --muted: var(--color-surface-container);
-    --muted-foreground: var(--color-secondary-container);
+    /* Light nest — never point at dark-only surface-* tokens */
+    --muted: var(--color-surface-light-muted);
+    --muted-foreground: var(--color-text-subtle);
 
-    --accent: var(--color-surface-container);
+    --accent: var(--color-surface-light-accent);
     --accent-foreground: var(--color-secondary-main);
 
     --destructive: var(--color-error-main);

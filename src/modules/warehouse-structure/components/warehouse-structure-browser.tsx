@@ -133,7 +133,7 @@ export function WarehouseStructureBrowser({ warehouse }: WarehouseStructureBrows
         ))}
       </div>
 
-      <Card className="min-h-[520px] flex-1 border-0 bg-surface-container shadow-sm">
+      <Card className="min-h-[520px] flex-1 border border-border bg-card shadow-sm">
         <CardContent className="p-0">
           <div className="hidden min-h-[520px] xl:grid xl:grid-cols-[minmax(260px,1fr)_minmax(300px,1.1fr)_minmax(320px,1.2fr)]">
             <div

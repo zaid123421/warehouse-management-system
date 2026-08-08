@@ -109,8 +109,8 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
         })}
       </nav>
 
-      <div className="mt-auto shrink-0 space-y-3 border-t border-surface-container p-3">
-        <div className="rounded-lg border border-border bg-surface-container/50 p-3">
+      <div className="mt-auto shrink-0 space-y-3 border-t border-border p-3">
+        <div className="rounded-lg border border-border bg-muted p-3">
           <div className="flex items-center gap-3">
             <div
               className="flex size-10 shrink-0 items-center justify-center rounded-full bg-primary-dark/20 text-xs font-bold uppercase tracking-tight text-primary-dark"
@@ -160,7 +160,7 @@ export function AppSidebar() {
   return (
     <>
       {/* Mobile header — visible below sm */}
-      <header className="flex sm:hidden h-14 items-center gap-2 border-b border-surface-container bg-surface-light dark:bg-surface-default px-3">
+      <header className="flex sm:hidden h-14 items-center gap-2 border-b border-border bg-surface-light dark:bg-surface-default px-3">
         <button
           type="button"
           onClick={() => setOpen(true)}
@@ -200,7 +200,7 @@ export function AppSidebar() {
       </Sheet>
 
       {/* Desktop sidebar — hidden below sm */}
-      <aside className="hidden sm:flex h-full w-[260px] shrink-0 flex-col border-e border-surface-container bg-surface-light dark:bg-surface-default text-foreground">
+      <aside className="hidden sm:flex h-full w-[260px] shrink-0 flex-col border-e border-border bg-surface-light dark:bg-surface-default text-foreground">
         <SidebarHeader />
         <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
           <SidebarContent />

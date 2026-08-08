@@ -122,7 +122,7 @@ export function SettingsContent() {
         </div>
 
         <div className="space-y-6">
-          <Card className="rounded-lg border-0 bg-surface-container">
+          <Card className="rounded-lg border border-border bg-card shadow-sm">
             <CardHeader>
               <CardTitle className="text-title-lg font-semibold text-foreground">
                 {t("accountSection")}
@@ -164,7 +164,7 @@ export function SettingsContent() {
             </CardContent>
           </Card>
 
-          <Card className="rounded-lg border-0 bg-surface-container">
+          <Card className="rounded-lg border border-border bg-card shadow-sm">
             <CardHeader className="border-b border-border pb-6">
               <CardTitle className="text-title-lg font-semibold text-foreground">
                 {t("securitySection")}
@@ -186,7 +186,7 @@ export function SettingsContent() {
             </CardHeader>
           </Card>
 
-          <Card className="rounded-lg border-0 bg-surface-container">
+          <Card className="rounded-lg border border-border bg-card shadow-sm">
             <CardHeader>
               <CardTitle className="text-title-lg font-semibold text-foreground">
                 {t("appearanceSection")}
