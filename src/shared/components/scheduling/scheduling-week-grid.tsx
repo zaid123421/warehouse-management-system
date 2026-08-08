@@ -1,7 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { useTranslations } from "next-intl";
+import { useFormatter, useTranslations } from "next-intl";
 import { Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -11,13 +11,13 @@ import { schedulingCellToneClassNames } from "@/shared/lib/scheduling-cell-tone"
 import {
   buildSchedulingMatrix,
   cellMatrixKey,
-  formatSchedulingDayLabel,
-  formatSchedulingDayShort,
   type SchedulingGridCell,
 } from "@/shared/lib/scheduling-grid-utils";
+import { isSameLocalDay } from "@/shared/lib/scheduling-week";
 
 type SchedulingWeekGridProps = {
   cells: SchedulingGridCell[];
+  weekDates: Date[];
   selectedCellId: number | null;
   onSelectCell: (cellId: number) => void;
   onApproveCell?: (cell: SchedulingGridCell) => void;
@@ -30,6 +30,7 @@ type SchedulingWeekGridProps = {
 
 export function SchedulingWeekGrid({
   cells,
+  weekDates,
   selectedCellId,
   onSelectCell,
   onApproveCell,
@@ -40,7 +41,9 @@ export function SchedulingWeekGrid({
   isLoading = false,
 }: SchedulingWeekGridProps) {
   const t = useTranslations(translationNamespace);
-  const { regions, days, lookup } = buildSchedulingMatrix(cells);
+  const format = useFormatter();
+  const { regions, columns, lookup } = buildSchedulingMatrix(cells, weekDates);
+  const today = new Date();
 
   if (isLoading) {
     return <Skeleton className="h-64 w-full rounded-xl" />;
@@ -49,7 +52,7 @@ export function SchedulingWeekGrid({
   if (regions.length === 0) {
     return (
       <div className="rounded-xl border border-dashed border-[var(--color-surface-light-container)] bg-card px-4 py-12 text-center dark:border-[var(--color-surface-container-high)]">
-        <p className="text-body-md text-muted-foreground">{t("noSchedulingCells")}</p>
+        <p className="text-body-md text-muted-foreground">{t("noSchedulingCellsThisWeek")}</p>
       </div>
     );
   }
@@ -87,17 +90,22 @@ export function SchedulingWeekGrid({
               >
                 {t("gridRowRegion")}
               </th>
-              {days.map((day) => (
+              {columns.map((column) => (
                 <th
-                  key={day}
+                  key={column.isoDate}
+                  aria-current={isSameLocalDay(column.date, today) ? "date" : undefined}
                   className={cn(
                     "min-w-[9rem] border-b-2 px-2 py-3 text-center text-body-sm font-semibold text-foreground",
                     borderColor,
+                    isSameLocalDay(column.date, today) &&
+                      "bg-[var(--color-surface-light-container)] dark:bg-[var(--color-surface-container-high)]",
                   )}
                 >
-                  <span className="block text-label-lg">{formatSchedulingDayShort(day)}</span>
+                  <span className="block text-label-lg">
+                    {format.dateTime(column.date, { weekday: "short" })}
+                  </span>
                   <span className="block text-body-sm font-normal text-muted-foreground">
-                    {formatSchedulingDayLabel(day)}
+                    {format.dateTime(column.date, { day: "numeric", month: "short" })}
                   </span>
                 </th>
               ))}
@@ -115,12 +123,12 @@ export function SchedulingWeekGrid({
                 >
                   {region}
                 </td>
-                {days.map((day) => {
-                  const cell = lookup.get(cellMatrixKey(region, day));
+                {columns.map((column) => {
+                  const cell = lookup.get(cellMatrixKey(region, column.isoDate));
                   if (!cell) {
                     return (
                       <td
-                        key={day}
+                        key={column.isoDate}
                         className={cn("border-b px-2 py-2 align-top", borderColor)}
                       >
                         <div className="flex min-h-[7.5rem] items-center justify-center rounded-lg border border-dashed border-muted-foreground/20 bg-muted/20">
@@ -136,7 +144,7 @@ export function SchedulingWeekGrid({
 
                   return (
                     <td
-                      key={day}
+                      key={column.isoDate}
                       className={cn("border-b px-2 py-2 align-top", borderColor)}
                     >
                       <div
@@ -164,11 +172,6 @@ export function SchedulingWeekGrid({
                           <p className="text-body-sm text-muted-foreground">
                             {t("gridCellTrucks", { count: cell.estimatedTrucks })}
                           </p>
-                          {cell.serviceDate ? (
-                            <p className="text-body-sm text-muted-foreground">
-                              {cell.serviceDate}
-                            </p>
-                          ) : null}
                         </div>
                         <div className="mt-auto flex flex-wrap items-center gap-2">
                           {renderStatusBadge(cell.status)}

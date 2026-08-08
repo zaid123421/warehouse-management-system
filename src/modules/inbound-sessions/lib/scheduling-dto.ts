@@ -88,6 +88,8 @@ export function normalizeSchedulingBoard(data: unknown): SchedulingBoard {
       : [];
   return {
     warehouseId: pickNumber(payload, "warehouseId"),
+    weekStart: pickString(payload, "weekStart"),
+    weekEnd: pickString(payload, "weekEnd"),
     cells: cellsRaw
       .map((item) => normalizeSchedulingCell(item))
       .filter((item): item is SchedulingCell => item != null),

@@ -6,6 +6,8 @@ import { ErrorAlert } from "@/components/ui/error-alert";
 import { SchedulingBoardShell } from "@/shared/components/scheduling/scheduling-board-shell";
 import { SchedulingKpiRow } from "@/shared/components/scheduling/scheduling-kpi-row";
 import { SchedulingWeekGrid } from "@/shared/components/scheduling/scheduling-week-grid";
+import { SchedulingWeekNavigator } from "@/shared/components/scheduling/scheduling-week-navigator";
+import { useSchedulingWeek } from "@/shared/hooks/use-scheduling-week";
 import {
   computeSchedulingBoardStats,
   toSchedulingGridCells,
@@ -20,7 +22,10 @@ type InboundSchedulingBoardProps = {
 
 export function InboundSchedulingBoard({ onOpenPlanning }: InboundSchedulingBoardProps) {
   const t = useTranslations("inboundSessions");
-  const { data, isPending, isError, error, refetch } = useSchedulingBoard();
+  const { weekStart, weekStartIso, weekEnd, weekDates, setWeekStart } = useSchedulingWeek();
+  const { data, isPending, isError, error, refetch } = useSchedulingBoard({
+    weekStart: weekStartIso,
+  });
   const [selectedCellId, setSelectedCellId] = useState<number | null>(null);
 
   const gridCells = useMemo(
@@ -32,7 +37,20 @@ export function InboundSchedulingBoard({ onOpenPlanning }: InboundSchedulingBoar
   return (
     <SchedulingBoardShell
       hint={t("schedulingBoardHint")}
-      toolbar={<p className="text-body-md text-muted-foreground">{t("schedulingIntro")}</p>}
+      toolbar={
+        <>
+          <p className="text-body-md text-muted-foreground">{t("schedulingIntro")}</p>
+          <SchedulingWeekNavigator
+            weekStart={weekStart}
+            weekEnd={weekEnd}
+            onWeekStartChange={(next) => {
+              setSelectedCellId(null);
+              setWeekStart(next);
+            }}
+            translationNamespace="inboundSessions"
+          />
+        </>
+      }
       kpiRow={
         <SchedulingKpiRow stats={stats} translationNamespace="inboundSessions" />
       }
@@ -47,6 +65,7 @@ export function InboundSchedulingBoard({ onOpenPlanning }: InboundSchedulingBoar
           ) : null}
           <SchedulingWeekGrid
             cells={gridCells}
+            weekDates={weekDates}
             selectedCellId={selectedCellId}
             onSelectCell={setSelectedCellId}
             renderStatusBadge={(status) => <SessionStatusBadge status={status} />}

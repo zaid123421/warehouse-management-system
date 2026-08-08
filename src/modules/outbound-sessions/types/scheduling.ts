@@ -33,6 +33,10 @@ export type OutboundSchedulingCell = {
 
 export type OutboundSchedulingBoard = {
   warehouseId: number;
+  /** Monday of the returned calendar week, `YYYY-MM-DD`. */
+  weekStart?: string;
+  /** Sunday of that week, inclusive. */
+  weekEnd?: string;
   cells: OutboundSchedulingCell[];
 };
 
