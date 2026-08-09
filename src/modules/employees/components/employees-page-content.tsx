@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
-import { Pencil, Plus, Search, Trash2 } from "lucide-react";
+import { Pencil, Plus, Search, Trash2, UserCheck, UserX } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -68,10 +68,60 @@ export function EmployeesPageContent() {
     setDeleteModalOpen(true);
   }
 
+  function renderActionButtons(row: WarehouseStaffAssignment) {
+    return (
+      <div className="flex flex-wrap gap-2 sm:justify-center">
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          className="gap-1.5 border-primary-dark/40 text-primary-dark hover:bg-primary-dark hover:text-white"
+          onClick={() => openEditModal(row)}
+        >
+          <Pencil className="size-3.5" />
+          <span className="sm:inline">{t("edit")}</span>
+        </Button>
+        {row.user.active ? (
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="gap-1.5 border-warning-dark/50 text-warning-dark hover:bg-warning-dark hover:text-white"
+            onClick={() => openStatusModal(row)}
+          >
+            <UserX className="size-3.5" />
+            {t("deactivate")}
+          </Button>
+        ) : (
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="gap-1.5 border-emerald-600/50 text-emerald-700 hover:bg-emerald-600 hover:text-white dark:text-emerald-400"
+            onClick={() => openStatusModal(row)}
+          >
+            <UserCheck className="size-3.5" />
+            {t("activate")}
+          </Button>
+        )}
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          className="gap-1.5 border-destructive/50 text-destructive hover:bg-destructive hover:text-white"
+          onClick={() => openDeleteModal(row)}
+        >
+          <Trash2 className="size-3.5" />
+          {t("delete")}
+        </Button>
+      </div>
+    );
+  }
+
   return (
-    <div className="flex min-h-0 flex-1 flex-col gap-4">
+    <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-4">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-        <div>
+        <div className="min-w-0">
           <h1 className="text-headline-sm font-bold text-foreground">{t("title")}</h1>
           <p className="mt-1 text-body-md text-muted-foreground">{t("intro")}</p>
         </div>
@@ -119,88 +169,115 @@ export function EmployeesPageContent() {
         />
       ) : null}
 
-      <StyledTable
-        isLoading={isPending}
-        rows={filteredStaff}
-        keyProp={(row) => row.assignmentId}
-        emptyText={emptyText}
-        columns={[
-          {
-            header: t("columnEmployee"),
-            render: (row) => (
-              <div className="flex items-center gap-3">
+      {/* Mobile cards */}
+      <div className="space-y-3 md:hidden">
+        {isPending && filteredStaff.length === 0 ? (
+          <p className="py-10 text-center text-body-md text-muted-foreground">Loading...</p>
+        ) : filteredStaff.length === 0 ? (
+          <p className="py-10 text-center text-body-md text-muted-foreground">{emptyText}</p>
+        ) : (
+          filteredStaff.map((row) => (
+            <article
+              key={row.assignmentId}
+              className="rounded-xl border border-black/5 bg-card p-4 shadow-sm dark:border-white/5"
+            >
+              <div className="flex items-start gap-3">
                 <EmployeeAvatar row={row} />
-                <span className="font-medium">{staffFullName(row)}</span>
+                <div className="min-w-0 flex-1">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <h2 className="truncate font-semibold text-foreground">{staffFullName(row)}</h2>
+                    <button
+                      type="button"
+                      onClick={() => openStatusModal(row)}
+                      className="cursor-pointer rounded-full transition-opacity hover:opacity-80"
+                      aria-label={t("changeStatusTitle")}
+                    >
+                      <EmployeeStatusBadge active={row.user.active} />
+                    </button>
+                  </div>
+                  <p className="mt-0.5 truncate font-mono text-sm text-muted-foreground">
+                    {row.user.email || "—"}
+                  </p>
+                  <p className="mt-1 text-body-sm text-muted-foreground">
+                    {row.user.role.name || "—"}
+                    {" · "}
+                    {formatRelativeTime(row.user.updatedAt)}
+                  </p>
+                </div>
               </div>
-            ),
-          },
-          {
-            header: t("columnEmail"),
-            render: (row) => (
-              <span className="max-w-[180px] truncate font-mono text-sm" title={row.user.email}>
-                {row.user.email || "—"}
-              </span>
-            ),
-          },
-          {
-            header: t("columnRole"),
-            render: (row) => row.user.role.name || "—",
-          },
-          {
-            header: t("columnStatus"),
-            render: (row) => (
-              <button
-                type="button"
-                onClick={() => openStatusModal(row)}
-                className="cursor-pointer rounded-full transition-opacity hover:opacity-80"
-                aria-label={t("changeStatusTitle")}
-              >
-                <EmployeeStatusBadge active={row.user.active} />
-              </button>
-            ),
-          },
-          {
-            header: t("columnAssignedSessions"),
-            render: () => <span className="text-muted-foreground">—</span>,
-          },
-          {
-            header: t("columnLastActive"),
-            render: (row) => (
-              <span className="text-muted-foreground">
-                {formatRelativeTime(row.user.updatedAt)}
-              </span>
-            ),
-          },
-          {
-            header: t("columnActions"),
-            className: "min-w-[220px]",
-            render: (row) => (
-              <div className="flex flex-wrap justify-center gap-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  className="gap-1.5 border-primary-dark/40 text-primary-dark hover:bg-primary-dark hover:text-white"
-                  onClick={() => openEditModal(row)}
-                >
-                  <Pencil className="size-3.5" />
-                  {t("edit")}
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  className="gap-1.5 border-destructive/50 text-destructive hover:bg-destructive hover:text-white"
-                  onClick={() => openDeleteModal(row)}
-                >
-                  <Trash2 className="size-3.5" />
-                  {t("delete")}
-                </Button>
+              <div className="mt-4 border-t border-black/5 pt-3 dark:border-white/5">
+                {renderActionButtons(row)}
               </div>
-            ),
-          },
-        ]}
-      />
+            </article>
+          ))
+        )}
+      </div>
+
+      {/* Desktop / tablet table */}
+      <div className="hidden min-w-0 md:block">
+        <StyledTable
+          horizontalScroll
+          isLoading={isPending}
+          rows={filteredStaff}
+          keyProp={(row) => row.assignmentId}
+          emptyText={emptyText}
+          columns={[
+            {
+              header: t("columnEmployee"),
+              align: "left",
+              render: (row) => (
+                <div className="flex items-center gap-3">
+                  <EmployeeAvatar row={row} />
+                  <span className="font-medium">{staffFullName(row)}</span>
+                </div>
+              ),
+            },
+            {
+              header: t("columnEmail"),
+              align: "left",
+              render: (row) => (
+                <span className="max-w-[200px] truncate font-mono text-sm" title={row.user.email}>
+                  {row.user.email || "—"}
+                </span>
+              ),
+            },
+            {
+              header: t("columnRole"),
+              render: (row) => row.user.role.name || "—",
+            },
+            {
+              header: t("columnStatus"),
+              render: (row) => (
+                <button
+                  type="button"
+                  onClick={() => openStatusModal(row)}
+                  className="cursor-pointer rounded-full transition-opacity hover:opacity-80"
+                  aria-label={t("changeStatusTitle")}
+                >
+                  <EmployeeStatusBadge active={row.user.active} />
+                </button>
+              ),
+            },
+            {
+              header: t("columnAssignedSessions"),
+              render: () => <span className="text-muted-foreground">—</span>,
+            },
+            {
+              header: t("columnLastActive"),
+              render: (row) => (
+                <span className="text-muted-foreground">
+                  {formatRelativeTime(row.user.updatedAt)}
+                </span>
+              ),
+            },
+            {
+              header: t("columnActions"),
+              className: "min-w-[260px]",
+              render: (row) => renderActionButtons(row),
+            },
+          ]}
+        />
+      </div>
 
       <AddEmployeeModal open={addModalOpen} onOpenChange={setAddModalOpen} />
 

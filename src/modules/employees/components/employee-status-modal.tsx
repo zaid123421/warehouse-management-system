@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -12,7 +11,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { DIALOG_SHELL_CLASS } from "@/lib/radius";
 import { PRIMARY_BUTTON_CLASS } from "@/lib/primary-button-styles";
@@ -32,26 +30,19 @@ export function EmployeeStatusModal({ open, onOpenChange, staff }: EmployeeStatu
   const t = useTranslations("employees");
   const tCommon = useTranslations("common");
   const updateStatus = useUpdateStaffStatus();
-  const [active, setActive] = useState(true);
 
-  useEffect(() => {
-    if (!open || !staff) return;
-    setActive(staff.user.active);
-  }, [open, staff]);
+  const currentlyActive = staff?.user.active ?? false;
+  const nextActive = !currentlyActive;
 
-  async function handleSave() {
+  async function handleConfirm() {
     if (!staff || staff.user.id <= 0) return;
-    if (active === staff.user.active) {
-      onOpenChange(false);
-      return;
-    }
 
     try {
       await updateStatus.mutateAsync({
         userId: staff.user.id,
-        payload: { active },
+        payload: { active: nextActive },
       });
-      toast.success(active ? t("activateSuccess") : t("deactivateSuccess"));
+      toast.success(nextActive ? t("activateSuccess") : t("deactivateSuccess"));
       onOpenChange(false);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : t("statusError"));
@@ -62,12 +53,16 @@ export function EmployeeStatusModal({ open, onOpenChange, staff }: EmployeeStatu
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className={cn(DIALOG_SHELL_CLASS, "max-w-md gap-0 overflow-hidden p-0")}>
         <DialogHeader className="p-6 pb-4 text-start">
-          <DialogTitle>{t("changeStatusTitle")}</DialogTitle>
-          <DialogDescription>{t("changeStatusDescription")}</DialogDescription>
+          <DialogTitle>
+            {nextActive ? t("activate") : t("deactivate")}
+          </DialogTitle>
+          <DialogDescription>
+            {nextActive ? t("activateConfirm") : t("deactivateConfirm")}
+          </DialogDescription>
         </DialogHeader>
 
         {staff ? (
-          <div className="space-y-5 px-6 pb-2">
+          <div className="px-6 pb-2">
             <div className="flex items-center gap-3 rounded-lg border border-border bg-muted/30 p-3">
               <EmployeeAvatar row={staff} />
               <div className="min-w-0">
@@ -75,38 +70,6 @@ export function EmployeeStatusModal({ open, onOpenChange, staff }: EmployeeStatu
                 <p className="truncate text-sm text-muted-foreground">{staff.user.email}</p>
               </div>
               <EmployeeStatusBadge active={staff.user.active} className="ms-auto shrink-0" />
-            </div>
-
-            <div className="space-y-2">
-              <Label>{t("statusLabel")}</Label>
-              <div className="inline-flex w-full rounded-lg border border-border p-1">
-                <button
-                  type="button"
-                  disabled={updateStatus.isPending}
-                  onClick={() => setActive(true)}
-                  className={cn(
-                    "flex-1 rounded-md px-3 py-2 text-sm font-medium transition-colors",
-                    active
-                      ? "bg-primary-dark text-white"
-                      : "text-muted-foreground hover:text-foreground",
-                  )}
-                >
-                  {t("statusActive")}
-                </button>
-                <button
-                  type="button"
-                  disabled={updateStatus.isPending}
-                  onClick={() => setActive(false)}
-                  className={cn(
-                    "flex-1 rounded-md px-3 py-2 text-sm font-medium transition-colors",
-                    !active
-                      ? "bg-primary-dark text-white"
-                      : "text-muted-foreground hover:text-foreground",
-                  )}
-                >
-                  {t("statusInactive")}
-                </button>
-              </div>
             </div>
           </div>
         ) : null}
@@ -123,10 +86,14 @@ export function EmployeeStatusModal({ open, onOpenChange, staff }: EmployeeStatu
           <Button
             type="button"
             disabled={updateStatus.isPending || !staff}
-            onClick={() => void handleSave()}
-            className={PRIMARY_BUTTON_CLASS}
+            onClick={() => void handleConfirm()}
+            className={cn(
+              nextActive
+                ? PRIMARY_BUTTON_CLASS
+                : "border-0 bg-warning-dark text-white hover:bg-warning-dark/90",
+            )}
           >
-            {t("saveStatus")}
+            {nextActive ? t("activate") : t("deactivate")}
           </Button>
         </DialogFooter>
       </DialogContent>

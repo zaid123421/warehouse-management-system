@@ -12,8 +12,8 @@ export default function DashboardLayout({
     <div className="flex h-screen flex-col overflow-hidden bg-background sm:flex-row">
       <AuthBootstrap />
       <AppSidebar />
-      <main className="min-w-0 flex-1 overflow-auto p-3 sm:p-6">
-        {children}
+      <main className="min-h-0 min-w-0 flex-1 overflow-auto p-3 sm:p-4 lg:p-6">
+        <div className="mx-auto min-w-0 w-full max-w-[1600px]">{children}</div>
       </main>
     </div>
   );

@@ -56,10 +56,10 @@ export function StyledTable<T>({
 
   return (
     <div
-      className={`rounded-xl border ${borderColor} bg-card ${horizontalScroll ? "overflow-x-auto" : "overflow-hidden"} ${isLoading ? "opacity-70" : ""} ${className ?? ""}`}
+      className={`min-w-0 max-w-full rounded-xl border ${borderColor} bg-card overflow-x-auto ${isLoading ? "opacity-70" : ""} ${className ?? ""}`}
     >
       <table
-        className={`w-full border-separate border-spacing-0 ${horizontalScroll ? "min-w-[44rem]" : ""}`}
+        className={`w-full border-separate border-spacing-0 ${horizontalScroll ? "min-w-[44rem]" : "min-w-[36rem]"}`}
       >
         <TableHeader>
           <TableRow className="border-0 hover:bg-transparent">

@@ -7,9 +7,10 @@ import { useTranslations } from "next-intl";
 import { ErrorAlert } from "@/components/ui/error-alert";
 import { useAuthStore } from "@/shared/stores/auth-store";
 import { ROUTES } from "@/constants/routes";
-import { Mail, Lock, Eye, EyeOff } from "lucide-react";
+import { Mail, Lock, Eye } from "lucide-react";
 import { AUTH_PRIMARY_BUTTON_CLASS } from "@/lib/primary-button-styles";
 import { loginUseCase, LoginError } from "@/application/auth/login.use-case";
+import { resolvePostLoginPath } from "@/application/auth/resolve-post-login-path";
 import { cn } from "@/lib/utils";
 import {
   AuthPageShell,
@@ -71,7 +72,8 @@ export default function LoginPage() {
     try {
       const { role, user } = await loginUseCase({ email, password });
       setSession(role, user);
-      router.push(ROUTES.DASHBOARD.ROOT);
+      const nextPath = await resolvePostLoginPath(role);
+      router.push(nextPath);
     } catch (err) {
       setFormError(
         err instanceof LoginError
@@ -144,8 +146,9 @@ export default function LoginPage() {
               onClick={() => setShowPassword((p) => !p)}
               className="absolute end-4 top-1/2 -translate-y-1/2 cursor-pointer text-white/35 transition-colors hover:text-white/70"
               aria-label={showPassword ? "Hide password" : "Show password"}
+              aria-pressed={showPassword}
             >
-              {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+              <Eye className="size-4" />
             </button>
           }
         />
@@ -169,11 +172,6 @@ export default function LoginPage() {
           {isSubmitting ? t("signingIn") : t("signIn")}
         </button>
       </form>
-
-      {/* Need access */}
-      <p className="mt-6 text-center text-sm text-white/35">
-        {t("needAccess")}
-      </p>
     </AuthPageShell>
   );
 }

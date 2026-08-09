@@ -2,7 +2,7 @@
 
 import { useEffect, useState, type FormEvent } from "react";
 import { useTranslations } from "next-intl";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
@@ -179,8 +179,9 @@ export function AddEmployeeModal({ open, onOpenChange }: AddEmployeeModalProps) 
                 className="absolute end-3 top-1/2 -translate-y-1/2 text-muted-foreground"
                 onClick={() => setShowPassword((v) => !v)}
                 aria-label={showPassword ? t("hidePassword") : t("showPassword")}
+                aria-pressed={showPassword}
               >
-                {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                <Eye className="size-4" />
               </button>
             </div>
             {fieldErrors.password ? (

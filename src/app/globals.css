@@ -49,6 +49,12 @@
     font-family: var(--font-family-arabic);
   }
 
+  /* Hide browser native password reveal so only our custom toggle shows */
+  input[type="password"]::-ms-reveal,
+  input[type="password"]::-ms-clear {
+    display: none;
+  }
+
   .dark {
     --color-text-subtle: #94A3B8;
 
