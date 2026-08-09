@@ -13,7 +13,7 @@ import {
   cellMatrixKey,
   type SchedulingGridCell,
 } from "@/shared/lib/scheduling-grid-utils";
-import { isSameLocalDay } from "@/shared/lib/scheduling-week";
+import { isSameLocalDay, withLocalCalendarTimeZone } from "@/shared/lib/scheduling-week";
 
 type SchedulingWeekGridProps = {
   cells: SchedulingGridCell[];
@@ -102,10 +102,16 @@ export function SchedulingWeekGrid({
                   )}
                 >
                   <span className="block text-label-lg">
-                    {format.dateTime(column.date, { weekday: "short" })}
+                    {format.dateTime(
+                      column.date,
+                      withLocalCalendarTimeZone({ weekday: "short" }),
+                    )}
                   </span>
                   <span className="block text-body-sm font-normal text-muted-foreground">
-                    {format.dateTime(column.date, { day: "numeric", month: "short" })}
+                    {format.dateTime(
+                      column.date,
+                      withLocalCalendarTimeZone({ day: "numeric", month: "short" }),
+                    )}
                   </span>
                 </th>
               ))}

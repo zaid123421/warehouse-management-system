@@ -10,6 +10,22 @@ export function toIsoDate(date: Date): string {
   return `${year}-${month}-${day}`;
 }
 
+/**
+ * Browser/runtime IANA zone used when formatting calendar-only {@link Date} values.
+ * Without an explicit zone, next-intl may format midnight local dates in UTC and shift
+ * the displayed weekday back by one day (e.g. Monday 00:00 in UTC+3 → Sunday).
+ */
+export function getLocalTimeZone(): string {
+  return Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
+}
+
+/** Merge formatter options so calendar dates keep their local civil day. */
+export function withLocalCalendarTimeZone<T extends Intl.DateTimeFormatOptions>(
+  options: T,
+): T & { timeZone: string } {
+  return { ...options, timeZone: getLocalTimeZone() };
+}
+
 /** Monday of the week containing `date`, matching the backend `PlanningWeek`. */
 export function startOfWeek(date: Date): Date {
   const start = startOfLocalDay(date);

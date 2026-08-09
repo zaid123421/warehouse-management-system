@@ -4,7 +4,7 @@ import { useFormatter, useTranslations } from "next-intl";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { addWeeks, isSameLocalDay, startOfWeek } from "@/shared/lib/scheduling-week";
+import { addWeeks, isSameLocalDay, startOfWeek, withLocalCalendarTimeZone } from "@/shared/lib/scheduling-week";
 
 type SchedulingWeekNavigatorProps = {
   weekStart: Date;
@@ -40,11 +40,15 @@ export function SchedulingWeekNavigator({
 
       <div className="min-w-[12rem] text-center">
         <p className="text-body-md font-semibold text-foreground">
-          {format.dateTimeRange(weekStart, weekEnd, {
-            day: "numeric",
-            month: "short",
-            year: "numeric",
-          })}
+          {format.dateTimeRange(
+            weekStart,
+            weekEnd,
+            withLocalCalendarTimeZone({
+              day: "numeric",
+              month: "short",
+              year: "numeric",
+            }),
+          )}
         </p>
         {isCurrentWeek ? (
           <p className="text-body-sm text-muted-foreground">{t("weekCurrent")}</p>

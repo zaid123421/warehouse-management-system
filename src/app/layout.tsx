@@ -25,7 +25,7 @@ export default async function RootLayout({
     <html lang={locale} dir={dir} suppressHydrationWarning>
       <body className={locale === "ar" ? "font-arabic" : "font-english"}>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-          <NextIntlClientProvider messages={messages}>
+          <NextIntlClientProvider messages={messages} timeZone="Asia/Damascus">
             <QueryProvider>
               <Suspense fallback={<Loading />}>
                 {children}

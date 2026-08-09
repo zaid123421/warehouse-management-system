@@ -6,7 +6,7 @@ import {
   toSchedulingGridCells,
   type SchedulingGridCell,
 } from "@/shared/lib/scheduling-grid-utils";
-import { buildWeekDates, startOfWeek } from "@/shared/lib/scheduling-week";
+import { buildWeekDates, startOfWeek, withLocalCalendarTimeZone } from "@/shared/lib/scheduling-week";
 
 /** 2026-08-03 is a Monday; 2026-08-04 the Tuesday of that week. */
 const WEEK_DATES = buildWeekDates(new Date(2026, 7, 3));
@@ -121,5 +121,27 @@ describe("startOfWeek", () => {
   it("anchors on Monday regardless of the day passed in", () => {
     expect(startOfWeek(new Date(2026, 7, 9))).toEqual(new Date(2026, 7, 3));
     expect(startOfWeek(new Date(2026, 7, 3))).toEqual(new Date(2026, 7, 3));
+  });
+});
+
+describe("withLocalCalendarTimeZone", () => {
+  it("pins formatter options to the runtime zone", () => {
+    const options = withLocalCalendarTimeZone({ weekday: "short", day: "numeric" });
+
+    expect(options.timeZone).toBeTruthy();
+    expect(options.weekday).toBe("short");
+    expect(options.day).toBe("numeric");
+  });
+
+  it("keeps Monday-first week columns aligned with their local iso dates", () => {
+    const weekDates = buildWeekDates(new Date(2026, 7, 3));
+    const options = withLocalCalendarTimeZone({ weekday: "short" });
+    const labels = weekDates.map((date) =>
+      new Intl.DateTimeFormat("en-US", options).format(date).toLowerCase(),
+    );
+
+    expect(labels[0].startsWith("mon")).toBe(true);
+    expect(labels[1].startsWith("tue")).toBe(true);
+    expect(labels[6].startsWith("sun")).toBe(true);
   });
 });
