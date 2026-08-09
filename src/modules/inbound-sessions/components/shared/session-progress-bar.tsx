@@ -13,14 +13,17 @@ export function SessionProgressBar({ value, className, label }: SessionProgressB
   return (
     <div className={cn("space-y-1", className)}>
       {label ? (
-        <div className="flex items-center justify-between text-body-sm text-muted-foreground">
-          <span>{label}</span>
-          <span>{clamped}%</span>
+        <div className="flex items-center justify-between text-body-sm text-foreground">
+          <span className="font-semibold">{label}</span>
+          <span className="font-semibold">{Math.round(clamped)}%</span>
         </div>
       ) : null}
-      <div className="h-2 overflow-hidden rounded-full bg-muted">
+      <div className="h-2 w-full overflow-hidden rounded-full bg-secondary dark:bg-muted">
         <div
-          className="h-full rounded-full bg-primary transition-all"
+          className={cn(
+            "h-full transition-all duration-500 ease-in-out",
+            clamped === 100 ? "bg-emerald-500 dark:bg-emerald-400" : "bg-primary"
+          )}
           style={{ width: `${clamped}%` }}
           role="progressbar"
           aria-valuenow={clamped}

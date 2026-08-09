@@ -33,7 +33,7 @@ export function VisualizationListItem({
       className={cn(
         "w-full rounded-xl border-2 p-3 text-start transition-colors",
         selected
-          ? "border-primary-dark bg-primary-dark/5 shadow-sm"
+          ? "border-primary-dark bg-primary-container shadow-sm dark:bg-primary-dark/15"
           : "border-[var(--color-surface-light-container)] bg-card hover:border-primary-dark/40 hover:bg-primary-dark/[0.03] dark:border-[var(--color-surface-container-high)]",
         className,
       )}

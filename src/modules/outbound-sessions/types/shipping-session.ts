@@ -29,6 +29,9 @@ export type ShippingSession = {
   id: number;
   status: ShippingSessionStatus;
   deliveryDay?: string;
+  serviceDate?: string;
+  outboundTruckId?: number;
+  outboundTruckLabel?: string;
   expectedTires: number;
   shippedTires: number;
   missingTires: number;
@@ -40,12 +43,14 @@ export type ShippingSession = {
   approvedAt?: string;
   completedAt?: string;
   createdAt?: string;
+  version?: number;
   outboundRequests: ShippingSessionOutboundLink[];
   lines: ShippingSessionLine[];
 };
 
 export type AssignShippingSessionRequest = {
   staffUserIds: number[];
+  version: number;
 };
 
 export type GenerateShippingSessionsRequest = {

@@ -1,6 +1,7 @@
 import api from "@/lib/api";
 import { ENDPOINTS } from "@/services/endpoints";
 import { toOutboundError } from "@/modules/outbound-sessions/lib/outbound-error";
+import { toVersionBody } from "@/modules/outbound-sessions/lib/optimistic-lock";
 import {
   normalizeGenerateShippingSessionsResult,
   normalizeShippingSessionDetail,
@@ -47,9 +48,15 @@ export async function generateShippingSessions(
   }
 }
 
-export async function approveShippingSession(sessionId: number): Promise<ShippingSession> {
+export async function approveShippingSession(
+  sessionId: number,
+  version?: number | null,
+): Promise<ShippingSession> {
   try {
-    const { data } = await api.post<unknown>(ENDPOINTS.WMS_SHIPPING_SESSIONS.APPROVE(sessionId));
+    const { data } = await api.post<unknown>(
+      ENDPOINTS.WMS_SHIPPING_SESSIONS.APPROVE(sessionId),
+      toVersionBody(version),
+    );
     const detail = normalizeShippingSessionDetail(data);
     if (!detail) throw new Error("Invalid approve shipping session response");
     return detail;
@@ -58,9 +65,15 @@ export async function approveShippingSession(sessionId: number): Promise<Shippin
   }
 }
 
-export async function cancelShippingSession(sessionId: number): Promise<ShippingSession> {
+export async function cancelShippingSession(
+  sessionId: number,
+  version?: number | null,
+): Promise<ShippingSession> {
   try {
-    const { data } = await api.post<unknown>(ENDPOINTS.WMS_SHIPPING_SESSIONS.CANCEL(sessionId));
+    const { data } = await api.post<unknown>(
+      ENDPOINTS.WMS_SHIPPING_SESSIONS.CANCEL(sessionId),
+      toVersionBody(version),
+    );
     const detail = normalizeShippingSessionDetail(data);
     if (!detail) throw new Error("Invalid cancel shipping session response");
     return detail;
@@ -74,10 +87,10 @@ export async function assignShippingSession(
   payload: AssignShippingSessionRequest,
 ): Promise<ShippingSession> {
   try {
-    const { data } = await api.post<unknown>(
-      ENDPOINTS.WMS_SHIPPING_SESSIONS.ASSIGN(sessionId),
-      payload,
-    );
+    const { data } = await api.post<unknown>(ENDPOINTS.WMS_SHIPPING_SESSIONS.ASSIGN(sessionId), {
+      version: payload.version ?? 0,
+      staffUserIds: payload.staffUserIds,
+    });
     const detail = normalizeShippingSessionDetail(data);
     if (!detail) throw new Error("Invalid assign shipping session response");
     return detail;
@@ -86,9 +99,15 @@ export async function assignShippingSession(
   }
 }
 
-export async function startShippingSession(sessionId: number): Promise<ShippingSession> {
+export async function startShippingSession(
+  sessionId: number,
+  version?: number | null,
+): Promise<ShippingSession> {
   try {
-    const { data } = await api.post<unknown>(ENDPOINTS.WMS_SHIPPING_SESSIONS.START(sessionId));
+    const { data } = await api.post<unknown>(
+      ENDPOINTS.WMS_SHIPPING_SESSIONS.START(sessionId),
+      toVersionBody(version),
+    );
     const detail = normalizeShippingSessionDetail(data);
     if (!detail) throw new Error("Invalid start shipping session response");
     return detail;
@@ -97,9 +116,15 @@ export async function startShippingSession(sessionId: number): Promise<ShippingS
   }
 }
 
-export async function completeShippingSession(sessionId: number): Promise<ShippingSession> {
+export async function completeShippingSession(
+  sessionId: number,
+  version?: number | null,
+): Promise<ShippingSession> {
   try {
-    const { data } = await api.post<unknown>(ENDPOINTS.WMS_SHIPPING_SESSIONS.COMPLETE(sessionId));
+    const { data } = await api.post<unknown>(
+      ENDPOINTS.WMS_SHIPPING_SESSIONS.COMPLETE(sessionId),
+      toVersionBody(version),
+    );
     const detail = normalizeShippingSessionDetail(data);
     if (!detail) throw new Error("Invalid complete shipping session response");
     return detail;

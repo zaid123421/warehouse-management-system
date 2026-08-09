@@ -1,6 +1,7 @@
 import api from "@/lib/api";
 import { ENDPOINTS } from "@/services/endpoints";
 import { toInboundError } from "@/modules/inbound-sessions/lib/inbound-error";
+import { toVersionBody } from "@/modules/inbound-sessions/lib/optimistic-lock";
 import {
   normalizeApproveInboundTruckResult,
   normalizeCreateReceivingFromTruckResult,
@@ -35,11 +36,16 @@ export async function getPlanningPool(
 }
 
 export async function getPlanningTrucks(params?: {
+  schedulingCellId?: number;
   serviceDate?: string;
   receivingDay?: string;
 }): Promise<InboundTruck[]> {
   try {
-    const { data } = await api.get<unknown>(ENDPOINTS.WMS_INBOUND_TRUCKS.PLANNING);
+    const { data } = await api.get<unknown>(ENDPOINTS.WMS_INBOUND_TRUCKS.PLANNING, {
+      params: params?.schedulingCellId
+        ? { schedulingCellId: params.schedulingCellId }
+        : undefined,
+    });
     let trucks = normalizeInboundTruckList(data);
     if (params?.serviceDate || params?.receivingDay) {
       trucks = trucks.filter(
@@ -88,10 +94,12 @@ export async function createInboundTruck(
 export async function assignRequestToTruck(
   truckId: number,
   inboundRequestId: number,
+  version?: number | null,
 ): Promise<InboundTruck> {
   try {
     const { data } = await api.post<unknown>(
       ENDPOINTS.WMS_INBOUND_TRUCKS.ASSIGN(truckId, inboundRequestId),
+      toVersionBody(version),
     );
     const detail = normalizeInboundTruckDetail(data);
     if (!detail) throw new Error("Invalid assign inbound truck response");
@@ -104,10 +112,12 @@ export async function assignRequestToTruck(
 export async function unassignRequestFromTruck(
   truckId: number,
   inboundRequestId: number,
+  version?: number | null,
 ): Promise<InboundTruck | null> {
   try {
     const { data } = await api.delete<unknown>(
       ENDPOINTS.WMS_INBOUND_TRUCKS.ASSIGN(truckId, inboundRequestId),
+      { data: toVersionBody(version) },
     );
     return normalizeInboundTruckDetail(data);
   } catch (err: unknown) {
@@ -117,10 +127,12 @@ export async function unassignRequestFromTruck(
 
 export async function approveInboundTruck(
   truckId: number,
+  version?: number | null,
 ): Promise<ApproveInboundTruckResult> {
   try {
     const { data } = await api.post<unknown>(
       ENDPOINTS.WMS_INBOUND_TRUCKS.APPROVE(truckId),
+      toVersionBody(version),
     );
     return normalizeApproveInboundTruckResult(data);
   } catch (err: unknown) {
@@ -139,10 +151,12 @@ export async function getTransitTrucks(): Promise<TransitTruck[]> {
 
 export async function createReceivingSessionFromTruck(
   truckId: number,
+  version?: number | null,
 ): Promise<CreateReceivingFromTruckResult> {
   try {
     const { data } = await api.post<unknown>(
       ENDPOINTS.WMS_INBOUND_TRUCKS.CREATE_RECEIVING_SESSION(truckId),
+      toVersionBody(version),
     );
     const result = normalizeCreateReceivingFromTruckResult(data);
     if (!result) throw new Error("Invalid create receiving session response");

@@ -41,6 +41,8 @@
   --color-surface-container-high: #2D2D2D; /* Container high */
   --color-surface-light: #F8F7F5; /* Default surface — Light mode */
   --color-surface-light-container: #FFFFFF; /* Card surface — Light mode */
+  --color-surface-light-muted: #EEECEA; /* Nested/muted surface — Light mode */
+  --color-surface-light-accent: #E8E6E3; /* Hover/accent nest — Light mode */
   --color-chart-1: #F59F0A; /* Chart color 1 — Active Tires */
   --color-chart-2: #0EA5E9; /* Chart color 2 — Shipments */
   --color-chart-3: #22C55E; /* Chart color 3 — Completed */

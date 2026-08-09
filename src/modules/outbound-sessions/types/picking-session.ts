@@ -26,6 +26,11 @@ export type PickingSession = {
   id: number;
   status: PickingSessionStatus;
   deliveryDay?: string;
+  serviceDate?: string;
+  dealerId?: number;
+  dealerName?: string;
+  outboundTruckId?: number;
+  outboundTruckLabel?: string;
   expectedTires: number;
   pickedTires?: number;
   completedCount?: number;
@@ -39,10 +44,12 @@ export type PickingSession = {
   completedAt?: string;
   dispatchedAt?: string;
   createdAt?: string;
+  version?: number;
   outboundRequests: PickingSessionOutboundLink[];
   lines: PickingSessionLine[];
 };
 
 export type AssignPickingSessionRequest = {
   staffUserIds: number[];
+  version: number;
 };

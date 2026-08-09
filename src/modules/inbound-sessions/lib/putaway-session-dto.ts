@@ -49,6 +49,7 @@ export function normalizePutawaySession(raw: unknown): PutawaySession | null {
       normalizeStaffIds(rec.assignedStaffUserIds).length ||
       undefined,
     exceptionScanCount: pickNumber(rec, "exceptionScanCount") || undefined,
+    version: pickNumber(rec, "version"),
     approvedAt: pickString(rec, "approvedAt"),
     createdAt: pickString(rec, "createdAt"),
     lines: linesRaw

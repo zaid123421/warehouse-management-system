@@ -1,6 +1,7 @@
 import api from "@/lib/api";
 import { ENDPOINTS } from "@/services/endpoints";
 import { toOutboundError } from "@/modules/outbound-sessions/lib/outbound-error";
+import { toVersionBody } from "@/modules/outbound-sessions/lib/optimistic-lock";
 import {
   normalizeApproveOutboundSchedulingCellResult,
   normalizeGeneratePickingSessionsResult,
@@ -15,9 +16,13 @@ import type {
   OutboundSchedulingCellDetail,
 } from "@/modules/outbound-sessions/types/scheduling";
 
-export async function getOutboundSchedulingBoard(): Promise<OutboundSchedulingBoard> {
+export async function getOutboundSchedulingBoard(
+  weekStart?: string,
+): Promise<OutboundSchedulingBoard> {
   try {
-    const { data } = await api.get<unknown>(ENDPOINTS.WMS_OUTBOUND_SCHEDULING.BOARD);
+    const { data } = await api.get<unknown>(ENDPOINTS.WMS_OUTBOUND_SCHEDULING.BOARD, {
+      params: weekStart ? { weekStart } : undefined,
+    });
     return normalizeOutboundSchedulingBoard(data);
   } catch (err: unknown) {
     toOutboundError(err);
@@ -37,12 +42,30 @@ export async function getOutboundSchedulingCellDetail(
   }
 }
 
+export async function approveOutboundSchedulingCellDealer(
+  cellId: number,
+  dealerId: number,
+  version?: number | null,
+): Promise<OutboundSchedulingCellDetail | null> {
+  try {
+    const { data } = await api.post<unknown>(
+      ENDPOINTS.WMS_OUTBOUND_SCHEDULING.APPROVE_DEALER(cellId, dealerId),
+      toVersionBody(version),
+    );
+    return normalizeOutboundSchedulingCellDetail(data);
+  } catch (err: unknown) {
+    toOutboundError(err);
+  }
+}
+
 export async function approveOutboundSchedulingCell(
   cellId: number,
+  version?: number | null,
 ): Promise<ApproveOutboundSchedulingCellResult> {
   try {
     const { data } = await api.post<unknown>(
       ENDPOINTS.WMS_OUTBOUND_SCHEDULING.APPROVE_CELL(cellId),
+      toVersionBody(version),
     );
     return normalizeApproveOutboundSchedulingCellResult(data);
   } catch (err: unknown) {

@@ -48,6 +48,7 @@ export function normalizeReceivingSession(raw: unknown): ReceivingSession | null
       normalizeStaffIds(rec.assignedStaffUserIds).length ||
       undefined,
     exceptionScanCount: pickNumber(rec, "exceptionScanCount") || undefined,
+    version: pickNumber(rec, "version"),
     startedAt: pickString(rec, "startedAt"),
     approvedAt: pickString(rec, "approvedAt"),
     completedAt: pickString(rec, "completedAt"),

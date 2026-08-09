@@ -50,6 +50,7 @@ function normalizeInboundTruck(raw: unknown): InboundTruck | null {
     handoverCompleteCount: pickNumber(rec, "handoverCompleteCount") || undefined,
     receivingSessionId: pickNumber(rec, "receivingSessionId") || undefined,
     ready: rec.ready === true ? true : rec.ready === false ? false : undefined,
+    version: pickNumber(rec, "version"),
     createdAt: pickString(rec, "createdAt"),
     assignedRequests: requestsRaw
       .map((item) => normalizeRequestLink(item))
@@ -120,6 +121,8 @@ export function normalizeTransitTruck(raw: unknown): TransitTruck | null {
     receivingDay: pickString(rec, "receivingDay"),
     assignedTires: pickNumber(rec, "assignedTires") || undefined,
     expectedTires: pickNumber(rec, "expectedTires") || undefined,
+    receivingSessionId: pickNumber(rec, "receivingSessionId") || undefined,
+    version: pickNumber(rec, "version"),
   };
 }
 

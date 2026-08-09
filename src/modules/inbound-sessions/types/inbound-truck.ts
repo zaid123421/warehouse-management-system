@@ -25,6 +25,7 @@ export type InboundTruck = {
   handoverCompleteCount?: number;
   receivingSessionId?: number;
   ready?: boolean;
+  version?: number;
   createdAt?: string;
   assignedRequests: InboundTruckRequestLink[];
 };
@@ -55,6 +56,8 @@ export type TransitTruck = {
   receivingDay?: string;
   assignedTires?: number;
   expectedTires?: number;
+  receivingSessionId?: number;
+  version?: number;
 };
 
 export type CreateReceivingFromTruckResult = {

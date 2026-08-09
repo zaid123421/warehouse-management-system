@@ -98,7 +98,7 @@ export function WarehouseVizSlotPositionsColumn({
                 className={cn(
                   "rounded-xl border-2 p-3 text-start transition-colors",
                   selectedSlotId === slot.id
-                    ? "border-primary-dark bg-primary-dark/5"
+                    ? "border-primary-dark bg-primary-container dark:bg-primary-dark/15"
                     : "border-[var(--color-surface-light-container)] bg-card hover:border-primary-dark/40 dark:border-[var(--color-surface-container-high)]",
                 )}
               >

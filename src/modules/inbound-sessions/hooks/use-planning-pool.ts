@@ -14,5 +14,6 @@ export function usePlanningPool(
     queryFn: () => getPlanningPool(params),
     enabled,
     staleTime: 30_000,
+    refetchInterval: 15_000,
   });
 }

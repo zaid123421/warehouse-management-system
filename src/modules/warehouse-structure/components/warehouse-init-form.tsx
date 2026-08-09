@@ -96,7 +96,7 @@ export function WarehouseInitForm() {
   }
 
   return (
-    <Card className="max-w-5xl overflow-hidden border-0 bg-surface-container shadow-sm">
+    <Card className="max-w-5xl overflow-hidden border border-border bg-card shadow-sm">
       <CardHeader className="border-b border-[var(--color-surface-light-container)] bg-card/60 pb-6 dark:border-[var(--color-surface-container-high)]">
         <div className="flex items-start gap-4">
           <div

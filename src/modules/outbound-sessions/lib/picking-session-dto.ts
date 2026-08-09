@@ -57,6 +57,11 @@ export function normalizePickingSession(raw: unknown): PickingSession | null {
     id,
     status: str(rec.status),
     deliveryDay: pickString(rec, "deliveryDay"),
+    serviceDate: pickString(rec, "serviceDate"),
+    dealerId: pickNumber(rec, "dealerId") || undefined,
+    dealerName: pickString(rec, "dealerName"),
+    outboundTruckId: pickNumber(rec, "outboundTruckId") || undefined,
+    outboundTruckLabel: pickString(rec, "outboundTruckLabel"),
     expectedTires,
     pickedTires: pickedTires || undefined,
     completedCount: pickNumber(rec, "completedCount") || undefined,
@@ -74,6 +79,7 @@ export function normalizePickingSession(raw: unknown): PickingSession | null {
     completedAt: pickString(rec, "completedAt"),
     dispatchedAt: pickString(rec, "dispatchedAt"),
     createdAt: pickString(rec, "createdAt"),
+    version: pickNumber(rec, "version"),
     outboundRequests: outboundRaw
       .map((item) => normalizeOutboundLink(item))
       .filter((item): item is PickingSessionOutboundLink => item != null),

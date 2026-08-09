@@ -41,10 +41,12 @@ export function useAssignRequestToTruck() {
     mutationFn: ({
       truckId,
       inboundRequestId,
+      version,
     }: {
       truckId: number;
       inboundRequestId: number;
-    }) => assignRequestToTruck(truckId, inboundRequestId),
+      version?: number | null;
+    }) => assignRequestToTruck(truckId, inboundRequestId, version),
     onSuccess: invalidate,
   });
 }
@@ -56,10 +58,12 @@ export function useUnassignRequestFromTruck() {
     mutationFn: ({
       truckId,
       inboundRequestId,
+      version,
     }: {
       truckId: number;
       inboundRequestId: number;
-    }) => unassignRequestFromTruck(truckId, inboundRequestId),
+      version?: number | null;
+    }) => unassignRequestFromTruck(truckId, inboundRequestId, version),
     onSuccess: invalidate,
   });
 }
@@ -68,7 +72,13 @@ export function useApproveInboundTruck() {
   const queryClient = useQueryClient();
   const invalidate = useInvalidateTruckMutations(queryClient);
   return useMutation({
-    mutationFn: (truckId: number) => approveInboundTruck(truckId),
+    mutationFn: ({
+      truckId,
+      version,
+    }: {
+      truckId: number;
+      version?: number | null;
+    }) => approveInboundTruck(truckId, version),
     onSuccess: invalidate,
   });
 }
@@ -77,7 +87,13 @@ export function useCreateReceivingFromTruck() {
   const queryClient = useQueryClient();
   const keys = inboundMutationInvalidationKeys();
   return useMutation({
-    mutationFn: (truckId: number) => createReceivingSessionFromTruck(truckId),
+    mutationFn: ({
+      truckId,
+      version,
+    }: {
+      truckId: number;
+      version?: number | null;
+    }) => createReceivingSessionFromTruck(truckId, version),
     onSuccess: (data) => {
       void queryClient.invalidateQueries({ queryKey: keys.receiving });
       void queryClient.invalidateQueries({ queryKey: keys.transit });

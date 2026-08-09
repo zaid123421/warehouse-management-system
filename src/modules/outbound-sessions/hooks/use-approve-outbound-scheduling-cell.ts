@@ -9,10 +9,18 @@ export function useApproveOutboundSchedulingCell() {
   const queryClient = useQueryClient();
   const keys = outboundMutationInvalidationKeys();
   return useMutation({
-    mutationFn: (cellId: number) => approveOutboundSchedulingCell(cellId),
-    onSuccess: (_data, cellId) => {
+    mutationFn: ({
+      cellId,
+      version,
+    }: {
+      cellId: number;
+      version?: number | null;
+    }) => approveOutboundSchedulingCell(cellId, version),
+    onSuccess: (_data, variables) => {
       void queryClient.invalidateQueries({ queryKey: keys.scheduling });
-      void queryClient.invalidateQueries({ queryKey: outboundQueryKeys.schedulingCell(cellId) });
+      void queryClient.invalidateQueries({
+        queryKey: outboundQueryKeys.schedulingCell(variables.cellId),
+      });
       void queryClient.invalidateQueries({ queryKey: keys.picking });
     },
   });

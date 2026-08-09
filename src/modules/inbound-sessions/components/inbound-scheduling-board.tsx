@@ -2,21 +2,19 @@
 
 import { useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
-import { toast } from "sonner";
 import { ErrorAlert } from "@/components/ui/error-alert";
 import { SchedulingBoardShell } from "@/shared/components/scheduling/scheduling-board-shell";
 import { SchedulingKpiRow } from "@/shared/components/scheduling/scheduling-kpi-row";
 import { SchedulingWeekGrid } from "@/shared/components/scheduling/scheduling-week-grid";
+import { SchedulingWeekNavigator } from "@/shared/components/scheduling/scheduling-week-navigator";
+import { useSchedulingWeek } from "@/shared/hooks/use-scheduling-week";
 import {
   computeSchedulingBoardStats,
   toSchedulingGridCells,
-  type SchedulingGridCell,
 } from "@/shared/lib/scheduling-grid-utils";
 import { SchedulingCellDetailPanel } from "@/modules/inbound-sessions/components/scheduling-cell-detail-panel";
 import { SessionStatusBadge } from "@/modules/inbound-sessions/components/shared/session-status-badge";
-import { useApproveSchedulingCell } from "@/modules/inbound-sessions/hooks/use-approve-scheduling-cell";
 import { useSchedulingBoard } from "@/modules/inbound-sessions/hooks/use-scheduling-board";
-import { canApproveSchedulingCell } from "@/modules/inbound-sessions/lib/status-utils";
 
 type InboundSchedulingBoardProps = {
   onOpenPlanning?: (cellId?: number) => void;
@@ -24,8 +22,10 @@ type InboundSchedulingBoardProps = {
 
 export function InboundSchedulingBoard({ onOpenPlanning }: InboundSchedulingBoardProps) {
   const t = useTranslations("inboundSessions");
-  const { data, isPending, isError, error, refetch } = useSchedulingBoard();
-  const approveMutation = useApproveSchedulingCell();
+  const { weekStart, weekStartIso, weekEnd, weekDates, setWeekStart } = useSchedulingWeek();
+  const { data, isPending, isError, error, refetch } = useSchedulingBoard({
+    weekStart: weekStartIso,
+  });
   const [selectedCellId, setSelectedCellId] = useState<number | null>(null);
 
   const gridCells = useMemo(
@@ -34,19 +34,23 @@ export function InboundSchedulingBoard({ onOpenPlanning }: InboundSchedulingBoar
   );
   const stats = useMemo(() => computeSchedulingBoardStats(gridCells), [gridCells]);
 
-  async function handleApprove(cell: SchedulingGridCell) {
-    try {
-      await approveMutation.mutateAsync(cell.cellId);
-      toast.success(t("approveCellSuccess"));
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : t("actionError"));
-    }
-  }
-
   return (
     <SchedulingBoardShell
       hint={t("schedulingBoardHint")}
-      toolbar={<p className="text-body-md text-muted-foreground">{t("schedulingIntro")}</p>}
+      toolbar={
+        <>
+          <p className="text-body-md text-muted-foreground">{t("schedulingIntro")}</p>
+          <SchedulingWeekNavigator
+            weekStart={weekStart}
+            weekEnd={weekEnd}
+            onWeekStartChange={(next) => {
+              setSelectedCellId(null);
+              setWeekStart(next);
+            }}
+            translationNamespace="inboundSessions"
+          />
+        </>
+      }
       kpiRow={
         <SchedulingKpiRow stats={stats} translationNamespace="inboundSessions" />
       }
@@ -61,11 +65,9 @@ export function InboundSchedulingBoard({ onOpenPlanning }: InboundSchedulingBoar
           ) : null}
           <SchedulingWeekGrid
             cells={gridCells}
+            weekDates={weekDates}
             selectedCellId={selectedCellId}
             onSelectCell={setSelectedCellId}
-            onApproveCell={(cell) => void handleApprove(cell)}
-            canApprove={canApproveSchedulingCell}
-            isApprovePending={approveMutation.isPending}
             renderStatusBadge={(status) => <SessionStatusBadge status={status} />}
             translationNamespace="inboundSessions"
             isLoading={isPending}

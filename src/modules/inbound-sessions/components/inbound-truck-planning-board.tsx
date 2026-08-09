@@ -7,6 +7,7 @@ import { Check, Package, Plus, Trash2, X } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { ErrorAlert } from "@/components/ui/error-alert";
+import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
 import { PRIMARY_BUTTON_CLASS } from "@/lib/primary-button-styles";
 import { cn } from "@/lib/utils";
@@ -86,6 +87,7 @@ export function InboundTruckPlanningBoard({ schedulingCellId }: InboundTruckPlan
     refetch: refetchTrucks,
   } = usePlanningTrucks(
     {
+      schedulingCellId,
       serviceDate: cell?.serviceDate,
       receivingDay: cell?.receivingDay,
     },
@@ -95,6 +97,8 @@ export function InboundTruckPlanningBoard({ schedulingCellId }: InboundTruckPlan
   const approveMutation = useApproveInboundTruck();
   const [localDrafts, setLocalDrafts] = useState<DraftTruck[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [dragOverLocalId, setDragOverLocalId] = useState<string | null>(null);
+  const [dragOverPool, setDragOverPool] = useState(false);
 
   useEffect(() => {
     setLocalDrafts([]);
@@ -242,9 +246,15 @@ export function InboundTruckPlanningBoard({ schedulingCellId }: InboundTruckPlan
           serviceDate: cell.serviceDate,
         });
         let assignedOnTruck = 0;
+        let truckVersion = truck.version ?? 0;
         for (const inboundRequestId of draft.assignedRequestIds) {
           try {
-            await assignRequestToTruck(truck.id, inboundRequestId);
+            const updated = await assignRequestToTruck(
+              truck.id,
+              inboundRequestId,
+              truckVersion,
+            );
+            truckVersion = updated.version ?? truckVersion + 1;
             assignedOnTruck += 1;
           } catch (err) {
             if (err instanceof InboundError && err.status === 409) {
@@ -278,8 +288,12 @@ export function InboundTruckPlanningBoard({ schedulingCellId }: InboundTruckPlan
       toast.error(t("truckApproveNeedsRequests"));
       return;
     }
+    const truck = serverTrucks.find((item) => item.id === serverTruckId);
     try {
-      await approveMutation.mutateAsync(serverTruckId);
+      await approveMutation.mutateAsync({
+        truckId: serverTruckId,
+        version: truck?.version ?? 0,
+      });
       toast.success(t("truckApproveSuccess"));
     } catch (err) {
       toast.error(err instanceof Error ? err.message : t("actionError"));
@@ -306,6 +320,7 @@ export function InboundTruckPlanningBoard({ schedulingCellId }: InboundTruckPlan
 
   function handleTruckDrop(event: React.DragEvent<HTMLDivElement>, localId: string) {
     event.preventDefault();
+    setDragOverLocalId(null);
     const truck = localDrafts.find((item) => item.localId === localId);
     if (!truck) return;
     const inboundRequestId = Number(event.dataTransfer.getData("text/plain"));
@@ -316,6 +331,7 @@ export function InboundTruckPlanningBoard({ schedulingCellId }: InboundTruckPlan
 
   function handlePoolDrop(event: React.DragEvent<HTMLDivElement>) {
     event.preventDefault();
+    setDragOverPool(false);
     const inboundRequestId = Number(event.dataTransfer.getData("text/plain"));
     const source = event.dataTransfer.getData("application/x-source");
     const sourceLocalId = event.dataTransfer.getData("application/x-truck-local-id");
@@ -360,9 +376,16 @@ export function InboundTruckPlanningBoard({ schedulingCellId }: InboundTruckPlan
 
       <div className="grid gap-4 lg:grid-cols-[minmax(16rem,20rem)_minmax(0,1fr)]">
         <section
-          onDragOver={(event) => event.preventDefault()}
+          onDragOver={(event) => {
+            event.preventDefault();
+            setDragOverPool(true);
+          }}
+          onDragLeave={() => setDragOverPool(false)}
           onDrop={handlePoolDrop}
-          className="rounded-xl border border-[var(--color-surface-light-container)] bg-card p-4 dark:border-[var(--color-surface-container-high)]"
+          className={cn(
+            "rounded-xl border border-[var(--color-surface-light-container)] bg-card p-4 transition-colors dark:border-[var(--color-surface-container-high)]",
+            dragOverPool && "bg-primary/5 ring-2 ring-primary border-transparent"
+          )}
         >
           <h2 className="mb-4 flex items-center gap-2 text-label-lg font-semibold text-foreground">
             <Package className="size-4 text-primary" />
@@ -388,16 +411,15 @@ export function InboundTruckPlanningBoard({ schedulingCellId }: InboundTruckPlan
                     handlePoolDragStart(event, request.inboundRequestId)
                   }
                   className={cn(
-                    "rounded-lg border border-[var(--color-surface-light-container)] bg-muted/40 px-3 py-2.5 text-body-sm text-foreground dark:border-[var(--color-surface-container-high)]",
+                    "flex items-center gap-2 rounded-lg border border-[var(--color-surface-light-container)] bg-muted/40 px-3 py-2.5 text-body-sm text-foreground dark:border-[var(--color-surface-container-high)]",
                     !isBusy && "cursor-grab active:cursor-grabbing",
                   )}
                 >
                   <span className="font-medium">
                     {t("requestShortLabel", { id: request.inboundRequestId })}
                   </span>
-                  <span className="text-muted-foreground">
-                    {" "}
-                    ({getStatusLabel((key) => tStatus(key as never), request.status)})
+                  <span className="text-muted-foreground ml-auto">
+                    {getStatusLabel((key) => tStatus(key as never), request.status)}
                   </span>
                 </div>
               ))}
@@ -415,19 +437,55 @@ export function InboundTruckPlanningBoard({ schedulingCellId }: InboundTruckPlan
             <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
               {trucks.map((truck) => {
                 const isPersisted = truck.serverTruckId != null;
+                const isDragOver = dragOverLocalId === truck.localId;
+                const serverTruck = isPersisted ? serverTrucks.find(t => t.id === truck.serverTruckId) : null;
+                const capacityTires = serverTruck?.capacityTires;
+                const assignedTires = isPersisted
+                  ? (serverTruck?.assignedTires ?? 0)
+                  : truck.assignedRequestIds.reduce((sum, id) => {
+                      const req = requestById.get(id);
+                      return sum + (req && "expectedTireCount" in req ? (req.expectedTireCount ?? 0) : 0);
+                    }, 0);
+
                 return (
                   <div
                     key={truck.localId}
                     onDragOver={(event) => {
-                      if (!isPersisted) event.preventDefault();
+                      if (!isPersisted) {
+                        event.preventDefault();
+                        setDragOverLocalId(truck.localId);
+                      }
                     }}
+                    onDragLeave={() => setDragOverLocalId(null)}
                     onDrop={(event) => handleTruckDrop(event, truck.localId)}
-                    className="flex min-h-40 flex-col rounded-xl border border-[var(--color-surface-light-container)] bg-card p-4 dark:border-[var(--color-surface-container-high)]"
+                    className={cn(
+                      "flex min-h-40 flex-col rounded-xl border border-[var(--color-surface-light-container)] bg-card p-4 transition-colors animate-in fade-in zoom-in-95 duration-200 dark:border-[var(--color-surface-container-high)]",
+                      isDragOver && "bg-primary/5 ring-2 ring-primary border-transparent"
+                    )}
                   >
                     <div className="mb-3 flex items-start justify-between gap-2">
-                      <h3 className="text-label-lg font-semibold text-foreground">
-                        {truck.label}
-                      </h3>
+                      <div className="flex flex-col gap-1">
+                        <h3 className="text-label-lg font-semibold text-foreground">
+                          {truck.label}
+                        </h3>
+                        {(!isPersisted || capacityTires !== undefined) && (
+                          <div className="flex flex-col gap-1.5 w-32">
+                            <div className="flex items-center justify-between text-[10px] text-muted-foreground font-medium">
+                              <span>{assignedTires} {capacityTires ? `/ ${capacityTires}` : ""} tires</span>
+                              {capacityTires && assignedTires > capacityTires && (
+                                <span className="text-destructive">Over capacity</span>
+                              )}
+                            </div>
+                            {capacityTires && (
+                              <Progress 
+                                value={Math.min((assignedTires / capacityTires) * 100, 100)} 
+                                className="h-1.5 bg-muted"
+                                indicatorClassName={assignedTires > capacityTires ? "bg-destructive" : "bg-primary"}
+                              />
+                            )}
+                          </div>
+                        )}
+                      </div>
                       <div className="flex shrink-0 items-center gap-1">
                         {isPersisted ? (
                           <Button
@@ -468,10 +526,16 @@ export function InboundTruckPlanningBoard({ schedulingCellId }: InboundTruckPlan
                         {isPersisted &&
                         (requestCountByTruckId.get(truck.serverTruckId as number) ?? 0) > 0
                           ? t("truckAssignedRequestsCount", {
+<<<<<<< HEAD
                               count:
                                 requestCountByTruckId.get(
                                   truck.serverTruckId as number,
                                 ) ?? 0,
+=======
+                              count: requestCountByTruckId.get(
+                                truck.serverTruckId as number,
+                              ) ?? 0,
+>>>>>>> 2d8e0c005180ca67856457c5b89631f2262c6378
                             })
                           : t("truckDropHint")}
                       </p>
@@ -528,12 +592,12 @@ export function InboundTruckPlanningBoard({ schedulingCellId }: InboundTruckPlan
                 type="button"
                 disabled={isBusy || !cell}
                 onClick={handleAddTruck}
-                className="flex min-h-40 flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-primary/60 bg-transparent px-4 py-6 text-primary transition hover:border-primary hover:bg-primary/5 disabled:cursor-not-allowed disabled:opacity-50"
+                className="flex min-h-40 flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed border-primary/40 bg-transparent px-4 py-6 text-primary transition-colors hover:border-primary hover:bg-primary/5 disabled:cursor-not-allowed disabled:opacity-50"
               >
-                <span className="flex size-10 items-center justify-center rounded-full border border-primary/40">
-                  <Plus className="size-5" />
+                <span className="flex size-12 items-center justify-center rounded-full bg-primary/10">
+                  <Plus className="size-6" />
                 </span>
-                <span className="text-body-md font-medium">{t("addTruck")}</span>
+                <span className="text-label-md font-medium tracking-wide">{t("addTruck")}</span>
               </button>
             </div>
           )}

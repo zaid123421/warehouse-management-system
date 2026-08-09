@@ -36,8 +36,13 @@ export const ENDPOINTS = {
   WMS_INBOUND_SCHEDULING: {
     BOARD: "/v1/wms/my-warehouse/scheduling/board",
     CELL: (cellId: number) => `/v1/wms/my-warehouse/scheduling/cells/${cellId}`,
-    APPROVE_CELL: (cellId: number) =>
-      `/v1/wms/my-warehouse/scheduling/cells/${cellId}/approve`,
+    APPROVE_DEALER: (cellId: number, dealerId: number) =>
+      `/v1/wms/my-warehouse/scheduling/cells/${cellId}/dealers/${dealerId}/approve`,
+  },
+
+  WMS_INBOUND_REQUESTS: {
+    LIST: "/v1/wms/my-warehouse/inbound-requests",
+    BY_ID: (requestId: number) => `/v1/wms/my-warehouse/inbound-requests/${requestId}`,
   },
 
   WMS_INBOUND_TRUCKS: {
@@ -88,7 +93,27 @@ export const ENDPOINTS = {
       `/v1/wms/my-warehouse/outbound-scheduling/cells/${cellId}`,
     APPROVE_CELL: (cellId: number) =>
       `/v1/wms/my-warehouse/outbound-scheduling/cells/${cellId}/approve`,
+    APPROVE_DEALER: (cellId: number, dealerId: number) =>
+      `/v1/wms/my-warehouse/outbound-scheduling/cells/${cellId}/dealers/${dealerId}/approve`,
     GENERATE_PICKING: "/v1/wms/my-warehouse/outbound-scheduling/generate-picking-sessions",
+  },
+
+  WMS_OUTBOUND_TRUCKS: {
+    CREATE: "/v1/wms/my-warehouse/outbound-trucks",
+    LIST: "/v1/wms/my-warehouse/outbound-trucks",
+    PLANNING_POOL: "/v1/wms/my-warehouse/outbound-trucks/planning-pool",
+    PLANNING: "/v1/wms/my-warehouse/outbound-trucks/planning",
+    READY_TO_SHIP: "/v1/wms/my-warehouse/outbound-trucks/ready-to-ship",
+    SHIPPING: "/v1/wms/my-warehouse/outbound-trucks/shipping",
+    BY_ID: (truckId: number) => `/v1/wms/my-warehouse/outbound-trucks/${truckId}`,
+    ASSIGN: (truckId: number, outboundRequestId: number) =>
+      `/v1/wms/my-warehouse/outbound-trucks/${truckId}/assign/${outboundRequestId}`,
+    CONFIRM_PLAN: "/v1/wms/my-warehouse/outbound-trucks/confirm-plan",
+    APPROVE: (truckId: number) =>
+      `/v1/wms/my-warehouse/outbound-trucks/${truckId}/approve`,
+    CREATE_SHIPPING_SESSION: (truckId: number) =>
+      `/v1/wms/my-warehouse/outbound-trucks/${truckId}/create-shipping-session`,
+    DELETE: (truckId: number) => `/v1/wms/my-warehouse/outbound-trucks/${truckId}`,
   },
 
   WMS_PICKING_SESSIONS: {

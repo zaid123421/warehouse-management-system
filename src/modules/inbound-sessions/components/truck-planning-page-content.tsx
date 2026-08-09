@@ -21,7 +21,7 @@ export function TruckPlanningPageContent({ schedulingCellId }: TruckPlanningPage
     ? [
         cell.serviceDate,
         formatSchedulingDayLabel(cell.receivingDay),
-        cell.regionProvinceName ?? "—",
+        cell.regionCityName || cell.regionProvinceName || "—",
       ]
         .filter(Boolean)
         .join(" · ")
