@@ -4,7 +4,14 @@ import { useFormatter, useTranslations } from "next-intl";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { addWeeks, isSameLocalDay, startOfWeek, withLocalCalendarTimeZone } from "@/shared/lib/scheduling-week";
+import {
+  addWeeks,
+  dateFromIsoCalendarDay,
+  isSameLocalDay,
+  startOfWeek,
+  toIsoDate,
+  withUtcCalendarTimeZone,
+} from "@/shared/lib/scheduling-week";
 
 type SchedulingWeekNavigatorProps = {
   weekStart: Date;
@@ -25,6 +32,8 @@ export function SchedulingWeekNavigator({
   const format = useFormatter();
   const currentWeekStart = startOfWeek(new Date());
   const isCurrentWeek = isSameLocalDay(weekStart, currentWeekStart);
+  const rangeStart = dateFromIsoCalendarDay(toIsoDate(weekStart));
+  const rangeEnd = dateFromIsoCalendarDay(toIsoDate(weekEnd));
 
   return (
     <div className={cn("flex flex-wrap items-center gap-2", className)}>
@@ -41,9 +50,9 @@ export function SchedulingWeekNavigator({
       <div className="min-w-[12rem] text-center">
         <p className="text-body-md font-semibold text-foreground">
           {format.dateTimeRange(
-            weekStart,
-            weekEnd,
-            withLocalCalendarTimeZone({
+            rangeStart,
+            rangeEnd,
+            withUtcCalendarTimeZone({
               day: "numeric",
               month: "short",
               year: "numeric",

@@ -2,6 +2,12 @@ import { parseServiceDate, startOfLocalDay } from "@/shared/lib/scheduling-cell-
 
 export const DAYS_IN_WEEK = 7;
 
+/**
+ * Warehouse planning calendar zone. Date-only values (`YYYY-MM-DD`) are civil days in this
+ * zone; formatting always uses UTC noon anchors so headers never shift by timezone.
+ */
+export const SCHEDULING_CALENDAR_TIME_ZONE = "UTC";
+
 /** `YYYY-MM-DD` in local time, matching the backend `LocalDate` wire format. */
 export function toIsoDate(date: Date): string {
   const year = date.getFullYear();
@@ -11,19 +17,36 @@ export function toIsoDate(date: Date): string {
 }
 
 /**
- * Browser/runtime IANA zone used when formatting calendar-only {@link Date} values.
- * Without an explicit zone, next-intl may format midnight local dates in UTC and shift
- * the displayed weekday back by one day (e.g. Monday 00:00 in UTC+3 → Sunday).
+ * Build a Date whose UTC calendar day equals `isoDate` (noon UTC).
+ * Safe to format with {@link withUtcCalendarTimeZone} without weekday shift.
  */
-export function getLocalTimeZone(): string {
-  return Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
+export function dateFromIsoCalendarDay(isoDate: string): Date {
+  const match = /^(\d{4})-(\d{2})-(\d{2})/.exec(isoDate.trim());
+  if (!match) {
+    return new Date(NaN);
+  }
+  const year = Number(match[1]);
+  const month = Number(match[2]) - 1;
+  const day = Number(match[3]);
+  return new Date(Date.UTC(year, month, day, 12, 0, 0));
 }
 
-/** Merge formatter options so calendar dates keep their local civil day. */
+/** Options for formatting calendar-only dates without timezone drift. */
+export function withUtcCalendarTimeZone<T extends Intl.DateTimeFormatOptions>(
+  options: T,
+): T & { timeZone: string } {
+  return { ...options, timeZone: SCHEDULING_CALENDAR_TIME_ZONE };
+}
+
+/** @deprecated Use {@link withUtcCalendarTimeZone}; kept for call-site compatibility. */
 export function withLocalCalendarTimeZone<T extends Intl.DateTimeFormatOptions>(
   options: T,
 ): T & { timeZone: string } {
-  return { ...options, timeZone: getLocalTimeZone() };
+  return withUtcCalendarTimeZone(options);
+}
+
+export function getLocalTimeZone(): string {
+  return Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
 }
 
 /** Monday of the week containing `date`, matching the backend `PlanningWeek`. */
@@ -64,4 +87,8 @@ export function isSameLocalDay(a: Date, b: Date): boolean {
     a.getMonth() === b.getMonth() &&
     a.getDate() === b.getDate()
   );
+}
+
+export function isSameIsoDate(isoDate: string, date: Date = new Date()): boolean {
+  return isoDate.slice(0, 10) === toIsoDate(date);
 }
