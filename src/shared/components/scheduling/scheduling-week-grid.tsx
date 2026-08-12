@@ -13,7 +13,11 @@ import {
   cellMatrixKey,
   type SchedulingGridCell,
 } from "@/shared/lib/scheduling-grid-utils";
-import { isSameLocalDay } from "@/shared/lib/scheduling-week";
+import {
+  dateFromIsoCalendarDay,
+  isSameIsoDate,
+  withUtcCalendarTimeZone,
+} from "@/shared/lib/scheduling-week";
 
 type SchedulingWeekGridProps = {
   cells: SchedulingGridCell[];
@@ -90,25 +94,35 @@ export function SchedulingWeekGrid({
               >
                 {t("gridRowRegion")}
               </th>
-              {columns.map((column) => (
+              {columns.map((column) => {
+                const headerDate = dateFromIsoCalendarDay(column.isoDate);
+                const isToday = isSameIsoDate(column.isoDate, today);
+                return (
                 <th
                   key={column.isoDate}
-                  aria-current={isSameLocalDay(column.date, today) ? "date" : undefined}
+                  aria-current={isToday ? "date" : undefined}
                   className={cn(
                     "min-w-[9rem] border-b-2 px-2 py-3 text-center text-body-sm font-semibold text-foreground",
                     borderColor,
-                    isSameLocalDay(column.date, today) &&
+                    isToday &&
                       "bg-[var(--color-surface-light-container)] dark:bg-[var(--color-surface-container-high)]",
                   )}
                 >
                   <span className="block text-label-lg">
-                    {format.dateTime(column.date, { weekday: "short" })}
+                    {format.dateTime(
+                      headerDate,
+                      withUtcCalendarTimeZone({ weekday: "short" }),
+                    )}
                   </span>
                   <span className="block text-body-sm font-normal text-muted-foreground">
-                    {format.dateTime(column.date, { day: "numeric", month: "short" })}
+                    {format.dateTime(
+                      headerDate,
+                      withUtcCalendarTimeZone({ day: "numeric", month: "short" }),
+                    )}
                   </span>
                 </th>
-              ))}
+                );
+              })}
             </tr>
           </thead>
           <tbody>

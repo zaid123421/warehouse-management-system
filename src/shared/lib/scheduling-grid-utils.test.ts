@@ -6,7 +6,13 @@ import {
   toSchedulingGridCells,
   type SchedulingGridCell,
 } from "@/shared/lib/scheduling-grid-utils";
-import { buildWeekDates, startOfWeek } from "@/shared/lib/scheduling-week";
+import {
+  buildWeekDates,
+  dateFromIsoCalendarDay,
+  startOfWeek,
+  toIsoDate,
+  withUtcCalendarTimeZone,
+} from "@/shared/lib/scheduling-week";
 
 /** 2026-08-03 is a Monday; 2026-08-04 the Tuesday of that week. */
 const WEEK_DATES = buildWeekDates(new Date(2026, 7, 3));
@@ -121,5 +127,39 @@ describe("startOfWeek", () => {
   it("anchors on Monday regardless of the day passed in", () => {
     expect(startOfWeek(new Date(2026, 7, 9))).toEqual(new Date(2026, 7, 3));
     expect(startOfWeek(new Date(2026, 7, 3))).toEqual(new Date(2026, 7, 3));
+  });
+});
+
+describe("UTC calendar date formatting", () => {
+  it("pins formatter options to UTC", () => {
+    const options = withUtcCalendarTimeZone({ weekday: "short", day: "numeric" });
+
+    expect(options.timeZone).toBe("UTC");
+    expect(options.weekday).toBe("short");
+    expect(options.day).toBe("numeric");
+  });
+
+  it("keeps Monday-first week columns aligned with their iso dates under UTC+3", () => {
+    const weekDates = buildWeekDates(new Date(2026, 7, 3));
+    const options = withUtcCalendarTimeZone({ weekday: "short" });
+    const labels = weekDates.map((date) => {
+      const headerDate = dateFromIsoCalendarDay(toIsoDate(date));
+      return new Intl.DateTimeFormat("en-US", options).format(headerDate).toLowerCase();
+    });
+
+    expect(labels[0].startsWith("mon")).toBe(true);
+    expect(labels[1].startsWith("tue")).toBe(true);
+    expect(labels[6].startsWith("sun")).toBe(true);
+  });
+
+  it("formats serviceDate 2026-08-04 as Tuesday regardless of host offset", () => {
+    const headerDate = dateFromIsoCalendarDay("2026-08-04");
+    const label = new Intl.DateTimeFormat(
+      "en-US",
+      withUtcCalendarTimeZone({ weekday: "long", day: "numeric", month: "short" }),
+    ).format(headerDate);
+
+    expect(label.toLowerCase()).toContain("tuesday");
+    expect(label).toContain("4");
   });
 });
