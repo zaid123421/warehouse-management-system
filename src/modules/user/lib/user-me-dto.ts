@@ -3,7 +3,7 @@ import type {
   UserMeProfile,
   UserMeRole,
 } from "@/modules/user/types/user-profile";
-import { asRecord, bool, num, pickNumber, pickString, str, unwrapPayload } from "@/shared/lib/dto-utils";
+import { asRecord, bool, pickNumber, str, unwrapPayload } from "@/shared/lib/dto-utils";
 
 function normalizePermission(raw: unknown): UserMePermission | null {
   const rec = asRecord(raw);

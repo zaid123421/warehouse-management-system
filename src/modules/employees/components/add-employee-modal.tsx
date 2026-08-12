@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, type FormEvent } from "react";
+import { useState, type FormEvent } from "react";
 import { useTranslations } from "next-intl";
 import { Eye } from "lucide-react";
 import { toast } from "sonner";
@@ -52,13 +52,16 @@ export function AddEmployeeModal({ open, onOpenChange }: AddEmployeeModalProps) 
   const [form, setForm] = useState<FormState>(emptyForm);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [showPassword, setShowPassword] = useState(false);
+  const [wasOpen, setWasOpen] = useState(open);
 
-  useEffect(() => {
-    if (!open) return;
-    setForm(emptyForm);
-    setFieldErrors({});
-    setShowPassword(false);
-  }, [open]);
+  if (open !== wasOpen) {
+    setWasOpen(open);
+    if (open) {
+      setForm(emptyForm);
+      setFieldErrors({});
+      setShowPassword(false);
+    }
+  }
 
   function validate(): boolean {
     const errors: Record<string, string> = {};

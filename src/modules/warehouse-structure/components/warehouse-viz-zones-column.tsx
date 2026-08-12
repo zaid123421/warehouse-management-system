@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { useTranslations } from "next-intl";
 import { ErrorAlert } from "@/components/ui/error-alert";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -40,7 +40,7 @@ export function WarehouseVizZonesColumn({
   const zonesQuery = useWarehouseZones(zonesPage);
   const rowsQuery = useZoneRows(selectedZoneId, rowsPage);
 
-  const zones = zonesQuery.data?.items ?? [];
+  const zones = useMemo(() => zonesQuery.data?.items ?? [], [zonesQuery.data?.items]);
   const rows = rowsQuery.data?.items ?? [];
 
   useEffect(() => {

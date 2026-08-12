@@ -3,6 +3,7 @@
 import { useTranslations } from "next-intl";
 import { ErrorAlert } from "@/components/ui/error-alert";
 import { Skeleton } from "@/components/ui/skeleton";
+import { TireUniqueIdLookupCard } from "@/modules/warehouse-structure/components/tire-unique-id-lookup-card";
 import { WarehouseInitForm } from "@/modules/warehouse-structure/components/warehouse-init-form";
 import { WarehouseStructureBrowser } from "@/modules/warehouse-structure/components/warehouse-structure-browser";
 import { useMyWarehouse } from "@/modules/warehouse-structure/hooks/use-my-warehouse";
@@ -60,7 +61,10 @@ export function WarehouseStructurePageContent() {
       </div>
 
       {warehouse.initialized ? (
-        <WarehouseStructureBrowser warehouse={warehouse} />
+        <>
+          <TireUniqueIdLookupCard />
+          <WarehouseStructureBrowser warehouse={warehouse} />
+        </>
       ) : (
         <WarehouseInitForm />
       )}

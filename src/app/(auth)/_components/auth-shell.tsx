@@ -27,7 +27,7 @@ export function AuthLeftPanel() {
       <div className="relative z-10 flex h-full flex-col">
         <div className="flex flex-1 flex-col items-center justify-center gap-6 px-12 py-16">
           <Image
-            src="/images/logo.png"
+            src="/images/x_blue_square.png"
             alt={t("logoAlt")}
             width={200}
             height={200}
@@ -89,7 +89,7 @@ function MobileLogo() {
   return (
     <div className="mb-8 flex justify-center lg:hidden">
       <Image
-        src="/images/logo.png"
+        src="/images/x_blue_square.png"
         alt={t("logoAlt")}
         width={56}
         height={56}

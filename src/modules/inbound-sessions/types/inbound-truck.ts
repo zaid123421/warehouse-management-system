@@ -34,6 +34,7 @@ export type InboundTruckRequestLink = {
   inboundRequestId: number;
   status: string;
   dealerName?: string;
+  expectedTireCount?: number;
 };
 
 export type CreateInboundTruckRequest = {

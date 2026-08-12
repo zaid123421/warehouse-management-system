@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, type FormEvent } from "react";
+import { useState, type FormEvent } from "react";
 import { useTranslations } from "next-intl";
 import { Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
@@ -67,20 +67,36 @@ export function EditEmployeeModal({ open, onOpenChange, staffToEdit }: EditEmplo
   const [form, setForm] = useState<FormState>(emptyForm);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [showPassword, setShowPassword] = useState(false);
+  const [syncKey, setSyncKey] = useState<{
+    open: boolean;
+    staffId: number | null;
+    detailId: number | null;
+  }>({
+    open,
+    staffId: staffToEdit?.user.id ?? null,
+    detailId: detailQuery.data?.user.id ?? null,
+  });
 
   const formLocked = updateStaff.isPending || detailQuery.isPending;
 
-  useEffect(() => {
-    if (!open || !staffToEdit) return;
-    setForm(assignmentToForm(staffToEdit));
-    setFieldErrors({});
-    setShowPassword(false);
-  }, [open, staffToEdit]);
-
-  useEffect(() => {
-    if (!open || !detailQuery.data) return;
-    setForm(assignmentToForm(detailQuery.data));
-  }, [open, detailQuery.data]);
+  const nextStaffId = staffToEdit?.user.id ?? null;
+  const nextDetailId = detailQuery.data?.user.id ?? null;
+  if (
+    open !== syncKey.open ||
+    nextStaffId !== syncKey.staffId ||
+    nextDetailId !== syncKey.detailId
+  ) {
+    setSyncKey({ open, staffId: nextStaffId, detailId: nextDetailId });
+    if (open && detailQuery.data) {
+      setForm(assignmentToForm(detailQuery.data));
+      setFieldErrors({});
+      setShowPassword(false);
+    } else if (open && staffToEdit) {
+      setForm(assignmentToForm(staffToEdit));
+      setFieldErrors({});
+      setShowPassword(false);
+    }
+  }
 
   function validate(): boolean {
     const errors: Record<string, string> = {};

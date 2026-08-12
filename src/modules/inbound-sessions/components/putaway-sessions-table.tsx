@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { Check, Eye, Play, Search } from "lucide-react";
@@ -65,7 +65,7 @@ export function PutawaySessionsTable() {
     { enabled: assignSession != null },
   );
 
-  const sessions = data ?? [];
+  const sessions = useMemo(() => data ?? [], [data]);
   const stats = useMemo(() => computeSessionListStats(sessions), [sessions]);
 
   const filteredData = useMemo(() => {
@@ -84,14 +84,11 @@ export function PutawaySessionsTable() {
     return result;
   }, [sessions, searchQuery, dateFilter]);
 
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [searchQuery, dateFilter]);
-
   const totalPages = Math.max(1, Math.ceil(filteredData.length / ITEMS_PER_PAGE));
+  const safePage = Math.min(currentPage, totalPages);
   const paginatedData = filteredData.slice(
-    (currentPage - 1) * ITEMS_PER_PAGE,
-    currentPage * ITEMS_PER_PAGE,
+    (safePage - 1) * ITEMS_PER_PAGE,
+    safePage * ITEMS_PER_PAGE,
   );
 
   async function runAction(
@@ -114,7 +111,10 @@ export function PutawaySessionsTable() {
           <Input
             type="date"
             value={dateFilter}
-            onChange={(e) => setDateFilter(e.target.value)}
+            onChange={(e) => {
+              setDateFilter(e.target.value);
+              setCurrentPage(1);
+            }}
             className="h-10 w-full sm:w-[180px]"
             aria-label={t("selectServiceDate")}
           />
@@ -122,7 +122,10 @@ export function PutawaySessionsTable() {
             <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
             <Input
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                setCurrentPage(1);
+              }}
               placeholder={t("searchPutawayPlaceholder")}
               className="h-10 bg-card pl-9"
             />
@@ -210,7 +213,10 @@ export function PutawaySessionsTable() {
                       assignedLabel={t("assignedStaffLabel")}
                       assignLabel={t("assignStaff")}
                       addStaffLabel={t("addStaff")}
-                      canAssign={canAssignPutawaySession(session.status)}
+                      canAssign={
+                        canAssignPutawaySession(session.status) &&
+                        (session.assignedStaffUserIds?.length ?? 0) === 0
+                      }
                       onAssign={() => setAssignSession(session)}
                     />
                   </div>
@@ -317,7 +323,7 @@ export function PutawaySessionsTable() {
             })}
           </div>
           <PaginationControls
-            currentPage={currentPage}
+            currentPage={safePage}
             totalPages={totalPages}
             onPageChange={setCurrentPage}
           />

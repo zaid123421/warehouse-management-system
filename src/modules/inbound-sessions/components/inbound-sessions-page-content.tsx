@@ -1,6 +1,5 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -25,18 +24,11 @@ export function InboundSessionsPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const tabFromUrl = searchParams.get("tab");
-  const [activeTab, setActiveTab] = useState(() =>
-    tabFromUrl && TAB_VALUES.has(tabFromUrl) ? tabFromUrl : "overview",
-  );
+  const activeTab =
+    tabFromUrl && TAB_VALUES.has(tabFromUrl) ? tabFromUrl : "overview";
 
   const { data: transitTrucks = [] } = useTransitTrucks();
-  const transitCount = transitTrucks.filter(t => t.ready).length;
-
-  useEffect(() => {
-    if (tabFromUrl && TAB_VALUES.has(tabFromUrl) && tabFromUrl !== activeTab) {
-      setActiveTab(tabFromUrl);
-    }
-  }, [tabFromUrl, activeTab]);
+  const transitCount = transitTrucks.filter((truck) => truck.ready).length;
 
   function handleOpenPlanning(cellId?: number) {
     if (!cellId) return;
@@ -44,7 +36,6 @@ export function InboundSessionsPageContent() {
   }
 
   function handleTabChange(value: string) {
-    setActiveTab(value);
     const url = new URL(window.location.href);
     if (value === "overview") {
       url.searchParams.delete("tab");

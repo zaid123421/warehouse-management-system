@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import {
@@ -109,14 +109,11 @@ export function PickingSessionsTable() {
     );
   }, [data, searchQuery]);
 
-  useEffect(() => {
-    setCurrentPage(1);
-  }, [searchQuery]);
-
   const totalPages = Math.max(1, Math.ceil(filteredData.length / ITEMS_PER_PAGE));
+  const safePage = Math.min(currentPage, totalPages);
   const paginatedData = filteredData.slice(
-    (currentPage - 1) * ITEMS_PER_PAGE,
-    currentPage * ITEMS_PER_PAGE,
+    (safePage - 1) * ITEMS_PER_PAGE,
+    safePage * ITEMS_PER_PAGE,
   );
 
   async function runAction(
@@ -144,7 +141,10 @@ export function PickingSessionsTable() {
           <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                setCurrentPage(1);
+              }}
             placeholder={t("searchPickingPlaceholder")}
             className="h-10 w-full bg-card pl-9"
           />
@@ -238,7 +238,10 @@ export function PickingSessionsTable() {
                       assignedLabel={t("assignedStaffLabel")}
                       assignLabel={t("assignStaff")}
                       addStaffLabel={t("addStaff")}
-                      canAssign={canAssignPickingSession(session.status)}
+                      canAssign={
+                        canAssignPickingSession(session.status) &&
+                        (session.assignedStaffUserIds?.length ?? 0) === 0
+                      }
                       onAssign={() => setAssignSession(session)}
                     />
                   </div>
@@ -422,7 +425,7 @@ export function PickingSessionsTable() {
             })}
           </div>
           <PaginationControls
-            currentPage={currentPage}
+            currentPage={safePage}
             totalPages={totalPages}
             onPageChange={setCurrentPage}
           />

@@ -19,6 +19,10 @@ function normalizeRequestLink(raw: unknown): InboundTruckRequestLink | null {
     inboundRequestId,
     status: str(rec.status),
     dealerName: pickString(rec, "dealerName"),
+    expectedTireCount:
+      pickNumber(rec, "expectedTireCount") ||
+      pickNumber(rec, "totalVolume") ||
+      undefined,
   };
 }
 
@@ -76,7 +80,10 @@ export function normalizePlanningPoolRequest(raw: unknown): PlanningPoolRequest 
       pickNumber(rec, "totalVolume") ||
       pickNumber(rec, "expectedTireCount") ||
       undefined,
-    expectedTireCount: pickNumber(rec, "expectedTireCount") || undefined,
+    expectedTireCount:
+      pickNumber(rec, "expectedTireCount") ||
+      pickNumber(rec, "totalVolume") ||
+      undefined,
     receivingDay: pickString(rec, "receivingDay"),
     schedulingCellId: pickNumber(rec, "schedulingCellId") || undefined,
   };

@@ -19,6 +19,7 @@ export const ENDPOINTS = {
   WMS_WAREHOUSE: {
     MY: "/v1/wms/my-warehouse",
     INITIATE: "/v1/wms/my-warehouse/initiate",
+    OVERVIEW: "/v1/wms/my-warehouse/overview",
   },
 
   WMS_WAREHOUSE_VISUALIZATION: {
@@ -31,6 +32,21 @@ export const ENDPOINTS = {
       `/v1/wms/my-warehouse/visualization/racks/${rackId}/slots`,
     SLOT_POSITIONS: (slotId: number) =>
       `/v1/wms/my-warehouse/visualization/slots/${slotId}/positions`,
+  },
+
+  WMS_TIRES: {
+    LOOKUP: "/v1/wms/my-warehouse/tires/lookup",
+  },
+
+  /** Position audit trail — path follows API docs (`/api/wms/...`); client baseURL already includes `/api`. */
+  WMS_STORAGE_POSITIONS: {
+    HISTORY: (storagePositionId: number) =>
+      `/v1/wms/storage-positions/${storagePositionId}/history`,
+  },
+
+  WMS_SLOTS: {
+    STORAGE_POSITION_QR: (slotId: number) =>
+      `/v1/wms/slots/${slotId}/storage-positions/qr`,
   },
 
   WMS_INBOUND_SCHEDULING: {
@@ -147,6 +163,19 @@ export const ENDPOINTS = {
       `/v1/wms/my-warehouse/shipping-sessions/${sessionId}/start`,
     COMPLETE: (sessionId: number) =>
       `/v1/wms/my-warehouse/shipping-sessions/${sessionId}/complete`,
+  },
+
+  WMS_REPORTS: {
+    SLA_EXPORT: "/v1/wms/my-warehouse/reports/sla/export",
+    SLA_EXPORT_PDF: "/v1/wms/my-warehouse/reports/sla/export/pdf",
+    PERFORMANCE_EXPORT: "/v1/wms/my-warehouse/reports/performance/export",
+    PERFORMANCE_EXPORT_PDF: "/v1/wms/my-warehouse/reports/performance/export/pdf",
+    PENDING_EXPORT: "/v1/wms/my-warehouse/reports/pending/export",
+    PENDING_EXPORT_PDF: "/v1/wms/my-warehouse/reports/pending/export/pdf",
+    OCCUPANCY_EXPORT: "/v1/wms/my-warehouse/reports/occupancy/export",
+    OCCUPANCY_EXPORT_PDF: "/v1/wms/my-warehouse/reports/occupancy/export/pdf",
+    INVENTORY_EXPORT: "/v1/wms/my-warehouse/reports/inventory/export",
+    INVENTORY_EXPORT_PDF: "/v1/wms/my-warehouse/reports/inventory/export/pdf",
   },
 } as const;
 

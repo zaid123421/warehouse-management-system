@@ -73,7 +73,10 @@
     "roleSupplier": "Warehouse",
     "roleUser": "Operator",
     "defaultAccountName": "Account",
-    "professionalPlan": "Professional Plan"
+    "professionalPlan": "Professional Plan",
+    "collapseSidebar": "Collapse sidebar",
+    "expandSidebar": "Expand sidebar",
+    "openSidebar": "Open menu"
   },
   "dashboard": {
     "title": "Dashboard",
@@ -122,6 +125,130 @@
         "label": "Zone D — Receiving",
         "description": "Inbound staging and inspection.",
         "stats": "{rackCols}×{rackRows} racks · {shelves} shelf rows · ~{tires} tires"
+      }
+    }
+  },
+  "warehouseOverview": {
+    "eyebrow": "Live overview",
+    "activityWindow": "Last {days} days · {from} → {to}",
+    "generatedAt": "Updated {value}",
+    "errorLoading": "Could not load warehouse overview.",
+    "retry": "Retry",
+    "kpi": {
+      "occupancy": "Occupancy",
+      "designedCapacity": "Designed capacity {count}",
+      "staff": "Active staff",
+      "staffHint": "Active / total warehouse staff",
+      "pending": "Pending work",
+      "pendingHint": "Inbound {inbound} · Outbound {outbound}",
+      "slaOverdue": "SLA overdue",
+      "activeRequests": "{count} active inbound requests"
+    },
+    "capacity": {
+      "title": "Warehouse capacity",
+      "description": "Current position occupancy across the warehouse.",
+      "donutCenter": "Occupied"
+    },
+    "usage": {
+      "occupied": "Occupied",
+      "empty": "Empty",
+      "reservedInbound": "Reserved inbound",
+      "reservedOutbound": "Reserved outbound"
+    },
+    "zones": {
+      "title": "Top zones",
+      "description": "Occupancy by zone.",
+      "empty": "No zone occupancy data."
+    },
+    "flow": {
+      "title": "Tire flow",
+      "description": "Expected vs received vs stored tires in the live window.",
+      "expected": "Expected",
+      "received": "Received",
+      "stored": "Stored"
+    },
+    "sla": {
+      "title": "SLA performance",
+      "description": "On-time rates for inbound and outbound.",
+      "inbound": "Inbound on-time",
+      "outbound": "Outbound on-time"
+    },
+    "live": {
+      "title": "Live operations",
+      "description": "Sessions and exceptions currently open.",
+      "receivingInProgress": "Receiving",
+      "putawayInProgress": "Putaway",
+      "pickingInProgress": "Picking",
+      "openShipping": "Shipping",
+      "reservedLines": "Reserved lines",
+      "expiredReservations": "Expired reservations"
+    },
+    "exceptions": {
+      "receiving": "Receiving exceptions",
+      "putaway": "Putaway exceptions",
+      "picking": "Picking exceptions",
+      "pickingMissing": "Picking missing lines",
+      "shipping": "Shipping exceptions",
+      "shippingMissing": "Shipping missing lines"
+    },
+    "attention": {
+      "title": "Needs attention",
+      "description": "Items that may need an operator action.",
+      "empty": "Nothing needs attention right now."
+    },
+    "performers": {
+      "title": "Top performers",
+      "description": "Highest match-scan counts in the activity window.",
+      "badge": "Staff",
+      "empty": "No performer data yet.",
+      "scans": "{count} scans"
+    },
+    "sessions": {
+      "receiving": "Receiving sessions",
+      "putaway": "Putaway sessions",
+      "empty": "No sessions in this list."
+    }
+  },
+  "reports": {
+    "title": "Warehouse reports",
+    "intro": "Export operational reports for a selected date range. Each report type has its own from/to filter.",
+    "from": "From",
+    "to": "To",
+    "exportExcel": "Export Excel",
+    "exportPdf": "Export PDF",
+    "invalidDateRange": "Choose a valid range where From is on or before To.",
+    "downloadStarted": "Download started.",
+    "downloadFailed": "Could not download the report. Try again.",
+    "kinds": {
+      "sla": {
+        "badge": "SLA",
+        "tagline": "On-time fulfillment",
+        "title": "SLA report",
+        "description": "Service-level compliance for inbound and outbound cycles within the selected period."
+      },
+      "performance": {
+        "badge": "Performance",
+        "tagline": "Throughput & speed",
+        "title": "Performance report",
+        "description": "Operational throughput, session completion rates, and productivity across warehouse teams."
+      },
+      "pending": {
+        "badge": "Pending",
+        "tagline": "Open work queue",
+        "title": "Pending work report",
+        "description": "Outstanding requests, sessions, and tasks still waiting for action in the selected window."
+      },
+      "occupancy": {
+        "badge": "Occupancy",
+        "tagline": "Space utilization",
+        "title": "Occupancy report",
+        "description": "How full zones, racks, and storage positions were over the selected period."
+      },
+      "inventory": {
+        "badge": "Inventory",
+        "tagline": "Stock snapshot",
+        "title": "Inventory report",
+        "description": "Stock levels and inventory movement for the warehouse between the chosen dates."
       }
     }
   },
@@ -352,7 +479,8 @@
         "status": "Status",
         "tireLabel": "Tire label",
         "tireId": "Tire ID",
-        "reservedFor": "Reserved for"
+        "reservedFor": "Reserved for",
+        "actions": "Actions"
       },
       "positionStatus": {
         "EMPTY": "Empty",
@@ -361,6 +489,78 @@
         "RESERVED_OUTBOUND": "Reserved outbound",
         "RESERVED": "Reserved",
         "FULL": "Full"
+      }
+    },
+    "tireLookup": {
+      "title": "Tire Unique ID inquiry",
+      "description": "Look up a tire by its 27-digit Unique ID to see barcode, occupancy, zone, and movement history.",
+      "uniqueIdLabel": "Tire Unique ID",
+      "uniqueIdPlaceholder": "27-digit Unique ID",
+      "uniqueIdHint": "Enter exactly {length} digits.",
+      "uniqueIdInvalid": "Unique ID must be exactly 27 digits.",
+      "search": "Look up",
+      "retry": "Retry",
+      "errorLoading": "Could not look up this tire.",
+      "fields": {
+        "tireUniqueId": "Tire Unique ID",
+        "locationBarcode": "Location barcode",
+        "occupancy": "Occupancy",
+        "positionStatus": "Position status",
+        "zoneName": "Zone"
+      },
+      "statusHistoryTitle": "Status history",
+      "locationHistoryTitle": "Location history",
+      "emptyStatusHistory": "No status history for this tire.",
+      "emptyLocationHistory": "No location history for this tire.",
+      "history": {
+        "historyType": "Type",
+        "status": "Status",
+        "when": "When",
+        "notes": "Notes",
+        "action": "Action",
+        "previousLocation": "Previous location",
+        "newLocation": "New location"
+      }
+    },
+    "positionHistory": {
+      "open": "History",
+      "title": "Position #{number} history",
+      "description": "Audit trail for assign, release, move, and related storage-position events.",
+      "noBarcode": "No barcode",
+      "retry": "Retry",
+      "errorLoading": "Could not load position history.",
+      "empty": "No history events for this position.",
+      "columns": {
+        "when": "When",
+        "action": "Action",
+        "actor": "Actor",
+        "tire": "Tire",
+        "note": "Note"
+      }
+    },
+    "slotPositionQr": {
+      "open": "QR codes",
+      "title": "Slot {number} — Position QR codes",
+      "description": "Storage-position QR codes for this slot. Click a QR image to open it in a new tab.",
+      "print": "Print",
+      "printMeta": "Slot ID {slotId} · Slot #{slotNumber} · QR {qrSizePx}px · {total} positions · page {page}/{totalPages}",
+      "retry": "Retry",
+      "errorLoading": "Could not load position QR codes.",
+      "empty": "No QR codes for this slot.",
+      "noBarcode": "No barcode",
+      "openInNewTab": "Open in new tab",
+      "openQrAria": "Open QR for position {number} in a new tab",
+      "qrAlt": "QR code for position {number}",
+      "fields": {
+        "slotId": "Slot ID",
+        "slotNumber": "Slot number",
+        "qrSizePx": "QR size",
+        "totalElements": "Total positions",
+        "page": "Page",
+        "size": "Page size",
+        "positionNumber": "Position",
+        "storagePositionId": "Storage position ID",
+        "locationBarcode": "Location barcode"
       }
     }
   },
@@ -453,6 +653,10 @@
     "truckPlanSubmitNeedsAssignments": "Add at least one truck with assigned requests before submitting.",
     "truckDropHint": "Drop a request here to assign it.",
     "truckAssignedRequestsCount": "{count} request(s) already assigned",
+    "truckPlanLiveStats": "{requests} request(s) · {tires} tire(s)",
+    "truckPlanCapacityStats": "{tires} / {capacity} capacity",
+    "truckOverCapacity": "Over capacity",
+    "requestTireCount": "{count} tires",
     "unassignFromTruck": "Remove from truck",
     "createTruckTitle": "Create truck",
     "columnSchedulingCell": "Scheduling cell",
@@ -712,6 +916,10 @@
     "unassignFromTruck": "Unassign request",
     "truckDropHint": "Drop requests here",
     "truckAssignedRequestsCount": "{count} request(s) assigned",
+    "truckPlanLiveStats": "{requests} request(s) · {tires} tire(s)",
+    "truckPlanCapacityStats": "{tires} / {capacity} capacity",
+    "truckOverCapacity": "Over capacity",
+    "requestTireCount": "{count} tires",
     "requestShortLabel": "Req #{id}",
     "readyToShipIntro": "Approved trucks appear here after picking completes. Create a shipping session on the service date.",
     "readyToShipReady": "Ready",

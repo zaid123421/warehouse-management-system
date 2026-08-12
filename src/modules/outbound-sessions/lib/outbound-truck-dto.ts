@@ -84,7 +84,10 @@ export function normalizeOutboundPlanningPoolRequest(
       pickNumber(rec, "totalVolume") ||
       pickNumber(rec, "expectedTireCount") ||
       undefined,
-    expectedTireCount: pickNumber(rec, "expectedTireCount") || undefined,
+    expectedTireCount:
+      pickNumber(rec, "expectedTireCount") ||
+      pickNumber(rec, "totalVolume") ||
+      undefined,
     deliveryDay: pickString(rec, "deliveryDay"),
     serviceDate: pickString(rec, "serviceDate"),
     regionCityId: pickNumber(rec, "regionCityId") || undefined,

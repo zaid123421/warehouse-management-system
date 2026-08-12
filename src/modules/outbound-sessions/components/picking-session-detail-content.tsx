@@ -254,7 +254,10 @@ export function PickingSessionDetailContent({ sessionId }: PickingSessionDetailC
             assignedLabel={t("assignedStaffLabel")}
             assignLabel={t("assignStaff")}
             addStaffLabel={t("addStaff")}
-            canAssign={canAssignPickingSession(data.status)}
+            canAssign={
+              canAssignPickingSession(data.status) &&
+              (data.assignedStaffUserIds?.length ?? 0) === 0
+            }
             onAssign={() => setAssignOpen(true)}
           />
 

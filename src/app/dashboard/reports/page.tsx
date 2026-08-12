@@ -1,13 +1,9 @@
-import { getTranslations } from "next-intl/server";
+import { ReportsPageContent } from "@/modules/reports/components/reports-page-content";
 
-export default async function ReportsPage() {
-  const t = await getTranslations("dashboard");
+export default function ReportsPage() {
   return (
-    <div className="space-y-4 break-words">
-      <h1 className="text-headline-sm font-bold text-foreground">
-        {t("reportsTitle")}
-      </h1>
-      <p className="text-body-md text-muted-foreground">{t("reportsIntro")}</p>
+    <div className="flex min-h-0 flex-1 flex-col">
+      <ReportsPageContent />
     </div>
   );
 }

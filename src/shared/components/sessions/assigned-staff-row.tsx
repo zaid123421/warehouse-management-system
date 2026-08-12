@@ -8,8 +8,8 @@ type AssignedStaffRowProps = {
   names: string[];
   notAssignedLabel: string;
   assignedLabel: string;
-  /** Label for outline button when staff already assigned (add more). */
-  addStaffLabel: string;
+  /** @deprecated Kept for call-site compatibility; assign is one-time only. */
+  addStaffLabel?: string;
   /** Label when nobody assigned yet. */
   assignLabel: string;
   canAssign: boolean;
@@ -21,13 +21,14 @@ export function AssignedStaffRow({
   names,
   notAssignedLabel,
   assignedLabel,
-  addStaffLabel,
   assignLabel,
   canAssign,
   onAssign,
   className,
 }: AssignedStaffRowProps) {
   const hasStaff = names.length > 0;
+  // Staff assignment is one-time: hide the button after the first successful assign.
+  const showAssignButton = canAssign && !hasStaff;
 
   return (
     <div className={cn("flex flex-wrap items-center gap-2", className)}>
@@ -58,20 +59,10 @@ export function AssignedStaffRow({
           <p className="text-body-sm text-muted-foreground">{notAssignedLabel}</p>
         )}
       </div>
-      {canAssign ? (
-        <Button
-          type="button"
-          size="sm"
-          variant="outline"
-          className={
-            hasStaff
-              ? "border-primary/40 text-primary hover:bg-primary/5"
-              : undefined
-          }
-          onClick={onAssign}
-        >
+      {showAssignButton ? (
+        <Button type="button" size="sm" variant="outline" onClick={onAssign}>
           <UserPlus className="size-4" />
-          {hasStaff ? addStaffLabel : assignLabel}
+          {assignLabel}
         </Button>
       ) : null}
     </div>

@@ -155,7 +155,10 @@ export function PutawaySessionDetailContent({ sessionId }: PutawaySessionDetailC
             assignedLabel={t("assignedStaffLabel")}
             assignLabel={t("assignStaff")}
             addStaffLabel={t("addStaff")}
-            canAssign={canAssignPutawaySession(data.status)}
+            canAssign={
+              canAssignPutawaySession(data.status) &&
+              (data.assignedStaffUserIds?.length ?? 0) === 0
+            }
             onAssign={() => setAssignOpen(true)}
           />
 

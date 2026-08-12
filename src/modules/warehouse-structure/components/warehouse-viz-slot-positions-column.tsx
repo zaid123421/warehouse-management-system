@@ -1,19 +1,25 @@
 "use client";
 
+import { useState } from "react";
 import { useTranslations } from "next-intl";
+import { History, QrCode } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { ErrorAlert } from "@/components/ui/error-alert";
 import { Skeleton } from "@/components/ui/skeleton";
 import { StyledTable } from "@/components/ui/styled-table";
 import { cn } from "@/lib/utils";
 import { OccupancyProgressBar } from "@/modules/warehouse-structure/components/occupancy-progress-bar";
 import { OccupancyStatGrid } from "@/modules/warehouse-structure/components/occupancy-stat-grid";
+import { PositionHistoryDialog } from "@/modules/warehouse-structure/components/position-history-dialog";
 import { PositionStatusBadge } from "@/modules/warehouse-structure/components/position-status-badge";
+import { SlotPositionQrDialog } from "@/modules/warehouse-structure/components/slot-position-qr-dialog";
 import { VisualizationPagination } from "@/modules/warehouse-structure/components/visualization-pagination";
 import { useRackSlots } from "@/modules/warehouse-structure/hooks/use-rack-slots";
 import { useSlotPositions } from "@/modules/warehouse-structure/hooks/use-slot-positions";
 import { formatOccupancyRatio } from "@/modules/warehouse-structure/lib/occupancy-utils";
 import { vizTypography } from "@/modules/warehouse-structure/lib/viz-typography";
 import type {
+  WarehousePosition,
   WarehouseRack,
   WarehouseSlot,
 } from "@/modules/warehouse-structure/types/warehouse-visualization";
@@ -40,8 +46,12 @@ export function WarehouseVizSlotPositionsColumn({
   onSelectSlot,
 }: WarehouseVizSlotPositionsColumnProps) {
   const t = useTranslations("warehouseStructure.viz");
+  const tHistory = useTranslations("warehouseStructure.positionHistory");
+  const tQr = useTranslations("warehouseStructure.slotPositionQr");
   const slotsQuery = useRackSlots(selectedRack?.id ?? null, slotsPage);
   const positionsQuery = useSlotPositions(selectedSlotId, positionsPage);
+  const [historyPosition, setHistoryPosition] = useState<WarehousePosition | null>(null);
+  const [qrDialogOpen, setQrDialogOpen] = useState(false);
 
   const slots = slotsQuery.data?.items ?? [];
   const positions = positionsQuery.data?.items ?? [];
@@ -135,13 +145,25 @@ export function WarehouseVizSlotPositionsColumn({
 
       {selectedSlot ? (
         <section className="space-y-3 border-t border-[var(--color-surface-light-container)] pt-4 dark:border-[var(--color-surface-container-high)]">
-          <div>
-            <h3 className={vizTypography.sectionTitle}>
-              {t("positionsTitle", { number: selectedSlot.slotNumber })}
-            </h3>
-            <p className={vizTypography.panelSubtitle}>
-              {t("rackLabel", { number: selectedSlot.rackNumber })}
-            </p>
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <h3 className={vizTypography.sectionTitle}>
+                {t("positionsTitle", { number: selectedSlot.slotNumber })}
+              </h3>
+              <p className={vizTypography.panelSubtitle}>
+                {t("rackLabel", { number: selectedSlot.rackNumber })}
+              </p>
+            </div>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="gap-1.5"
+              onClick={() => setQrDialogOpen(true)}
+            >
+              <QrCode className="size-3.5" />
+              {tQr("open")}
+            </Button>
           </div>
 
           {positionsQuery.isError ? (
@@ -210,6 +232,21 @@ export function WarehouseVizSlotPositionsColumn({
                     </span>
                   ),
                 },
+                {
+                  header: t("positionsTable.actions"),
+                  render: (row) => (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className="gap-1.5"
+                      onClick={() => setHistoryPosition(row)}
+                    >
+                      <History className="size-3.5" />
+                      {tHistory("open")}
+                    </Button>
+                  ),
+                },
               ]}
             />
           )}
@@ -224,6 +261,20 @@ export function WarehouseVizSlotPositionsColumn({
       ) : (
         <p className={vizTypography.hint}>{t("selectSlotHint")}</p>
       )}
+
+      <PositionHistoryDialog
+        open={historyPosition != null}
+        onOpenChange={(open) => {
+          if (!open) setHistoryPosition(null);
+        }}
+        position={historyPosition}
+      />
+
+      <SlotPositionQrDialog
+        open={qrDialogOpen && selectedSlot != null}
+        onOpenChange={setQrDialogOpen}
+        slot={selectedSlot}
+      />
     </div>
   );
 }

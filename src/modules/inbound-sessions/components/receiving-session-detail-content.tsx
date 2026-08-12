@@ -235,7 +235,10 @@ export function ReceivingSessionDetailContent({ sessionId }: ReceivingSessionDet
             assignedLabel={t("assignedStaffLabel")}
             assignLabel={t("assignStaff")}
             addStaffLabel={t("addStaff")}
-            canAssign={canAssignReceivingSession(data.status)}
+            canAssign={
+              canAssignReceivingSession(data.status) &&
+              (data.assignedStaffUserIds?.length ?? 0) === 0
+            }
             onAssign={() => setAssignOpen(true)}
           />
 

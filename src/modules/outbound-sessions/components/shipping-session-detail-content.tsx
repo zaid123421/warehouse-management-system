@@ -224,7 +224,10 @@ export function ShippingSessionDetailContent({ sessionId }: ShippingSessionDetai
             assignedLabel={t("assignedStaffLabel")}
             assignLabel={t("assignStaff")}
             addStaffLabel={t("addStaff")}
-            canAssign={canAssignShippingSession(data.status)}
+            canAssign={
+              canAssignShippingSession(data.status) &&
+              (data.assignedStaffUserIds?.length ?? 0) === 0
+            }
             onAssign={() => setAssignOpen(true)}
           />
 

@@ -73,7 +73,10 @@
     "roleSupplier": "مستودع",
     "roleUser": "مشغّل",
     "defaultAccountName": "الحساب",
-    "professionalPlan": "الخطة الاحترافية"
+    "professionalPlan": "الخطة الاحترافية",
+    "collapseSidebar": "طي الشريط الجانبي",
+    "expandSidebar": "فتح الشريط الجانبي",
+    "openSidebar": "فتح القائمة"
   },
   "dashboard": {
     "title": "لوحة التحكم",
@@ -122,6 +125,130 @@
         "label": "المنطقة د — الاستلام",
         "description": "منطقة تجهيز واستلام الوارد.",
         "stats": "{rackCols}×{rackRows} وحدة رف · {shelves} مستويات رف · ~{tires} إطار"
+      }
+    }
+  },
+  "warehouseOverview": {
+    "eyebrow": "نظرة حية",
+    "activityWindow": "آخر {days} يوم · {from} → {to}",
+    "generatedAt": "آخر تحديث {value}",
+    "errorLoading": "تعذّر تحميل نظرة المستودع.",
+    "retry": "إعادة المحاولة",
+    "kpi": {
+      "occupancy": "الإشغال",
+      "designedCapacity": "السعة التصميمية {count}",
+      "staff": "الموظفون النشطون",
+      "staffHint": "نشط / إجمالي موظفي المستودع",
+      "pending": "أعمال معلّقة",
+      "pendingHint": "وارد {inbound} · صادر {outbound}",
+      "slaOverdue": "SLA متأخر",
+      "activeRequests": "{count} طلب وارد نشط"
+    },
+    "capacity": {
+      "title": "سعة المستودع",
+      "description": "إشغال المواقع الحالي عبر المستودع.",
+      "donutCenter": "مشغول"
+    },
+    "usage": {
+      "occupied": "مشغول",
+      "empty": "فارغ",
+      "reservedInbound": "محجوز وارد",
+      "reservedOutbound": "محجوز صادر"
+    },
+    "zones": {
+      "title": "أعلى المناطق",
+      "description": "الإشغال حسب المنطقة.",
+      "empty": "لا توجد بيانات إشغال للمناطق."
+    },
+    "flow": {
+      "title": "تدفق الإطارات",
+      "description": "المتوقع مقابل المستلم مقابل المخزّن في النافذة الحالية.",
+      "expected": "متوقع",
+      "received": "مستلم",
+      "stored": "مخزّن"
+    },
+    "sla": {
+      "title": "أداء SLA",
+      "description": "نسب الالتزام بالوقت للوارد والصادر.",
+      "inbound": "وارد في الوقت",
+      "outbound": "صادر في الوقت"
+    },
+    "live": {
+      "title": "العمليات الحية",
+      "description": "الجلسات والاستثناءات المفتوحة حالياً.",
+      "receivingInProgress": "استلام",
+      "putawayInProgress": "تخزين",
+      "pickingInProgress": "التقاط",
+      "openShipping": "شحن",
+      "reservedLines": "خطوط محجوزة",
+      "expiredReservations": "حجوزات منتهية"
+    },
+    "exceptions": {
+      "receiving": "استثناءات الاستلام",
+      "putaway": "استثناءات التخزين",
+      "picking": "استثناءات الالتقاط",
+      "pickingMissing": "خطوط التقاط ناقصة",
+      "shipping": "استثناءات الشحن",
+      "shippingMissing": "خطوط شحن ناقصة"
+    },
+    "attention": {
+      "title": "يحتاج انتباهاً",
+      "description": "عناصر قد تحتاج إجراء من المشغّل.",
+      "empty": "لا يوجد ما يحتاج انتباهاً الآن."
+    },
+    "performers": {
+      "title": "أفضل الأداء",
+      "description": "أعلى عدد مسحات مطابقة في نافذة النشاط.",
+      "badge": "الموظفون",
+      "empty": "لا توجد بيانات أداء بعد.",
+      "scans": "{count} مسحة"
+    },
+    "sessions": {
+      "receiving": "جلسات الاستلام",
+      "putaway": "جلسات التخزين",
+      "empty": "لا توجد جلسات في هذه القائمة."
+    }
+  },
+  "reports": {
+    "title": "تقارير المستودع",
+    "intro": "صدّر التقارير التشغيلية حسب نطاق تاريخ. لكل نوع تقرير فلترة من/إلى خاصة به.",
+    "from": "من",
+    "to": "إلى",
+    "exportExcel": "تصدير Excel",
+    "exportPdf": "تصدير PDF",
+    "invalidDateRange": "اختر نطاقاً صالحاً بحيث يكون تاريخ البداية قبل أو يساوي تاريخ النهاية.",
+    "downloadStarted": "بدأ التحميل.",
+    "downloadFailed": "تعذّر تحميل التقرير. حاول مرة أخرى.",
+    "kinds": {
+      "sla": {
+        "badge": "SLA",
+        "tagline": "الالتزام بالمواعيد",
+        "title": "تقرير مستوى الخدمة (SLA)",
+        "description": "مدى الالتزام بمستويات الخدمة لدورات الوارد والصادر ضمن الفترة المحددة."
+      },
+      "performance": {
+        "badge": "الأداء",
+        "tagline": "الإنتاجية والسرعة",
+        "title": "تقرير الأداء",
+        "description": "إنتاجية العمليات ومعدلات إكمال الجلسات وأداء فرق المستودع."
+      },
+      "pending": {
+        "badge": "معلّق",
+        "tagline": "أعمال قيد الانتظار",
+        "title": "تقرير الأعمال المعلّقة",
+        "description": "الطلبات والجلسات والمهام التي ما زالت بانتظار إجراء ضمن النافذة الزمنية."
+      },
+      "occupancy": {
+        "badge": "الإشغال",
+        "tagline": "استغلال المساحة",
+        "title": "تقرير الإشغال",
+        "description": "نسب امتلاء المناطق والرفوف ومواقع التخزين خلال الفترة المحددة."
+      },
+      "inventory": {
+        "badge": "المخزون",
+        "tagline": "لقطة المخزون",
+        "title": "تقرير المخزون",
+        "description": "مستويات المخزون وحركة الأصناف في المستودع بين التاريخين المختارين."
       }
     }
   },
@@ -351,7 +478,8 @@
         "status": "الحالة",
         "tireLabel": "تسمية الإطار",
         "tireId": "معرّف الإطار",
-        "reservedFor": "محجوز لـ"
+        "reservedFor": "محجوز لـ",
+        "actions": "إجراءات"
       },
       "positionStatus": {
         "EMPTY": "فارغ",
@@ -360,6 +488,78 @@
         "RESERVED_OUTBOUND": "محجوز صادر",
         "RESERVED": "محجوز",
         "FULL": "ممتلئ"
+      }
+    },
+    "tireLookup": {
+      "title": "استعلام المعرّف الفريد للإطار",
+      "description": "ابحث عن إطار عبر المعرّف الفريد المكوّن من 27 رقماً لعرض الباركود والإشغال والمنطقة وسجل الحركة.",
+      "uniqueIdLabel": "المعرّف الفريد للإطار",
+      "uniqueIdPlaceholder": "معرّف فريد من 27 رقماً",
+      "uniqueIdHint": "أدخل {length} رقماً بالضبط.",
+      "uniqueIdInvalid": "يجب أن يكون المعرّف الفريد 27 رقماً.",
+      "search": "بحث",
+      "retry": "إعادة المحاولة",
+      "errorLoading": "تعذّر البحث عن هذا الإطار.",
+      "fields": {
+        "tireUniqueId": "المعرّف الفريد",
+        "locationBarcode": "باركود الموقع",
+        "occupancy": "الإشغال",
+        "positionStatus": "حالة الموقع",
+        "zoneName": "المنطقة"
+      },
+      "statusHistoryTitle": "سجل الحالات",
+      "locationHistoryTitle": "سجل المواقع",
+      "emptyStatusHistory": "لا يوجد سجل حالات لهذا الإطار.",
+      "emptyLocationHistory": "لا يوجد سجل مواقع لهذا الإطار.",
+      "history": {
+        "historyType": "النوع",
+        "status": "الحالة",
+        "when": "الوقت",
+        "notes": "ملاحظات",
+        "action": "الإجراء",
+        "previousLocation": "الموقع السابق",
+        "newLocation": "الموقع الجديد"
+      }
+    },
+    "positionHistory": {
+      "open": "السجل",
+      "title": "سجل الموقع #{number}",
+      "description": "مسار تدقيق لأحداث التعيين والتحرير والنقل والأحداث المرتبطة بموقع التخزين.",
+      "noBarcode": "بدون باركود",
+      "retry": "إعادة المحاولة",
+      "errorLoading": "تعذّر تحميل سجل الموقع.",
+      "empty": "لا توجد أحداث سجل لهذا الموقع.",
+      "columns": {
+        "when": "الوقت",
+        "action": "الإجراء",
+        "actor": "المنفّذ",
+        "tire": "الإطار",
+        "note": "ملاحظة"
+      }
+    },
+    "slotPositionQr": {
+      "open": "رموز QR",
+      "title": "خانة {number} — رموز QR للمواقع",
+      "description": "رموز QR لمواقع التخزين في هذه الخانة. اضغط على الصورة لفتحها في تبويب جديد.",
+      "print": "طباعة",
+      "printMeta": "معرّف الخانة {slotId} · خانة #{slotNumber} · حجم QR {qrSizePx}px · {total} موقع · صفحة {page}/{totalPages}",
+      "retry": "إعادة المحاولة",
+      "errorLoading": "تعذّر تحميل رموز QR للمواقع.",
+      "empty": "لا توجد رموز QR لهذه الخانة.",
+      "noBarcode": "بدون باركود",
+      "openInNewTab": "فتح في تبويب جديد",
+      "openQrAria": "فتح رمز QR للموقع {number} في تبويب جديد",
+      "qrAlt": "رمز QR للموقع {number}",
+      "fields": {
+        "slotId": "معرّف الخانة",
+        "slotNumber": "رقم الخانة",
+        "qrSizePx": "حجم QR",
+        "totalElements": "إجمالي المواقع",
+        "page": "الصفحة",
+        "size": "حجم الصفحة",
+        "positionNumber": "الموقع",
+        "storagePositionId": "معرّف موقع التخزين",
+        "locationBarcode": "باركود الموقع"
       }
     }
   },
@@ -452,6 +652,10 @@
     "truckPlanSubmitNeedsAssignments": "أضف شاحنة واحدة على الأقل مع طلبات معيّنة قبل الإرسال.",
     "truckDropHint": "أسقط طلباً هنا لتعيينه.",
     "truckAssignedRequestsCount": "{count} طلب مسند مسبقاً",
+    "truckPlanLiveStats": "{requests} طلب · {tires} إطار",
+    "truckPlanCapacityStats": "{tires} / {capacity} السعة",
+    "truckOverCapacity": "تجاوز السعة",
+    "requestTireCount": "{count} إطار",
     "unassignFromTruck": "إزالة من الشاحنة",
     "createTruckTitle": "إنشاء شاحنة",
     "columnSchedulingCell": "خلية الجدولة",
@@ -711,6 +915,10 @@
     "unassignFromTruck": "إلغاء إسناد الطلب",
     "truckDropHint": "أسقط الطلبات هنا",
     "truckAssignedRequestsCount": "{count} طلب مسند",
+    "truckPlanLiveStats": "{requests} طلب · {tires} إطار",
+    "truckPlanCapacityStats": "{tires} / {capacity} السعة",
+    "truckOverCapacity": "تجاوز السعة",
+    "requestTireCount": "{count} إطار",
     "requestShortLabel": "طلب #{id}",
     "readyToShipIntro": "تظهر هنا الشاحنات المعتمدة بعد اكتمال الالتقاط. أنشئ جلسة شحن في يوم الخدمة.",
     "readyToShipReady": "جاهز",

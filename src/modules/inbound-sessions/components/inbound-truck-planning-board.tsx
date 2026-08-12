@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { Check, Package, Plus, Trash2, X } from "lucide-react";
@@ -43,6 +43,23 @@ type InboundTruckPlanningBoardProps = {
 
 function createLocalId() {
   return `draft-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+}
+
+/** Fixed truck capacity used while drafting the plan (before submit). */
+const DRAFT_TRUCK_CAPACITY_TIRES = 2000;
+
+/** Prefer API `expectedTireCount`; fall back to `totalVolume` when needed. */
+function getExpectedTireCount(
+  request?: PlanningPoolRequest | InboundTruckRequestLink | null,
+): number {
+  if (!request) return 0;
+  if ("expectedTireCount" in request && request.expectedTireCount != null) {
+    return request.expectedTireCount;
+  }
+  if ("totalVolume" in request && request.totalVolume != null) {
+    return request.totalVolume;
+  }
+  return 0;
 }
 
 function toPersistedDraft(
@@ -96,13 +113,15 @@ export function InboundTruckPlanningBoard({ schedulingCellId }: InboundTruckPlan
 
   const approveMutation = useApproveInboundTruck();
   const [localDrafts, setLocalDrafts] = useState<DraftTruck[]>([]);
+  const [draftCellId, setDraftCellId] = useState(schedulingCellId);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [dragOverLocalId, setDragOverLocalId] = useState<string | null>(null);
   const [dragOverPool, setDragOverPool] = useState(false);
 
-  useEffect(() => {
+  if (draftCellId !== schedulingCellId) {
+    setDraftCellId(schedulingCellId);
     setLocalDrafts([]);
-  }, [schedulingCellId]);
+  }
 
   const persistedTrucks = useMemo(
     () =>
@@ -117,7 +136,7 @@ export function InboundTruckPlanningBoard({ schedulingCellId }: InboundTruckPlan
     [persistedTrucks, localDrafts],
   );
 
-  const pool = poolData ?? [];
+  const pool = useMemo(() => poolData ?? [], [poolData]);
   const assignedRequestIds = useMemo(() => {
     const ids = new Set<number>();
     for (const truck of trucks) {
@@ -415,10 +434,15 @@ export function InboundTruckPlanningBoard({ schedulingCellId }: InboundTruckPlan
                     !isBusy && "cursor-grab active:cursor-grabbing",
                   )}
                 >
-                  <span className="font-medium">
+                  <span className="min-w-0 font-medium">
                     {t("requestShortLabel", { id: request.inboundRequestId })}
+                    <span className="mt-0.5 block text-xs font-normal text-primary-dark">
+                      {t("requestTireCount", {
+                        count: getExpectedTireCount(request),
+                      })}
+                    </span>
                   </span>
-                  <span className="text-muted-foreground ml-auto">
+                  <span className="ml-auto text-muted-foreground">
                     {getStatusLabel((key) => tStatus(key as never), request.status)}
                   </span>
                 </div>
@@ -438,14 +462,18 @@ export function InboundTruckPlanningBoard({ schedulingCellId }: InboundTruckPlan
               {trucks.map((truck) => {
                 const isPersisted = truck.serverTruckId != null;
                 const isDragOver = dragOverLocalId === truck.localId;
-                const serverTruck = isPersisted ? serverTrucks.find(t => t.id === truck.serverTruckId) : null;
-                const capacityTires = serverTruck?.capacityTires;
-                const assignedTires = isPersisted
-                  ? (serverTruck?.assignedTires ?? 0)
-                  : truck.assignedRequestIds.reduce((sum, id) => {
-                      const req = requestById.get(id);
-                      return sum + (req && "expectedTireCount" in req ? (req.expectedTireCount ?? 0) : 0);
-                    }, 0);
+                const serverTruck = isPersisted
+                  ? serverTrucks.find((t) => t.id === truck.serverTruckId)
+                  : null;
+                const capacityTires =
+                  serverTruck?.capacityTires && serverTruck.capacityTires > 0
+                    ? serverTruck.capacityTires
+                    : DRAFT_TRUCK_CAPACITY_TIRES;
+                const assignedRequestCount = truck.assignedRequestIds.length;
+                const assignedTires = truck.assignedRequestIds.reduce((sum, id) => {
+                  return sum + getExpectedTireCount(requestById.get(id));
+                }, 0);
+                const isOverCapacity = assignedTires > capacityTires;
 
                 return (
                   <div
@@ -464,27 +492,36 @@ export function InboundTruckPlanningBoard({ schedulingCellId }: InboundTruckPlan
                     )}
                   >
                     <div className="mb-3 flex items-start justify-between gap-2">
-                      <div className="flex flex-col gap-1">
+                      <div className="flex min-w-0 flex-col gap-1.5">
                         <h3 className="text-label-lg font-semibold text-foreground">
                           {truck.label}
                         </h3>
-                        {(!isPersisted || capacityTires !== undefined) && (
-                          <div className="flex flex-col gap-1.5 w-32">
-                            <div className="flex items-center justify-between text-[10px] text-muted-foreground font-medium">
-                              <span>{assignedTires} {capacityTires ? `/ ${capacityTires}` : ""} tires</span>
-                              {capacityTires && assignedTires > capacityTires && (
-                                <span className="text-destructive">Over capacity</span>
-                              )}
-                            </div>
-                            {capacityTires && (
-                              <Progress 
-                                value={Math.min((assignedTires / capacityTires) * 100, 100)} 
-                                className="h-1.5 bg-muted"
-                                indicatorClassName={assignedTires > capacityTires ? "bg-destructive" : "bg-primary"}
-                              />
-                            )}
+                        <div className="flex w-44 flex-col gap-1.5">
+                          <p className="text-xs font-medium text-foreground">
+                            {t("truckPlanLiveStats", {
+                              requests: assignedRequestCount,
+                              tires: assignedTires,
+                            })}
+                          </p>
+                          <div className="flex items-center justify-between text-[10px] font-medium text-muted-foreground">
+                            <span>
+                              {t("truckPlanCapacityStats", {
+                                tires: assignedTires,
+                                capacity: capacityTires,
+                              })}
+                            </span>
+                            {isOverCapacity ? (
+                              <span className="text-destructive">{t("truckOverCapacity")}</span>
+                            ) : null}
                           </div>
-                        )}
+                          <Progress
+                            value={Math.min((assignedTires / capacityTires) * 100, 100)}
+                            className="h-1.5 bg-muted"
+                            indicatorClassName={
+                              isOverCapacity ? "bg-destructive" : "bg-primary"
+                            }
+                          />
+                        </div>
                       </div>
                       <div className="flex shrink-0 items-center gap-1">
                         {isPersisted ? (
@@ -526,16 +563,10 @@ export function InboundTruckPlanningBoard({ schedulingCellId }: InboundTruckPlan
                         {isPersisted &&
                         (requestCountByTruckId.get(truck.serverTruckId as number) ?? 0) > 0
                           ? t("truckAssignedRequestsCount", {
-<<<<<<< HEAD
                               count:
                                 requestCountByTruckId.get(
                                   truck.serverTruckId as number,
                                 ) ?? 0,
-=======
-                              count: requestCountByTruckId.get(
-                                truck.serverTruckId as number,
-                              ) ?? 0,
->>>>>>> 2d8e0c005180ca67856457c5b89631f2262c6378
                             })
                           : t("truckDropHint")}
                       </p>
@@ -543,6 +574,7 @@ export function InboundTruckPlanningBoard({ schedulingCellId }: InboundTruckPlan
                       <div className="flex flex-1 flex-col gap-2">
                         {truck.assignedRequestIds.map((requestId) => {
                           const request = requestById.get(requestId);
+                          const tireCount = getExpectedTireCount(request);
                           return (
                             <div
                               key={requestId}
@@ -557,7 +589,7 @@ export function InboundTruckPlanningBoard({ schedulingCellId }: InboundTruckPlan
                                   "cursor-grab active:cursor-grabbing",
                               )}
                             >
-                              <span className="font-medium">
+                              <span className="min-w-0 font-medium">
                                 {t("requestShortLabel", { id: requestId })}
                                 {request && "dealerName" in request && request.dealerName ? (
                                   <span className="font-normal text-muted-foreground">
@@ -565,6 +597,9 @@ export function InboundTruckPlanningBoard({ schedulingCellId }: InboundTruckPlan
                                     · {request.dealerName}
                                   </span>
                                 ) : null}
+                                <span className="mt-0.5 block text-xs font-normal text-primary-dark">
+                                  {t("requestTireCount", { count: tireCount })}
+                                </span>
                               </span>
                               {!isPersisted ? (
                                 <button
