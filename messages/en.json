@@ -52,7 +52,7 @@
     "submitting": "Registering..."
   },
   "nav": {
-    "dashboard": "Dashboard",
+    "dashboard": "Overview",
     "products": "Products",
     "orders": "Orders",
     "inventory": "Inventory",
@@ -79,7 +79,7 @@
     "openSidebar": "Open menu"
   },
   "dashboard": {
-    "title": "Dashboard",
+    "title": "Overview",
     "intro": "Choose a section from the menu above. Links shown depend on your role.",
     "profileTitle": "Profile",
     "profileIntro": "Profile content by permissions.",

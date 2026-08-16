@@ -65,11 +65,10 @@ export function canAccess(role: Role | null | undefined, pathname: string): bool
 }
 
 export const NAV_ENTRIES = [
-  { path: ROUTES.DASHBOARD.ROOT, label: 'Dashboard', key: 'dashboard' },
+  { path: ROUTES.DASHBOARD.ROOT, label: 'Overview', key: 'dashboard' },
   { path: ROUTES.DASHBOARD.WAREHOUSE_STRUCTURE, label: 'Warehouse Structure', key: 'warehouseStructure' },
   { path: ROUTES.DASHBOARD.INBOUND_SESSIONS.LIST, label: 'Inbound Sessions', key: 'inboundSessions' },
   { path: ROUTES.DASHBOARD.OUTBOUND_SESSIONS.LIST, label: 'Outbound Sessions', key: 'outboundSessions' },
-  { path: ROUTES.DASHBOARD.INVENTORY, label: 'Inventory', key: 'inventory' },
   { path: ROUTES.DASHBOARD.EMPLOYEES, label: 'Employees', key: 'employees' },
   { path: ROUTES.DASHBOARD.REPORTS, label: 'Reports', key: 'reports' },
   { path: ROUTES.DASHBOARD.PROFILE, label: 'Settings', key: 'settings' },
